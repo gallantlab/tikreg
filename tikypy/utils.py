@@ -2,6 +2,16 @@ import numpy as np
 from scipy.stats import zscore
 
 
+def determinant_normalizer(mat, thresh=1e-08):
+    '''get the (pseudo-) determinant of the matrix
+    '''
+    evals = np.linalg.eigvalsh(mat)
+    gdx = evals > thresh
+    det = np.prod(evals[gdx])
+    return det**(1./gdx.sum())
+
+
+
 def delay2slice(delay):
     if delay > 0:
         ii = slice(None, -delay)
