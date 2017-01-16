@@ -70,7 +70,7 @@ class BasePrior(object):
         return self.prior
 
     def prior2penalty(self, regularizer=0.0):
-        penalty = np.linalg.inv(self.prior + regularizer*np.eye(self.ndelays))
+        penalty = np.linalg.inv(self.prior + regularizer*np.eye(self.prior.shape[0]))
         if self.dodetnorm:
             penalty /= determinant_normalizer(penalty)
         self.penalty = penalty
