@@ -1,50 +1,7 @@
 import numpy as np
 import itertools
 
-from scipy.linalg import toeplitz
-from scipy.misc import comb
-
 import utils as tikutils
-
-
-##############################
-# Helper functions
-##############################
-
-
-def difference_operator(order, nobs):
-    '''Get a finite difference operator matrix of size `nobs`.
-
-    Parameters
-    ----------
-    order : int
-        The order of the derivative (e.g. 2nd derivative)
-    nobs : int
-        The size of the output matrix
-
-    Returns
-    -------
-    mat : (`nobs`,`nobs`) np.ndarray
-    '''
-
-    depth = order + 1
-    # pascal triangle row
-    kernel = np.asarray([comb(depth-1, idx) for idx in xrange(depth)])
-    sign = (-1)**np.arange(len(kernel))
-    kernel *= sign
-    vec = np.zeros(nobs)
-    if order % 2 == 0:
-        lkern = len(kernel)/2
-        vec[:len(kernel)-lkern] = kernel[lkern:]
-        convmat = toeplitz(vec, np.zeros(nobs))
-        convmat += np.tril(convmat, -1).T
-    elif order == 1:
-        vec[:len(kernel)] = kernel
-        convmat = toeplitz(vec)
-    else:
-        raise NotImplementedError
-    return convmat
-
 
 
 ##############################
@@ -106,6 +63,15 @@ class TemporalPrior(BasePrior):
         super(TemporalPrior, self).__init__(prior, **kwargs)
 
 
+class CustomPrior(TemporalPrior):
+    '''Specify a custom prior
+    '''
+    def __init__(self, *args, **kwargs):
+        '''
+        '''
+        super(CustomPrior, self).__init__(*args, **kwargs)
+
+
 class SphericalPrior(TemporalPrior):
     '''Equivalent to ridge.
     '''
@@ -128,17 +94,10 @@ class HRFPrior(TemporalPrior):
         super(HRFPrior, self).__init__(raw_prior, delays=delays, **kwargs)
 
     def prior2penalty(self, regularizer=1e-08):
+        # default is low rank, so need to regularize to invert
         return super(HRFPrior, self).prior2penalty(regularizer=regularizer)
 
 
-
-class CustomPrior(TemporalPrior):
-    '''Specify a custom prior
-    '''
-    def __init__(self, *args, **kwargs):
-        '''
-        '''
-        super(CustomPrior, self).__init__(*args, **kwargs)
 
 
 class WishartPrior(object):

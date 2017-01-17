@@ -3,6 +3,44 @@ from scipy.stats import zscore
 
 
 
+from scipy.linalg import toeplitz
+from scipy.misc import comb
+
+
+def difference_operator(order, nobs):
+    '''Get a finite difference operator matrix of size `nobs`.
+
+    Parameters
+    ----------
+    order : int
+        The order of the derivative (e.g. 2nd derivative)
+    nobs : int
+        The size of the output matrix
+
+    Returns
+    -------
+    mat : (`nobs`,`nobs`) np.ndarray
+    '''
+
+    depth = order + 1
+    # pascal triangle row
+    kernel = np.asarray([comb(depth-1, idx) for idx in xrange(depth)])
+    sign = (-1)**np.arange(len(kernel))
+    kernel *= sign
+    vec = np.zeros(nobs)
+    if order % 2 == 0:
+        lkern = len(kernel)/2
+        vec[:len(kernel)-lkern] = kernel[lkern:]
+        convmat = toeplitz(vec, np.zeros(nobs))
+        convmat += np.tril(convmat, -1).T
+    elif order == 1:
+        vec[:len(kernel)] = kernel
+        convmat = toeplitz(vec)
+    else:
+        raise NotImplementedError
+    return convmat
+
+
 
 
 
