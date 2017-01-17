@@ -54,9 +54,11 @@ def difference_operator(order, nobs):
 class BasePrior(object):
     '''Base class for priors
     '''
-    def __init__(self, prior, dodetnorm=True):
+    def __init__(self, prior, dodetnorm=False):
         '''
         '''
+        assert prior.ndim == 2
+
         if dodetnorm:
             self.detnorm = determinant_normalizer(prior)
         else:
@@ -79,8 +81,6 @@ class BasePrior(object):
     def normalize_prior(self):
         self.detnorm = determinant_normalizer(self.prior)
         self.prior /= self.detnorm
-
-
 
 
 def get_delays_from_prior(raw_prior, delays):
@@ -106,7 +106,6 @@ class TemporalPrior(BasePrior):
         super(TemporalPrior, self).__init__(prior, **kwargs)
 
 
-
 class SphericalPrior(TemporalPrior):
     '''Equivalent to ridge.
     '''
@@ -130,6 +129,16 @@ class HRFPrior(TemporalPrior):
 
     def prior2penalty(self, regularizer=1e-08):
         return super(HRFPrior, self).prior2penalty(regularizer=regularizer)
+
+
+
+class CustomPrior(TemporalPrior):
+    '''Specify a custom prior
+    '''
+    def __init__(self, *args, **kwargs):
+        '''
+        '''
+        super(CustomPrior, self).__init__(*args, **kwargs)
 
 
 class WishartPrior(object):
@@ -201,16 +210,3 @@ class GaussianKernelPrior(TemporalPrior):
         '''
         '''
         super(GaussianKernelPrior, self).__init__(*args, **kwargs)
-
-
-
-
-
-
-class CustomPrior(TemporalPrior):
-    '''Specify a custom prior
-    '''
-    def __init__(self, *args, **kwargs):
-        '''
-        '''
-        super(CustomPrior, self).__init__(*args, **kwargs)
