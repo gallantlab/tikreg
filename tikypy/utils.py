@@ -5,6 +5,31 @@ from scipy.linalg import toeplitz
 from scipy.misc import comb
 
 
+def SVD(X, **kwargs):
+    '''
+    Wrapper for SVD factorization
+    Uses scipy.linalg.svd by default
+    if the SVD does not converge, it will
+    use a slower svd factorization (DGESVD)
+
+    see scipy.linalg.svd for documentation
+    '''
+    import scipy.linalg as LA
+
+    if 'full_matrices' not in kwargs:
+        kwargs['full_matrices'] = False
+
+    try:
+        O = LA.svd(X, **kwargs)
+    except LA.LinAlgError, e:
+        from warnings import warn
+        print warn('%s... trying slow SVD' % e)
+        from svd_dgesvd import svd_dgesvd as slow_svd
+        O = slow_svd(X, **kwargs)
+    return O
+
+
+
 def difference_operator(order, nobs):
     '''Get a finite difference operator matrix of size `nobs`.
 

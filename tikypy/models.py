@@ -5,7 +5,7 @@ from collections import defaultdict as ddic
 from scipy.linalg import cho_factor, cho_solve
 
 
-from aone.algos import SVD
+from tikypy.utils import SVD
 from aone.algos.kernels import lazy_kernel
 import tikypy.utils as tikutils
 

@@ -1,7 +1,7 @@
 import numpy as np
 
-import temporal_priors as tp
-import utils as tikutils
+import tikypy.temporal_priors as tp
+import tikypy.utils as tikutils
 
 ##############################
 #
