@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 
-import utils as tikutils
+import tikypy.utils as tikutils
 
 
 ##############################
@@ -16,24 +16,26 @@ class BasePrior(object):
         '''
         assert prior.ndim == 2
 
-        if dodetnorm:
-            self.detnorm = tikutils.determinant_normalizer(prior)
-        else:
-            self.detnorm = 1.0
-        self.prior = prior / self.detnorm
+        self.prior = prior
+        self.detnorm = 1.0
         self.penalty = 0.0
+        self.penalty_detnorm = 1.0
         self.dodetnorm = dodetnorm
+
+        if self.dodetnorm:
+            self.normalize_prior()
 
     @property
     def asarray(self):
         return self.prior
 
-    def prior2penalty(self, regularizer=0.0):
+    def prior2penalty(self, regularizer=0.0, dodetnorm=False):
         penalty = np.linalg.inv(self.prior + regularizer*np.eye(self.prior.shape[0]))
-        if self.dodetnorm:
-            penalty /= tikutils.determinant_normalizer(penalty)
-        self.penalty = penalty
-        return penalty
+        if dodetnorm:
+            self.penalty_detnorm = tikutils.determinant_normalizer(penalty)
+
+        self.penalty = penalty / self.penalty_detnorm
+        return self.penalty
 
     def normalize_prior(self):
         self.detnorm = tikutils.determinant_normalizer(self.prior)
@@ -94,8 +96,18 @@ class HRFPrior(TemporalPrior):
         super(HRFPrior, self).__init__(raw_prior, delays=delays, **kwargs)
 
     def prior2penalty(self, regularizer=1e-08):
-        # default is low rank, so need to regularize to invert
+        # default HRF prior is low rank, so need to regularize to invert
         return super(HRFPrior, self).prior2penalty(regularizer=regularizer)
+
+
+class SmoothnessPrior(TemporalPrior):
+    '''
+    '''
+    def __init__(self, *args, **kwargs):
+        '''
+        '''
+        super(SmoothnessPrior, self).__init__(*args, **kwargs)
+
 
 
 

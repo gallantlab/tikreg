@@ -12,43 +12,57 @@ import utils as tikutils
 def test_base_prior():
     tmp = np.random.randn(10, 10)
     raw_prior = np.dot(tmp, tmp.T)
-    prior = tp.BasePrior(raw_prior, dodetnorm=False)
+    prior = tp.BasePrior(raw_prior.copy(), dodetnorm=False)
+
+    # basic defaults
     assert prior.detnorm == 1.0
     assert np.allclose(prior.asarray, raw_prior)
+    # return penalty
     penalty = np.linalg.inv(prior.asarray + np.eye(prior.asarray.shape[0]))
     assert np.allclose(prior.prior2penalty(regularizer=1.0), penalty)
 
-
-    tmp = np.random.randn(10, 10)
-    raw_prior = np.dot(tmp, tmp.T)
-    prior = tp.BasePrior(raw_prior, dodetnorm=True)
+    #####
+    prior = tp.BasePrior(raw_prior.copy(), dodetnorm=True)
+    # test determinant normalizer computation
     detnorm = tikutils.determinant_normalizer(raw_prior)
     assert prior.detnorm == detnorm
-
+    # test determinant normalization
     rr = raw_prior / tikutils.determinant_normalizer(raw_prior)
     assert np.allclose(prior.asarray, rr)
-    penalty = np.linalg.inv(prior.asarray + np.eye(prior.asarray.shape[0]))
-    penalty /= tikutils.determinant_normalizer(penalty)
-    assert np.allclose(prior.prior2penalty(regularizer=1.0), penalty)
 
+    #####
+    prior = tp.BasePrior(raw_prior.copy(), dodetnorm=False)
+    # test penalty computation
+    penalty = np.linalg.inv(raw_prior + np.eye(raw_prior.shape[0]))
+    assert np.allclose(prior.prior2penalty(regularizer=1.0, dodetnorm=False), penalty)
+    assert prior.penalty_detnorm == 1.0
+    # test penalty with normalization
+    penalty_detnorm = prior.prior2penalty(regularizer=1.0, dodetnorm=True)
+    pdetnorm = tikutils.determinant_normalizer(penalty)
+    assert prior.penalty_detnorm == pdetnorm
+    assert np.allclose(penalty_detnorm, penalty / pdetnorm)
 
 def test_temporal_prior():
     ndelays = 10
     tmp = np.random.randn(ndelays, ndelays)
     raw_prior = np.dot(tmp, tmp.T)
     prior = tp.TemporalPrior(raw_prior)
+    delays = np.arange(ndelays)
+
     assert hasattr(prior, 'ndelays')
     assert hasattr(prior, 'delays')
+    assert isinstance(prior.asarray, np.ndarray)
+    assert prior.ndelays == ndelays
+    assert len(prior.delays) == prior.ndelays
+    assert np.allclose(prior.delays, delays)
 
 
 def test_spherical_prior():
     prior = tp.SphericalPrior()
-    assert len(prior.delays) == prior.ndelays
-    assert isinstance(prior.asarray, np.ndarray)
-    assert prior.asarray.shape[0] == prior.ndelays
-
     delays = range(10)
     ndelays = len(delays)
+    assert prior.asarray.shape[0] == prior.ndelays
+
     prior = tp.SphericalPrior(delays)
     a,b = prior.asarray.shape
     assert a == b == len(prior.delays)
