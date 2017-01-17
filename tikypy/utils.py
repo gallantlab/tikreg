@@ -74,10 +74,9 @@ def hrf_default_basis(dt=2.0, duration=32):
     '''
     try:
         import hrf_estimation as he
-    except ImportError as err:
-        issue = '''You need to install `hrf_estimation` package: "pip install -U hrf_estimation"'''
-        err.message = err.message + issue
-        raise
+    except ImportError:
+        txt = '''You need to install `hrf_estimation` package: "pip install hrf_estimation"'''
+        raise ImportError(txt)
 
     time = np.arange(0, duration, dt)
     h1 = he.hrf.spm_hrf_compat(time)

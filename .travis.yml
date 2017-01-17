@@ -2,7 +2,7 @@ sudo: true  # To use travis container infrastructure
 language: python
 python:
   - "2.7"
-  - "3.4"
+  - "3.5"
 # command to install dependencies
 install:
   - pip install -r requirements.txt

@@ -51,7 +51,8 @@ class lazy_kernel(object):
 
         # Check if we already have this update, in which case just return verbosely
         if (kernel_type == self.kernel_type) and (self.parameter == parameter):
-            if verbose: print 'kernel is already set:', self
+            if verbose:
+                print('kernel is already set:%s'%self)
             return
 
         self.parameter = parameter
@@ -68,7 +69,8 @@ class lazy_kernel(object):
             self.kernel = self.cache
         else:
             raise ValueError('Kernel "%s" is not available. Choose from: %s' % (kernel_type,  sjoin(self.kernel_types, ', ')))
-        if verbose: print self
+        if verbose:
+            print(self)
 
 
 def multiquad_kernel(xdata, ydata = None, c =1.0 ):
