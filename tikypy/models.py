@@ -7,7 +7,7 @@ from scipy.linalg import cho_factor, cho_solve
 
 from aone.algos import SVD
 from aone.algos.kernels import lazy_kernel
-import utils
+import tikypy.utils as tikutils
 
 METHOD = 'SVD'
 
@@ -41,7 +41,7 @@ def ols(X, Y, rcond=1e-08):
     U = U[:, gdx]
     V = Vt.T[:, gdx]
     XTY  = np.dot(X.T, Y)
-    XTXinv = np.dot(utils.mult_diag(1.0/S**2, V, left=False), V.T)
+    XTXinv = np.dot(tikutils.mult_diag(1.0/S**2, V, left=False), V.T)
     return np.dot(XTXinv, XTY)
 
 
@@ -77,7 +77,7 @@ def olspred(X, Y, Xtest=False):
     if (Xtest is False) or (Xtest is None):
         LH = U
     else:
-        LH = np.dot(Xtest, utils.mult_diag(1.0/S, V, left=False))
+        LH = np.dot(Xtest, tikutils.mult_diag(1.0/S, V, left=False))
     return np.dot(LH, UTY)
 
 
@@ -175,11 +175,11 @@ def solve_l2_primal(Xtrain, Ytrain,
         if performance:
             # Compute performance
             if method is 'SVD':
-                XVD = utils.mult_diag(D, XtestV, left=False)
+                XVD = tikutils.mult_diag(D, XtestV, left=False)
                 Ypred = np.dot(XVD, UTY)
             elif method is 'Chol':
                 Ypred = np.dot(Xtest, cho_solve((L, lower), XtY))
-            cc = utils.columnwise_correlation(Ypred, Ytest, axis=0)
+            cc = tikutils.columnwise_correlation(Ypred, Ytest, axis=0)
             results['performance'].append(cc)
 
             if verbose:
@@ -196,7 +196,7 @@ def solve_l2_primal(Xtrain, Ytrain,
         elif predictions:
             # only predictions
             if method is 'SVD':
-                XVD = utils.mult_diag(D, XtestV, left=False)
+                XVD = tikutils.mult_diag(D, XtestV, left=False)
                 Ypred = np.dot(XVD, UTY)
             elif method is 'Chol':
                 Ypred = np.dot(Xtest, cho_solve((L, lower), XtY))
@@ -204,7 +204,7 @@ def solve_l2_primal(Xtrain, Ytrain,
         if weights:
             # weights
             if method is 'SVD':
-                betas = np.dot(utils.mult_diag(D, V, left=False), UTY)
+                betas = np.dot(tikutils.mult_diag(D, V, left=False), UTY)
             elif method is 'Chol':
                 betas = cho_solve((L, lower), XtY)
             results['weights'].append(betas)
@@ -293,12 +293,12 @@ def solve_l2_dual(Ktrain, Ytrain,
 
         if performance:
             if method is 'SVD':
-                KtestQD = utils.mult_diag(D, KtestQ, left=False)
+                KtestQD = tikutils.mult_diag(D, KtestQ, left=False)
                 Ypred = np.dot(KtestQD, QTY)
             elif method is 'Chol':
                 Ypred = np.dot(Ktest, cho_solve((L, lower), Ytrain))
 
-            cc = utils.columnwise_correlation(Ypred, Ytest)
+            cc = tikutils.columnwise_correlation(Ypred, Ytest)
             results['performance'].append(cc)
 
             if verbose:
@@ -314,7 +314,7 @@ def solve_l2_dual(Ktrain, Ytrain,
             results['predictions'].append(Ypred)
         elif predictions:
             if method is 'SVD':
-                KtestQD = utils.mult_diag(D, KtestQ, left=False)
+                KtestQD = tikutils.mult_diag(D, KtestQ, left=False)
                 Ypred = np.dot(KtestQD, QTY)
             elif method is 'Chol':
                 Ypred = np.dot(Ktest, cho_solve((L, lower), Ytrain))
@@ -322,7 +322,7 @@ def solve_l2_dual(Ktrain, Ytrain,
 
         if weights:
             if method is 'SVD':
-                QD = utils.mult_diag(D, Q, left=False)
+                QD = tikutils.mult_diag(D, Q, left=False)
                 rlambdas = np.dot(QD, QTY)
             elif method is 'Chol':
                 rlambdas = cho_solve((L, lower), Ytrain)
@@ -339,9 +339,9 @@ def kernel_spatiotemporal_prior(Xtrain, temporal_prior, spatial_prior,
         Xtest = Xtrain
     kernel = np.zeros((Xtest.shape[0], Xtrain.shape[0]))
     for idx in delays:
-        Xi = Xtrain[utils.delay2slice(idx)]
+        Xi = Xtrain[tikutils.delay2slice(idx)]
         for ddx in delays:
-            Xd = Xtest[utils.delay2slice(ddx)]
+            Xd = Xtest[tikutils.delay2slice(ddx)]
             kernel[ddx:,idx:] += np.dot(temporal_prior[ddx,idx]*np.dot(Xd, spatial_prior), Xi.T)
     return kernel
 
@@ -358,7 +358,7 @@ def kernel_cvridge(Ktrain, Ytrain,
 
     n = Ktrain.shape[0]
     if not isinstance(folds, list):
-        folds = utils.generate_trntest_folds(n, sampler=folds,
+        folds = tikutils.generate_trntest_folds(n, sampler=folds,
                                             nfolds=nfolds,
                                             testpct=1-trainpct,
                                             nchunks=blocklen)
@@ -379,8 +379,8 @@ def kernel_cvridge(Ktrain, Ytrain,
             txt = (fdx+1,nfolds,ntrn,ntest)
             print('train ridge fold  %i/%i: ntrain=%i, ntest=%i'%txt)
 
-        Ktrn = utils.fast_indexing(Ktrain, trn, trn)
-        Ktest = utils.fast_indexing(Ktrain, test, trn)
+        Ktrn = tikutils.fast_indexing(Ktrain, trn, trn)
+        Ktest = tikutils.fast_indexing(Ktrain, test, trn)
 
         res = solve_l2_dual(Ktrn, Ytrain[trn],
                             Ktest, zscore(Ytrain[test]),
@@ -521,7 +521,7 @@ def cvridge(Xtrain, Ytrain,
     n, p = Xtrain.shape
 
     if not isinstance(folds, list):
-        folds = utils.generate_trntest_folds(n, sampler=folds,
+        folds = tikutils.generate_trntest_folds(n, sampler=folds,
                                             nfolds=nfolds,
                                             testpct=1-trainpct,
                                             nchunks=blocklen)
@@ -570,8 +570,8 @@ def cvridge(Xtrain, Ytrain,
                                       performance=True,
                                       verbose=verbose)
             else:
-                Ktrain = utils.fast_indexing(kernel,trn, trn)
-                Ktest = utils.fast_indexing(kernel,test, trn)
+                Ktrain = tikutils.fast_indexing(kernel,trn, trn)
+                Ktest = tikutils.fast_indexing(kernel,test, trn)
                 res = solve_l2_dual(Ktrain, Ytrain[trn],
                                     Ktest, zscore(Ytrain[test]),
                                     ridges, EPS=EPS,
