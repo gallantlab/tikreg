@@ -46,11 +46,11 @@ def main(**kwargs):
           # url='gallantlab.github.io/cottoncandy/',
           packages=['tikypy',
                     ],
-          # package_data={
-          #     'cottoncandy':[
-          #       'defaults.cfg',
-          #         ],
-          #     },
+          package_data={
+              'tikypy':[
+                'defaults.cfg',
+                  ],
+              },
           cmdclass=dict(install=my_install),
           include_package_data=True,
           long_description = long_description,
