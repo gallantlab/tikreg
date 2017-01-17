@@ -4,7 +4,6 @@ from tikypy.models import _ols, _generalized_tikhonov_dual
 import tikypy.utils as tikutils
 
 def test_kernel_kron():
-    from aone.fmri.utils import delay_signal
     # generate data
     n,p,d = 20, 10, 5
     delays = range(d)
@@ -16,8 +15,8 @@ def test_kernel_kron():
     sigma_t = np.dot(b.T, b)
     sigma = np.kron(sigma_t, sigma_x)
 
-    Xtrn = delay_signal(Xtrain, delays)
-    Xtst = delay_signal(Xtest, delays)
+    Xtrn = tikutils.delay_signal(Xtrain, delays)
+    Xtst = tikutils.delay_signal(Xtest, delays)
     XSXtrn = reduce(np.dot, [Xtrn, sigma, Xtrn.T])
 
     K = kernel_spatiotemporal_prior(Xtrain, sigma_t, sigma_x, delays=delays)

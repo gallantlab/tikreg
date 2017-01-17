@@ -75,8 +75,7 @@ def test_spherical_prior():
 
 def test_hrf_prior():
 
-    from aone.fmri import handler, utils as fmriutils
-    H = fmriutils.hrf_default_basis(dt=2.0, duration=20.)
+    H = tikutils.hrf_default_basis(dt=2.0, duration=20.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
 
     # test initialization
@@ -91,25 +90,25 @@ def test_hrf_prior():
 
 
     # change temporal resolution
-    H = fmriutils.hrf_default_basis(dt=1.0, duration=20.)
+    H = tikutils.hrf_default_basis(dt=1.0, duration=20.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
     prior = tp.HRFPrior(dt=1.0)
     assert np.allclose(prior.asarray, raw_prior)
 
     # change total duration
-    H = fmriutils.hrf_default_basis(dt=2.0, duration=40.)
+    H = tikutils.hrf_default_basis(dt=2.0, duration=40.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
     prior = tp.HRFPrior(duration=40)
     assert np.allclose(prior.asarray, raw_prior)
 
     # change resolution and duratoin
-    H = fmriutils.hrf_default_basis(dt=1.0, duration=40.)
+    H = tikutils.hrf_default_basis(dt=1.0, duration=40.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
     prior = tp.HRFPrior(dt=1.0, duration=40)
     assert np.allclose(prior.asarray, raw_prior)
 
     # change resolution and duration and subselect delays
-    H = fmriutils.hrf_default_basis(dt=1.0, duration=40.)
+    H = tikutils.hrf_default_basis(dt=1.0, duration=40.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
     delays = np.arange(1, 40)
     tt = tikutils.fast_indexing(raw_prior, delays, delays)
@@ -117,7 +116,7 @@ def test_hrf_prior():
     assert np.allclose(prior.asarray, tt)
 
     # change resolution and duration and subselect delays
-    H = fmriutils.hrf_default_basis(dt=1.0, duration=40.)
+    H = tikutils.hrf_default_basis(dt=1.0, duration=40.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
     delays = np.asarray([1,2,10,30,35])
     tt = tikutils.fast_indexing(raw_prior, delays, delays)
@@ -126,7 +125,7 @@ def test_hrf_prior():
 
 
     # grab continuous delays
-    H = fmriutils.hrf_default_basis(dt=2.0, duration=20.)
+    H = tikutils.hrf_default_basis(dt=2.0, duration=20.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
 
     delays = np.arange(1,10)
@@ -137,7 +136,7 @@ def test_hrf_prior():
     assert np.allclose(prior.ndelays, len(delays))
 
     # grab disjoint delays
-    H = fmriutils.hrf_default_basis(dt=2.0, duration=20.)
+    H = tikutils.hrf_default_basis(dt=2.0, duration=20.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
 
     delays = np.asarray([1,3,6,9])
