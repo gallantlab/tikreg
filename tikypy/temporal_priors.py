@@ -5,8 +5,7 @@ from scipy.linalg import toeplitz
 from scipy.misc import comb
 
 import utils as tikutils
-# from aone.utils import cbook
-# from aone.fmri import utils as fmriutils
+
 
 ##############################
 # Helper functions
