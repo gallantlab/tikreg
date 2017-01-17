@@ -30,7 +30,6 @@ def test_kernel_kron():
 
 
 def test_ols():
-
     B, X, Y = tikutils.generate_data(noise=0, dozscore=False)
     Bh = ols(X, Y)
     assert np.allclose(Bh, B)

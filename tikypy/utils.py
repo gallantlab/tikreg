@@ -47,7 +47,7 @@ def difference_operator(order, nobs):
 
     depth = order + 1
     # pascal triangle row
-    kernel = np.asarray([comb(depth-1, idx) for idx in xrange(depth)])
+    kernel = np.asarray([comb(depth-1, idx) for idx in range(depth)])
     sign = (-1)**np.arange(len(kernel))
     kernel *= sign
     vec = np.zeros(nobs)
@@ -393,9 +393,10 @@ def generate_trntest_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
     ntrain = int(N - N*(testpct))
     samples = np.arange(N)
     step = 1 if sampler == 'mbb' else nchunks
-    samples = [samples[idx:idx+nchunks] for idx in xrange(0,N-nchunks+1, step)]
-    samples = map(list, samples)
+    samples = [samples[idx:idx+nchunks] for idx in range(0,N-nchunks+1, step)]
     N = len(samples)
+    samples = map(list, samples)
+
     append = lambda z: reduce(lambda x, y: x+y, z)
     allidx = np.arange(oN)
     if sampler == 'cv':
@@ -409,7 +410,7 @@ def generate_trntest_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
         # Repeat the cross-validation N times
         assert isinstance(nfolds, tuple)
         reps, nfolds = nfolds
-        for rdx in xrange(reps):
+        for rdx in range(reps):
             np.random.shuffle(samples)
             sets = np.array_split(np.arange(len(samples)), nfolds)
             for i,v in enumerate(sets):
@@ -419,7 +420,7 @@ def generate_trntest_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
 
     elif sampler == 'nbb' or sampler == 'mbb':
         fun = lambda x: [x[t] for t in np.random.randint(0, N, ntrain/nchunks)]
-        for bdx in xrange(nfolds):
+        for bdx in range(nfolds):
             train = np.asarray(append(fun(samples)))
             test = allidx[~np.in1d(allidx, train)]
             yield train, test

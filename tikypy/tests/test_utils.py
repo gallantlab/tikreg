@@ -61,7 +61,7 @@ def test_noise_ceiling_correction():
     # https://github.com/OSchoppe/CCnorm/blob/master/calc_CCnorm.m
     from scipy.stats import zscore
     signal = np.random.randn(50)
-    repeats = np.asarray([signal + np.random.randn(len(signal))*1. for t in xrange(10)])
+    repeats = np.asarray([signal + np.random.randn(len(signal))*1. for t in range(10)])
     nreps, ntpts = repeats.shape
 
     repeats = zscore(repeats, 1)

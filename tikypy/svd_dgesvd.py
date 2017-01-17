@@ -90,18 +90,17 @@ def _fastCopyAndTranspose(type, *arrays):
 def _assertRank2(*arrays):
     for a in arrays:
         if len(a.shape) != 2:
-            raise LinAlgError, '%d-dimensional array given. Array must be \
-            two-dimensional' % len(a.shape)
+            raise LinAlgError('%d-dimensional array given. Array must be two-dimensional' % len(a.shape))
 
 def _assertSquareness(*arrays):
     for a in arrays:
         if max(a.shape) != min(a.shape):
-            raise LinAlgError, 'Array must be square'
+            raise LinAlgError('Array must be square')
 
 def _assertFinite(*arrays):
     for a in arrays:
         if not (isfinite(a).all()):
-            raise LinAlgError, "Array must not contain infs or NaNs"
+            raise LinAlgError("Array must not contain infs or NaNs")
 def _assertNonEmpty(*arrays):
     for a in arrays:
         if size(a) == 0:
@@ -111,8 +110,8 @@ def _assertNonEmpty(*arrays):
 dbl_arr = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1)
 dbl_2_arr = np.ctypeslib.ndpointer(dtype=np.float64, ndim=2)
 
-lib.dgesvd_.argtypes = [POINTER(c_char), POINTER(c_char), POINTER(c_int), 
-  POINTER(c_int), dbl_2_arr, POINTER(c_int), dbl_arr, dbl_2_arr, POINTER(c_int), 
+lib.dgesvd_.argtypes = [POINTER(c_char), POINTER(c_char), POINTER(c_int),
+  POINTER(c_int), dbl_2_arr, POINTER(c_int), dbl_arr, dbl_2_arr, POINTER(c_int),
   dbl_2_arr, POINTER(c_int), dbl_arr, POINTER(c_int), POINTER(c_int)]
 
 def svd_dgesvd(a, full_matrices=0, compute_uv=1):
@@ -148,7 +147,7 @@ def svd_dgesvd(a, full_matrices=0, compute_uv=1):
     Raises
     ------
     LinAlgError
-        If SVD computation fails. 
+        If SVD computation fails.
         For details see dgesvd.f and dbdsqr.f of LAPACK
     """
     a, wrap = _makearray(a)
@@ -209,16 +208,4 @@ def svd_dgesvd(a, full_matrices=0, compute_uv=1):
         return s
 
 if __name__ == '__main__':
-    a = loadmat('svd_error.mat')['svd_error'].newbyteorder('=')
-    u, s, vt = svd_dgesvd(a) 
-    print s
-    #print u
-    #print vt
-    if True:
-        u2, s2, vt2 = np.linalg.svd(a) 
-        print s2
-        print u2
-        print vt2
-        print s2-s
-        print u2-u
-        print vt2-vt
+    pass

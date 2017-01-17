@@ -43,25 +43,25 @@ def banded_angles(*models):#,
     offset=0.0
     nangles=6#21#):
     nmodels = len(models)
-    print nmodels
+    print(nmodels)
 
     angle = np.linspace(0,90,6)#0+offset, 90 - offset, nangles)
-    print angle
+    print(angle)
 
     angle = np.deg2rad(angle)
     alpha1 = np.sin(angle)
     alpha2 = np.cos(angle)
-    print np.round(alpha1, 2)
-    print np.round(alpha2, 2)
+    print(np.round(alpha1, 2))
+    print(np.round(alpha2, 2))
 
     angle1 = np.deg2rad(np.linspace(0,90,6))
     angle2 = np.deg2rad(np.linspace(0,90,6))
     alpha1 = np.sin(angle1)*np.cos(0.0)
     alpha2 = np.sin(angle1)*np.sin(0.0)
     alpha3 = np.cos(angle1)
-    print np.round(alpha1, 2)
-    print np.round(alpha2, 2)
-    print np.round(alpha3, 2)
+    print(np.round(alpha1, 2))
+    print(np.round(alpha2, 2))
+    print(np.round(alpha3, 2))
     return
 
 
@@ -387,14 +387,14 @@ def test_spherical_coords():
     coords = simple_sphere_coord(radius=1.0, theta1=50.0, theta2=10.0)
     simple_xyz = np.asarray(coords)
     xyz = polar2cartesian(np.deg2rad([10.,50.])).squeeze()
-    print simple_xyz
-    print xyz
+    print(simple_xyz)
+    print(xyz)
 
     coords = simple_sphere_coord(radius=1.0, theta1=0.0, theta2=10.0)
     simple_xyz = np.asarray(coords)
     xyz = polar2cartesian(np.deg2rad([10.,0.])).squeeze()
-    print simple_xyz
-    print xyz
+    print(simple_xyz)
+    print(xyz)
 
 
 if 0:
@@ -462,7 +462,7 @@ def show_spherical_angles(theta1=30., theta2=60., physics_convention=False):
         coords = polar2cartesian(np.deg2rad(mangles), physics_convention=physics_convention)
 
     for idx, xyz in enumerate(coords.T):
-        if 0: print xyz
+        if 0: print(xyz)
         x,y,z = xyz
         a = Arrow3D([0,x],[0,y],[0,z], mutation_scale=20, lw=1, arrowstyle="-|>", color="r")
         ax.add_artist(a)
@@ -483,7 +483,7 @@ def show_spherical_angles(theta1=30., theta2=60., physics_convention=False):
 
     for idx, xyz in enumerate(coords.T):
         x,y,z = xyz
-        if 0: print xyz
+        if 0: print(xyz)
         a = Arrow3D([0,x],[0,y],[0,z], mutation_scale=20, lw=1, arrowstyle="-|>", color="k")
         ax.add_artist(a)
         plt.show()
@@ -508,17 +508,17 @@ if 0:
     sphere_angles = np.asarray([theta, phi])[...,None]
     coords_3sphere = polar2cartesian(np.deg2rad(angles), physics_convention=True)
     coords_2sphere = polar2cartesian(np.deg2rad(sphere_angles), radius=radius, physics_convention=True)
-    print coords_3sphere
-    print coords_2sphere
+    print(coords_3sphere)
+    print(coords_2sphere)
     x0, x1, x2, x3 = coords_3sphere
     x,y,z = coords_2sphere
     rad,t1,t2 = simple_sphere_angle(x,y,z)
 
-    print radius
+    print(radius)
     x,y,z = simple_sphere_coord(theta1=phi, theta2=theta, radius=radius)
     rad,t1,t2 = simple_sphere_angle(x,y,z)
-    print rad
-    print (np.asarray([x0,x1,x2])**2).sum()**0.5
+    print(rad)
+    print((np.asarray([x0,x1,x2])**2).sum()**0.5)
 
 
 
@@ -554,7 +554,7 @@ if __name__ == '__main__':
 
     ridges = np.logspace(0,1,5)#np.logspace(0,3,5)
     ratios = np.asarray(list(itertools.product(*[ridges]*3)))
-    print ratios.shape
+    print(ratios.shape)
 
     angles = np.nan_to_num(cartesian2polar(ratios))
     show_spherical_angles(angles[:,0], angles[:,1])
@@ -564,7 +564,7 @@ if __name__ == '__main__':
     ##############################
     ridges = np.linspace(0,1,5)#np.logspace(0,3,5)
     ratios = np.asarray(list(itertools.product(*[ridges]*3)))
-    print ratios.shape
+    print(ratios.shape)
 
     angles = np.nan_to_num(cartesian2polar(ratios))
     show_spherical_angles(angles[:,0], angles[:,1])

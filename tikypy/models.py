@@ -111,7 +111,7 @@ def should_solve_dual(X, kernel):
 def clean_results_dict(results):
     '''Make sure we return arrays, and ndim is at least 2D
     '''
-    for k,v in results.iteritems():
+    for k,v in results.items():
         v = np.asarray(v)
         v = v.squeeze() if k != 'performance' else v
         if v.ndim <= 1: v = v[...,None]

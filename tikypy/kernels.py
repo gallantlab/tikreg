@@ -1,4 +1,3 @@
-from string import join as sjoin
 import numpy as np
 
 from tikypy.utils import mult_diag
@@ -68,7 +67,8 @@ class lazy_kernel(object):
         elif kernel_type == 'linear':
             self.kernel = self.cache
         else:
-            raise ValueError('Kernel "%s" is not available. Choose from: %s' % (kernel_type,  sjoin(self.kernel_types, ', ')))
+            txt = (kernel_type,  ', '.join(self.kernel_types))
+            raise ValueError('Kernel "%s" is not available. Choose from: %s'%txt)
         if verbose:
             print(self)
 
