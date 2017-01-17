@@ -6,7 +6,7 @@ from scipy.linalg import cho_factor, cho_solve
 
 
 from tikypy.utils import SVD
-from aone.algos.kernels import lazy_kernel
+from tikypy.kernels import lazy_kernel
 import tikypy.utils as tikutils
 
 METHOD = 'SVD'
