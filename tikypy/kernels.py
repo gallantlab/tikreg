@@ -45,7 +45,8 @@ class lazy_kernel(object):
 
 
         if self.kernel_type == 'linear' and kernel_type == 'linear':
-            if verbose: print 'kernel is already set:', self
+            if verbose:
+                print('kernel is already set:%s'%self)
             return
 
         # Check if we already have this update, in which case just return verbosely
