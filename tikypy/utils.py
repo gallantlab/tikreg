@@ -23,7 +23,7 @@ def SVD(X, **kwargs):
         O = LA.svd(X, **kwargs)
     except LA.LinAlgError as e:
         from warnings import warn
-        print warn('%s... trying slow SVD' % e)
+        warn('%s... trying slow SVD' % e)
         from svd_dgesvd import svd_dgesvd as slow_svd
         O = slow_svd(X, **kwargs)
     return O
