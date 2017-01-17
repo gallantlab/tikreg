@@ -1,8 +1,7 @@
 import numpy as np
-from aone.utils.cbook import fast_indexing
 
 import temporal_priors as tp
-
+import utils as tikutils
 
 ##############################
 #
@@ -23,13 +22,13 @@ def test_base_prior():
     tmp = np.random.randn(10, 10)
     raw_prior = np.dot(tmp, tmp.T)
     prior = tp.BasePrior(raw_prior, dodetnorm=True)
-    detnorm = tp.determinant_normalizer(raw_prior)
+    detnorm = tikutils.determinant_normalizer(raw_prior)
     assert prior.detnorm == detnorm
 
-    rr = raw_prior / tp.determinant_normalizer(raw_prior)
+    rr = raw_prior / tikutils.determinant_normalizer(raw_prior)
     assert np.allclose(prior.asarray, rr)
     penalty = np.linalg.inv(prior.asarray + np.eye(prior.asarray.shape[0]))
-    penalty /= tp.determinant_normalizer(penalty)
+    penalty /= tikutils.determinant_normalizer(penalty)
     assert np.allclose(prior.prior2penalty(regularizer=1.0), penalty)
 
 
@@ -72,7 +71,7 @@ def test_hrf_prior():
 
     # test delay seletion
     delays = np.arange(10)
-    tt = fast_indexing(raw_prior, delays, delays)
+    tt = tikutils.fast_indexing(raw_prior, delays, delays)
     prior = tp.HRFPrior()
     assert np.allclose(prior.asarray, tt)
 
@@ -99,7 +98,7 @@ def test_hrf_prior():
     H = fmriutils.hrf_default_basis(dt=1.0, duration=40.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
     delays = np.arange(1, 40)
-    tt = fast_indexing(raw_prior, delays, delays)
+    tt = tikutils.fast_indexing(raw_prior, delays, delays)
     prior = tp.HRFPrior(dt=1.0, duration=40, delays=delays)
     assert np.allclose(prior.asarray, tt)
 
@@ -107,7 +106,7 @@ def test_hrf_prior():
     H = fmriutils.hrf_default_basis(dt=1.0, duration=40.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
     delays = np.asarray([1,2,10,30,35])
-    tt = fast_indexing(raw_prior, delays, delays)
+    tt = tikutils.fast_indexing(raw_prior, delays, delays)
     prior = tp.HRFPrior(dt=1.0, duration=40, delays=delays)
     assert np.allclose(prior.asarray, tt)
 
@@ -117,7 +116,7 @@ def test_hrf_prior():
     raw_prior = np.dot(H, H.T).astype(np.float64)
 
     delays = np.arange(1,10)
-    tt = fast_indexing(raw_prior, delays, delays)
+    tt = tikutils.fast_indexing(raw_prior, delays, delays)
     prior = tp.HRFPrior(delays)
     assert np.allclose(prior.asarray, tt)
     assert np.allclose(prior.delays, delays)
@@ -128,7 +127,7 @@ def test_hrf_prior():
     raw_prior = np.dot(H, H.T).astype(np.float64)
 
     delays = np.asarray([1,3,6,9])
-    tt = fast_indexing(raw_prior, delays, delays)
+    tt = tikutils.fast_indexing(raw_prior, delays, delays)
     prior = tp.HRFPrior(delays)
     assert np.allclose(prior.asarray, tt)
     assert np.allclose(prior.delays, delays)
