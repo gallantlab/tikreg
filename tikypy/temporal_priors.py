@@ -4,8 +4,9 @@ import itertools
 from scipy.linalg import toeplitz
 from scipy.misc import comb
 
-from utils import determinant_normalizer
-from aone.utils import cbook
+import utils as tikutils
+# from aone.utils import cbook
+# from aone.fmri import utils as fmriutils
 
 ##############################
 # Helper functions
@@ -60,7 +61,7 @@ class BasePrior(object):
         assert prior.ndim == 2
 
         if dodetnorm:
-            self.detnorm = determinant_normalizer(prior)
+            self.detnorm = tikutils.determinant_normalizer(prior)
         else:
             self.detnorm = 1.0
         self.prior = prior / self.detnorm
@@ -74,12 +75,12 @@ class BasePrior(object):
     def prior2penalty(self, regularizer=0.0):
         penalty = np.linalg.inv(self.prior + regularizer*np.eye(self.prior.shape[0]))
         if self.dodetnorm:
-            penalty /= determinant_normalizer(penalty)
+            penalty /= tikutils.determinant_normalizer(penalty)
         self.penalty = penalty
         return penalty
 
     def normalize_prior(self):
-        self.detnorm = determinant_normalizer(self.prior)
+        self.detnorm = tikutils.determinant_normalizer(self.prior)
         self.prior /= self.detnorm
 
 
@@ -90,7 +91,7 @@ def get_delays_from_prior(raw_prior, delays):
     else:
         assert (min(delays) >= 0) and (max(delays) < raw_prior.shape[0])
         delays = np.asarray(delays)
-        prior = cbook.fast_indexing(raw_prior, delays, delays)
+        prior = tikutils.fast_indexing(raw_prior, delays, delays)
     return prior, delays
 
 
@@ -122,8 +123,8 @@ class HRFPrior(TemporalPrior):
     def __init__(self, delays=None, dt=2.0, duration=20, **kwargs):
         '''
         '''
-        from aone.fmri import handler, utils as fmriutils
-        H = fmriutils.hrf_default_basis(dt=dt, duration=duration)
+
+        H = tikutils.hrf_default_basis(dt=dt, duration=duration)
         raw_prior = np.dot(H, H.T).astype(np.float64)
         super(HRFPrior, self).__init__(raw_prior, delays=delays, **kwargs)
 
@@ -157,7 +158,7 @@ class WishartPrior(object):
 
     def update_prior(self):
         prior = np.linalg.inv(self.penalty + self.wishart_lambda*self.wishart)
-        self.detnorm = determinant_normalizer(prior)
+        self.detnorm = tikutils.determinant_normalizer(prior)
         prior /= self.detnorm
         self.prior = prior
 
@@ -187,7 +188,7 @@ class PriorFromPenalty(object):
         '''
         self.wishart_lambda = wishart_lambda
         prior = np.linalg.inv(self.penalty + self.wishart_lambda*self.wishart)
-        self.detnorm = determinant_normalizer(prior)
+        self.detnorm = tikutils.determinant_normalizer(prior)
         prior /= self.detnorm
         self.prior = prior
 
