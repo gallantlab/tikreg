@@ -2,6 +2,48 @@ import numpy as np
 from scipy.stats import zscore
 
 
+
+
+
+
+def hrf_default_basis(dt=2.0, duration=32):
+    '''
+
+    Returns
+    --------
+    hrf_basis (time-by-3)
+    '''
+    try:
+        import hrf_estimation as he
+    except ImportError as err:
+        issue = '''You need to install `hrf_estimation` package: "pip install -U hrf_estimation"'''
+        err.message = err.message + issue
+        raise
+
+    time = np.arange(0, duration, dt)
+    h1 = he.hrf.spm_hrf_compat(time)
+    h2 = he.hrf.dspmt(time)
+    h3 = he.hrf.ddspmt(time)
+
+    hrf_basis = np.c_[h1, h2, h3]
+    return hrf_basis
+
+
+
+def fast_indexing(a, rows, cols=None):
+    '''
+    Much faster than fancy indexing for taking
+    selected rows and cols from matrix.
+    Slightly faster for row indexing, too
+
+    '''
+    if cols is None:
+        cols = np.arange(a.shape[-1])
+    idx = rows.reshape(-1,1)*a.shape[1] + cols
+    return a.take(idx)
+
+
+
 def determinant_normalizer(mat, thresh=1e-08):
     '''get the (pseudo-) determinant of the matrix
     '''
