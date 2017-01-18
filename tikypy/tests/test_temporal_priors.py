@@ -120,7 +120,7 @@ def test_hrf_prior():
     prior = tp.HRFPrior(dt=1.0, duration=40, delays=delays)
     assert np.allclose(prior.asarray, tt)
 
-    # change resolution and duration and subselect delays
+    # change resolution and duration and subselect disjoint delays
     H = tikutils.hrf_default_basis(dt=1.0, duration=40.)
     raw_prior = np.dot(H, H.T).astype(np.float64)
     delays = np.asarray([1,2,10,30,35])
@@ -141,8 +141,6 @@ def test_hrf_prior():
     assert np.allclose(prior.ndelays, len(delays))
 
     # grab disjoint delays
-    H = tikutils.hrf_default_basis(dt=2.0, duration=20.)
-    raw_prior = np.dot(H, H.T).astype(np.float64)
 
     delays = np.asarray([1,3,6,9])
     tt = tikutils.fast_indexing(raw_prior, delays, delays)
@@ -150,3 +148,80 @@ def test_hrf_prior():
     assert np.allclose(prior.asarray, tt)
     assert np.allclose(prior.delays, delays)
     assert np.allclose(prior.ndelays, len(delays))
+
+
+def test_prior_from_penalty():
+    tmp = np.random.randn(10, 10)
+    raw_penalty = np.dot(tmp, tmp.T)
+    prior = tp.PriorFromPenalty(raw_penalty)
+
+    assert np.allclose(raw_penalty, prior.penalty)
+
+    penalty = prior.prior2penalty()
+    assert np.allclose(raw_penalty, penalty)
+
+    penalty = prior.prior2penalty(dodetnorm=True)
+    pdetnorm = tikutils.determinant_normalizer(raw_penalty)
+    assert np.allclose(raw_penalty / pdetnorm, penalty)
+
+    # the prior from penalty is initialized with zeros
+    assert np.allclose(prior.prior, 0)
+    # this must break because the prior hasn't been updated
+    try:
+        penalty = prior.prior2penalty(regularizer=1.0)
+    except AssertionError:
+        pass
+
+    # generate the prior from penalty
+    prior.update_prior()
+    raw_prior = np.linalg.inv(raw_penalty)
+    assert np.allclose(raw_prior, prior.prior)
+    assert np.allclose(prior.penalty, raw_penalty)
+
+    # generate a regularized prior from penalty
+    penalty = prior.prior2penalty(regularizer=1.0, dodetnorm=True)
+    reg_penalty = np.linalg.inv(raw_prior + 1.0*np.eye(raw_prior.shape[0]))
+    reg_pdetnorm = tikutils.determinant_normalizer(reg_penalty)
+    assert np.allclose(prior.penalty, raw_penalty)
+    assert np.allclose(reg_penalty / reg_pdetnorm, penalty)
+
+    # subselect delays
+    delays = np.asarray([1,2,3,4])
+    prior = tp.PriorFromPenalty(raw_penalty, delays=delays)
+    assert np.allclose(prior.delays, delays)
+
+    # generate prior
+    prior.update_prior()
+    raw_prior = np.linalg.inv(raw_penalty)
+    raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
+    # prior should only contain delays of interest
+    assert np.allclose(raw_prior, prior.prior)
+    # penalty should be kept as original
+    assert np.allclose(prior.penalty, raw_penalty)
+
+    # check default wishart covariance
+    assert np.allclose(prior.wishart, np.eye(raw_penalty.shape[0]))
+
+    # regularize penalty before inverting
+    prior.update_prior(wishart_lambda=2.0)
+    assert prior.wishart_lambda == 2.0
+    raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(raw_penalty.shape[0]))
+    raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
+    assert np.allclose(raw_prior, prior.prior)
+
+    # regularize
+    prior.update_prior(wishart_lambda=2.0, dodetnorm=True)
+    detnorm = tikutils.determinant_normalizer(raw_prior )
+    assert np.allclose(raw_prior / detnorm, prior.prior)
+
+    # set a non-diagonal wishart prior
+    a = np.random.randn(10,10)
+    W = np.dot(a, a.T)
+    prior.set_wishart(W)
+    assert np.allclose(prior.wishart, W)
+    # check the update works
+    prior.update_prior(wishart_lambda=2.0, dodetnorm=True)
+    raw_prior = np.linalg.inv(raw_penalty + 2.0*W)
+    raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
+    detnorm = tikutils.determinant_normalizer(raw_prior )
+    assert np.allclose(raw_prior / detnorm, prior.prior)
