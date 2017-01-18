@@ -13,7 +13,7 @@ def get_delays_from_prior(raw_prior, delays):
         prior = raw_prior
         delays = np.arange(raw_prior.shape[0])
     else:
-        assert (min(delays) >= 0) and (max(delays) < raw_prior.shape[0])
+        assert min(delays) >= 0 and max(delays) < raw_prior.shape[0]
         delays = np.asarray(delays)
         prior = tikutils.fast_indexing(raw_prior, delays, delays)
     return prior, delays
@@ -142,7 +142,7 @@ class SphericalPrior(TemporalPrior):
     def __init__(self, delays=range(5), **kwargs):
         '''
         '''
-        raw_prior = np.eye(len(np.linspace(0, max(delays))))
+        raw_prior = np.eye(max(delays)+1)
         super(SphericalPrior, self).__init__(raw_prior, delays=delays, **kwargs)
 
 
