@@ -1,4 +1,9 @@
 sudo: true  # To use travis container infrastructure
+addons:
+  apt:
+    packages:
+	- libblas-dev
+	- liblapack-dev
 language: python
 python:
   - "2.7"
