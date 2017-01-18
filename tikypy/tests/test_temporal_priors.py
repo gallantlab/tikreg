@@ -225,3 +225,10 @@ def test_prior_from_penalty():
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     detnorm = tikutils.determinant_normalizer(raw_prior )
     assert np.allclose(raw_prior / detnorm, prior.prior)
+
+def test_smoothness_prior():
+    prior = tp.SmoothnessPrior(order=1, delays=range(10))
+    prior.update_prior(wishart_lambda=1.0)
+
+    prior = tp.SmoothnessPrior(order=2, delays=range(10))
+    prior.update_prior(wishart_lambda=1.0)

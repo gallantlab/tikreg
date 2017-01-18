@@ -83,71 +83,6 @@ class CustomPrior(TemporalPrior):
         super(CustomPrior, self).__init__(*args, **kwargs)
 
 
-class SphericalPrior(TemporalPrior):
-    '''Equivalent to ridge.
-    '''
-    def __init__(self, delays=range(5), **kwargs):
-        '''
-        '''
-        raw_prior = np.eye(len(np.linspace(0, max(delays))))
-        super(SphericalPrior, self).__init__(raw_prior, delays=delays, **kwargs)
-
-
-class HRFPrior(TemporalPrior):
-    '''Haemodynamic response function prior
-    '''
-    def __init__(self, delays=None, dt=2.0, duration=20, **kwargs):
-        '''
-        '''
-
-        H = tikutils.hrf_default_basis(dt=dt, duration=duration)
-        raw_prior = np.dot(H, H.T).astype(np.float64)
-        super(HRFPrior, self).__init__(raw_prior, delays=delays, **kwargs)
-
-    def prior2penalty(self, regularizer=1e-08):
-        # default HRF prior is low rank, so need to regularize to invert
-        return super(HRFPrior, self).prior2penalty(regularizer=regularizer)
-
-
-class SmoothnessPrior(TemporalPrior):
-    '''
-    '''
-    def __init__(self, delays=range(5), order=2, **kwargs):
-        '''
-        '''
-        raw_delays = np.linspace(0, max(delays))
-        delays = np.asarray(delays)
-        penalty = difference_operator(order, len(raw_delays))
-
-        super(SmoothnessPrior, self).__init__(*args, **kwargs)
-
-
-
-class WishartPrior(object):
-    def __init__(self, prior, wishart_array):
-        '''
-        '''
-        self.prior = prior
-        self.wishart = wishart_array
-
-        self.wishart_lambda = 0.0
-        self.detnorm = 1.0
-        self.penalty = self.prior2penalty(self.prior)
-
-    def update_wishart(self, wishart_lambda=0.0):
-        self.wishart_lambda = wishart_lambda
-
-    def update_prior(self):
-        prior = np.linalg.inv(self.penalty + self.wishart_lambda*self.wishart)
-        self.detnorm = tikutils.determinant_normalizer(prior)
-        prior /= self.detnorm
-        self.prior = prior
-
-
-
-
-
-
 class PriorFromPenalty(TemporalPrior):
     '''
     '''
@@ -199,6 +134,66 @@ class PriorFromPenalty(TemporalPrior):
         if dodetnorm:
             # normalize
             self.normalize_prior()
+
+
+class SphericalPrior(TemporalPrior):
+    '''Equivalent to ridge.
+    '''
+    def __init__(self, delays=range(5), **kwargs):
+        '''
+        '''
+        raw_prior = np.eye(len(np.linspace(0, max(delays))))
+        super(SphericalPrior, self).__init__(raw_prior, delays=delays, **kwargs)
+
+
+class HRFPrior(TemporalPrior):
+    '''Haemodynamic response function prior
+    '''
+    def __init__(self, delays=None, dt=2.0, duration=20, **kwargs):
+        '''
+        '''
+
+        H = tikutils.hrf_default_basis(dt=dt, duration=duration)
+        raw_prior = np.dot(H, H.T).astype(np.float64)
+        super(HRFPrior, self).__init__(raw_prior, delays=delays, **kwargs)
+
+    def prior2penalty(self, regularizer=1e-08):
+        # default HRF prior is low rank, so need to regularize to invert
+        return super(HRFPrior, self).prior2penalty(regularizer=regularizer)
+
+
+
+class SmoothnessPrior(PriorFromPenalty):
+    '''
+    '''
+    def __init__(self, delays=range(5), order=2, **kwargs):
+        '''
+        '''
+        penalty = tikutils.difference_operator(order, len(delays))
+        CTC = np.dot(penalty, penalty.T)
+        super(SmoothnessPrior, self).__init__(CTC, delays=delays, **kwargs)
+
+
+class WishartPrior(object):
+    def __init__(self, prior, wishart_array):
+        '''
+        '''
+        self.prior = prior
+        self.wishart = wishart_array
+
+        self.wishart_lambda = 0.0
+        self.detnorm = 1.0
+        self.penalty = self.prior2penalty(self.prior)
+
+    def update_wishart(self, wishart_lambda=0.0):
+        self.wishart_lambda = wishart_lambda
+
+    def update_prior(self):
+        prior = np.linalg.inv(self.penalty + self.wishart_lambda*self.wishart)
+        self.detnorm = tikutils.determinant_normalizer(prior)
+        prior /= self.detnorm
+        self.prior = prior
+
 
 
 
