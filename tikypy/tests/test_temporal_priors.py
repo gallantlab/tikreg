@@ -32,7 +32,7 @@ def test_base_prior():
     assert np.allclose(prior.asarray, rr)
 
     #####
-    prior = tp.BasePrior(raw_prior.copy(), dodetnorm=False)
+    prior = tp.BasePrior(raw_prior, dodetnorm=False)
     # test penalty computation
     penalty = np.linalg.inv(raw_prior + np.eye(raw_prior.shape[0]))
     assert np.allclose(prior.prior2penalty(regularizer=1.0, dodetnorm=False), penalty)
@@ -42,8 +42,9 @@ def test_base_prior():
     assert prior.penalty_detnorm == 1.0
 
     # update class
-    prior.normalize_prior()
+    prior.normalize_penalty()
     pdetnorm = tikutils.determinant_normalizer(penalty)
+    assert prior.penalty_detnorm == pdetnorm
     assert np.allclose(penalty_detnorm, penalty / pdetnorm)
 
 def test_temporal_prior():
