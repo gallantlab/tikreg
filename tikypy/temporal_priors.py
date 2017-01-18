@@ -34,7 +34,7 @@ class BasePrior(object):
 
         self.prior = prior.copy()
         self.detnorm = 1.0
-        self.penalty = 0.0
+        self.penalty = None
         self.penalty_detnorm = 1.0
         self.dodetnorm = dodetnorm
 
@@ -47,8 +47,10 @@ class BasePrior(object):
 
     def prior2penalty(self, regularizer=0.0, dodetnorm=False):
         penalty = np.linalg.inv(self.prior + regularizer*np.eye(self.prior.shape[0]))
-        self.penalty = penalty
-        detnorm = tikutils.determinant_normalizer(self.penalty) if dodetnorm else 1.0
+        if self.penalty is None:
+            # first time
+            self.penalty = penalty
+        detnorm = tikutils.determinant_normalizer(penalty) if dodetnorm else 1.0
         return penalty / detnorm
 
     def normalize_prior(self):
@@ -152,21 +154,23 @@ class PriorFromPenalty(TemporalPrior):
     def __init__(self, penalty, delays=None, **kwargs):
         '''
         '''
+        prior = np.zeros_like(penalty)
+        # if delays is None:
+        #     delays = np.arange(penalty.shape[0])
+        # assert (min(delays) >= 0) and (max(delays) < penalty.shape[0])
 
+        super(PriorFromPenalty, self).__init__(prior, delays=delays, **kwargs)
+
+        # overwrite penalty after init
         self.penalty = penalty.copy()
         self.wishart = np.eye(penalty.shape[0])
         self.wishart_lambda = 0.0
 
-        if delays is None:
-            delays = np.arange(penalty.shape[0])
-        assert (min(delays) >= 0) and (max(delays) < penalty.shape[0])
-        prior = np.zeros_like(penalty)
-        super(PriorFromPenalty, self).__init__(prior, delays=delays, **kwargs)
-
     def prior2penalty(self, regularizer=0.0, dodetnorm=False):
         if regularizer > 0.0:
-            penalty = super(PriorFromPenalty, self).prior2penalty(self.prior,
-                                                                  regularizer=regularizer,
+            # make sure we have a valid prior
+            assert not np.allclose(self.prior, 0)
+            penalty = super(PriorFromPenalty, self).prior2penalty(regularizer=regularizer,
                                                                   dodetnorm=dodetnorm)
         elif dodetnorm:
             # re-scale
@@ -177,6 +181,7 @@ class PriorFromPenalty(TemporalPrior):
         return penalty
 
     def set_wishart(self, wishart_array):
+        assert np.allclose(wishart_array.shape, self.penalty.shape)
         self.wishart = wishart_array
 
     def update_prior(self, wishart_lambda=0.0, dodetnorm=False):
