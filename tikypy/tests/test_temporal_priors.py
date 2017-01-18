@@ -12,17 +12,18 @@ import tikypy.utils as tikutils
 def test_base_prior():
     tmp = np.random.randn(10, 10)
     raw_prior = np.dot(tmp, tmp.T)
-    prior = tp.BasePrior(raw_prior.copy(), dodetnorm=False)
+    prior = tp.BasePrior(raw_prior, dodetnorm=False)
 
     # basic defaults
     assert prior.detnorm == 1.0
     assert np.allclose(prior.asarray, raw_prior)
     # return penalty
-    penalty = np.linalg.inv(prior.asarray + np.eye(prior.asarray.shape[0]))
-    assert np.allclose(prior.prior2penalty(regularizer=1.0), penalty)
+    penalty = np.linalg.inv(raw_prior + 1.0*np.eye(raw_prior.shape[0]))
+    assert np.allclose(prior.prior2penalty(regularizer=1.0, dodetnorm=False), penalty)
+
 
     #####
-    prior = tp.BasePrior(raw_prior.copy(), dodetnorm=True)
+    prior = tp.BasePrior(raw_prior, dodetnorm=True)
     # test determinant normalizer computation
     detnorm = tikutils.determinant_normalizer(raw_prior)
     assert prior.detnorm == detnorm
@@ -38,8 +39,11 @@ def test_base_prior():
     assert prior.penalty_detnorm == 1.0
     # test penalty with normalization
     penalty_detnorm = prior.prior2penalty(regularizer=1.0, dodetnorm=True)
+    assert prior.penalty_detnorm == 1.0
+
+    # update class
+    prior.normalize_prior()
     pdetnorm = tikutils.determinant_normalizer(penalty)
-    assert prior.penalty_detnorm == pdetnorm
     assert np.allclose(penalty_detnorm, penalty / pdetnorm)
 
 def test_temporal_prior():
