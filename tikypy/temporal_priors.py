@@ -5,6 +5,22 @@ import tikypy.utils as tikutils
 
 
 ##############################
+# functions
+##############################
+
+def get_delays_from_prior(raw_prior, delays):
+    if delays is None:
+        prior = raw_prior
+        delays = np.arange(raw_prior.shape[0])
+    else:
+        assert (min(delays) >= 0) and (max(delays) < raw_prior.shape[0])
+        delays = np.asarray(delays)
+        prior = tikutils.fast_indexing(raw_prior, delays, delays)
+    return prior, delays
+
+
+
+##############################
 # Classes
 ##############################
 
@@ -16,7 +32,7 @@ class BasePrior(object):
         '''
         assert prior.ndim == 2
 
-        self.prior = prior
+        self.prior = prior.copy()
         self.detnorm = 1.0
         self.penalty = 0.0
         self.penalty_detnorm = 1.0
@@ -31,26 +47,17 @@ class BasePrior(object):
 
     def prior2penalty(self, regularizer=0.0, dodetnorm=False):
         penalty = np.linalg.inv(self.prior + regularizer*np.eye(self.prior.shape[0]))
-        if dodetnorm:
-            self.penalty_detnorm = tikutils.determinant_normalizer(penalty)
-
-        self.penalty = penalty / self.penalty_detnorm
-        return self.penalty
+        self.penalty = penalty
+        detnorm = tikutils.determinant_normalizer(self.penalty) if dodetnorm else 1.0
+        return penalty / detnorm
 
     def normalize_prior(self):
         self.detnorm = tikutils.determinant_normalizer(self.prior)
         self.prior /= self.detnorm
 
-
-def get_delays_from_prior(raw_prior, delays):
-    if delays is None:
-        prior = raw_prior
-        delays = np.arange(raw_prior.shape[0])
-    else:
-        assert (min(delays) >= 0) and (max(delays) < raw_prior.shape[0])
-        delays = np.asarray(delays)
-        prior = tikutils.fast_indexing(raw_prior, delays, delays)
-    return prior, delays
+    def normalize_penalty(self):
+        self.penalty_detnorm = tikutils.determinant_normalizer(self.penalty)
+        self.penalty /= self.penalty_detnorm
 
 
 class TemporalPrior(BasePrior):
@@ -103,12 +110,14 @@ class HRFPrior(TemporalPrior):
 class SmoothnessPrior(TemporalPrior):
     '''
     '''
-    def __init__(self, *args, **kwargs):
+    def __init__(self, delays=range(5), order=2, **kwargs):
         '''
         '''
+        raw_delays = np.linspace(0, max(delays))
+        delays = np.asarray(delays)
+        penalty = difference_operator(order, len(raw_delays))
+
         super(SmoothnessPrior, self).__init__(*args, **kwargs)
-
-
 
 
 
@@ -137,40 +146,54 @@ class WishartPrior(object):
 
 
 
-class PriorFromPenalty(object):
+class PriorFromPenalty(TemporalPrior):
     '''
     '''
-    def __init__(self, penalty, *args, **kwargs):
+    def __init__(self, penalty, delays=None, **kwargs):
         '''
         '''
-        self.nn = penalty.shape[0]
+
+        self.penalty = penalty.copy()
+        self.wishart = np.eye(penalty.shape[0])
         self.wishart_lambda = 0.0
-        self.wishart = 0.0
-        self.prior = 1.0
-        self.penalty = penalty
-        self.detnorm = 1.0
+
+        if delays is None:
+            delays = np.arange(penalty.shape[0])
+        assert (min(delays) >= 0) and (max(delays) < penalty.shape[0])
+        prior = np.zeros_like(penalty)
+        super(PriorFromPenalty, self).__init__(prior, delays=delays, **kwargs)
+
+    def prior2penalty(self, regularizer=0.0, dodetnorm=False):
+        if regularizer > 0.0:
+            penalty = super(PriorFromPenalty, self).prior2penalty(self.prior,
+                                                                  regularizer=regularizer,
+                                                                  dodetnorm=dodetnorm)
+        elif dodetnorm:
+            # re-scale
+            penalty = self.penalty / tikutils.determinant_normalizer(self.penalty)
+        else:
+            # exact
+            penalty = self.penalty
+        return penalty
 
     def set_wishart(self, wishart_array):
         self.wishart = wishart_array
 
-    def set_prior(self, wishart_lambda=0.0):
+    def update_prior(self, wishart_lambda=0.0, dodetnorm=False):
         '''
         '''
         self.wishart_lambda = wishart_lambda
+
+        # compute prior
         prior = np.linalg.inv(self.penalty + self.wishart_lambda*self.wishart)
-        self.detnorm = tikutils.determinant_normalizer(prior)
-        prior /= self.detnorm
+        # select requested delays from prior
+        prior, delays = get_delays_from_prior(prior, self.delays)
+        # update object prior
         self.prior = prior
 
-    def get_prior(self, *args, **kwargs):
-        '''
-        '''
-        self.set_prior(*args, **kwargs)
-        return self.prior
-
-
-
-
+        if dodetnorm:
+            # normalize
+            self.normalize_prior()
 
 
 
