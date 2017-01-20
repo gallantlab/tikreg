@@ -28,7 +28,7 @@ class PriorFromPenalty(BasePrior):
         self.wishart = np.eye(penalty.shape[0])
         self.wishart_lambda = 0.0
 
-    def prior2penalty(self, regularizer=0.0, dodetnorm=False):
+    def prior2penalty(self, regularizer=0.0, dodetnorm=True):
         if regularizer > 0.0:
             # make sure we have a valid prior
             assert not np.allclose(self.prior, 0)
@@ -59,3 +59,13 @@ class PriorFromPenalty(BasePrior):
         if dodetnorm:
             # normalize
             self.normalize_prior()
+
+
+class SphericalPrior(BasePrior):
+    '''Equivalent to ridge.
+    '''
+    def __init__(self, nfeatures=20, **kwargs):
+        '''
+        '''
+        raw_prior = np.eye(nfeatures)
+        super(SphericalPrior, self).__init__(raw_prior, **kwargs)
