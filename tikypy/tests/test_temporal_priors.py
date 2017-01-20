@@ -165,7 +165,7 @@ def test_prior_from_penalty():
     assert np.allclose(raw_penalty / pdetnorm, penalty)
 
     # the prior from penalty is initialized with zeros
-    assert np.allclose(prior.prior, 0)
+    assert np.allclose(prior.asarray, 0)
     # this must break because the prior hasn't been updated
     try:
         penalty = prior.prior2penalty(regularizer=1.0)
@@ -175,7 +175,7 @@ def test_prior_from_penalty():
     # generate the prior from penalty
     prior.update_prior()
     raw_prior = np.linalg.inv(raw_penalty)
-    assert np.allclose(raw_prior, prior.prior)
+    assert np.allclose(raw_prior, prior.asarray)
     assert np.allclose(prior.penalty, raw_penalty)
 
     # generate a regularized prior from penalty
@@ -195,7 +195,7 @@ def test_prior_from_penalty():
     raw_prior = np.linalg.inv(raw_penalty)
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     # prior should only contain delays of interest
-    assert np.allclose(raw_prior, prior.prior)
+    assert np.allclose(raw_prior, prior.asarray)
     # penalty should be kept as original
     assert np.allclose(prior.penalty, raw_penalty)
 
@@ -207,12 +207,12 @@ def test_prior_from_penalty():
     assert prior.wishart_lambda == 2.0
     raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(raw_penalty.shape[0]))
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
-    assert np.allclose(raw_prior, prior.prior)
+    assert np.allclose(raw_prior, prior.asarray)
 
     # regularize
     prior.update_prior(wishart_lambda=2.0, dodetnorm=True)
     detnorm = tikutils.determinant_normalizer(raw_prior )
-    assert np.allclose(raw_prior / detnorm, prior.prior)
+    assert np.allclose(raw_prior / detnorm, prior.asarray)
 
     # set a non-diagonal wishart prior
     a = np.random.randn(10,10)
@@ -224,11 +224,58 @@ def test_prior_from_penalty():
     raw_prior = np.linalg.inv(raw_penalty + 2.0*W)
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     detnorm = tikutils.determinant_normalizer(raw_prior )
-    assert np.allclose(raw_prior / detnorm, prior.prior)
+    assert np.allclose(raw_prior / detnorm, prior.asarray)
+
+
 
 def test_smoothness_prior():
-    prior = tp.SmoothnessPrior(order=1, delays=range(10))
-    prior.update_prior(wishart_lambda=1.0)
+    delays = range(10)
+    ndelays = len(delays)
 
-    prior = tp.SmoothnessPrior(order=2, delays=range(10))
-    prior.update_prior(wishart_lambda=1.0)
+    for order in [1,2,4]:
+        C = tikutils.difference_operator(order, ndelays)
+        raw_penalty = np.dot(C, C.T)
+
+        # create object
+        prior = tp.SmoothnessPrior(delays=delays, order=order)
+        assert np.allclose(prior.asarray.shape, (ndelays,ndelays))
+        assert np.allclose(prior.asarray, np.zeros_like(raw_penalty)) # initializes to zero array
+        assert np.allclose(prior.penalty, raw_penalty)
+
+        # create prior
+        prior.update_prior()
+        raw_prior = np.linalg.inv(raw_penalty)
+        assert np.allclose(raw_prior, prior.asarray)
+
+        # update regularizer
+        prior.update_prior(wishart_lambda=2.0)
+        raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(ndelays))
+        assert np.allclose(raw_prior, prior.asarray)
+
+    # check delay sub-selection
+    delays = np.asarray([1,3,6,8])
+    ndelays = len(delays)
+    fulldelays = range(max(delays)+1)
+
+    C = tikutils.difference_operator(order, len(fulldelays))
+    raw_penalty = np.dot(C, C.T)
+
+    # create object
+    prior = tp.SmoothnessPrior(delays=delays, order=order)
+    assert np.allclose(prior.asarray.shape, (ndelays,ndelays))
+    assert np.allclose(prior.asarray, 0) # initializes to zero array
+    assert np.allclose(prior.asarray, np.zeros((ndelays, ndelays)))
+    assert np.allclose(prior.penalty.shape, len(fulldelays), len(fulldelays))
+    assert np.allclose(prior.penalty, raw_penalty)
+
+    # create prior
+    prior.update_prior()
+    raw_prior = np.linalg.inv(raw_penalty)
+    raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
+    assert np.allclose(raw_prior, prior.asarray)
+
+    # update regularizer
+    prior.update_prior(wishart_lambda=2.0)
+    raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(len(fulldelays)))
+    raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
+    assert np.allclose(raw_prior, prior.asarray)

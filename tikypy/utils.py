@@ -29,7 +29,6 @@ def SVD(X, **kwargs):
     return O
 
 
-
 def difference_operator(order, nobs):
     '''Get a finite difference operator matrix of size `nobs`.
 
@@ -87,7 +86,6 @@ def hrf_default_basis(dt=2.0, duration=32):
     return hrf_basis
 
 
-
 def fast_indexing(a, rows, cols=None):
     '''
     Much faster than fancy indexing for taking
@@ -101,7 +99,6 @@ def fast_indexing(a, rows, cols=None):
     return a.take(idx)
 
 
-
 def determinant_normalizer(mat, thresh=1e-08):
     '''get the (pseudo-) determinant of the matrix
     '''
@@ -109,7 +106,6 @@ def determinant_normalizer(mat, thresh=1e-08):
     gdx = evals > thresh
     det = np.prod(evals[gdx])
     return det**(1./gdx.sum())
-
 
 
 def delay2slice(delay):
@@ -216,8 +212,6 @@ def mult_diag(d, mtx, left=True):
         return (d*mtx.T).T
     else:
         return d*mtx
-
-
 
 
 def noise_ceiling_correction(repeats, yhat, dozscore=True):
@@ -339,7 +333,6 @@ def whiten_penalty(X, penalty=0.0):
     u, s, ut = np.linalg.svd(cov, full_matrices=False)
     covnegsqrt = np.dot(mult_diag((s+penalty)**(-1/2.0), u, left=False), ut)
     return np.dot(covnegsqrt, X.T).T
-
 
 
 def columnwise_correlation(y, ypred, zscorea=True, zscoreb=True, axis=0):

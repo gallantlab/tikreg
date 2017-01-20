@@ -90,9 +90,8 @@ class PriorFromPenalty(TemporalPrior):
         '''
         '''
         prior = np.zeros_like(penalty)
-        # if delays is None:
-        #     delays = np.arange(penalty.shape[0])
-        # assert (min(delays) >= 0) and (max(delays) < penalty.shape[0])
+        if delays is None:
+            delays = np.arange(penalty.shape[0])
 
         super(PriorFromPenalty, self).__init__(prior, delays=delays, **kwargs)
 
@@ -136,6 +135,19 @@ class PriorFromPenalty(TemporalPrior):
             self.normalize_prior()
 
 
+class SmoothnessPrior(PriorFromPenalty):
+    '''
+    '''
+    def __init__(self, delays=range(5), order=2, **kwargs):
+        '''
+        '''
+        maxdelay = max(delays)+1
+        penalty = tikutils.difference_operator(order, maxdelay)
+        CTC = np.dot(penalty, penalty.T)
+        super(SmoothnessPrior, self).__init__(CTC, delays=delays, **kwargs)
+
+
+
 class SphericalPrior(TemporalPrior):
     '''Equivalent to ridge.
     '''
@@ -162,16 +174,6 @@ class HRFPrior(TemporalPrior):
         return super(HRFPrior, self).prior2penalty(regularizer=regularizer)
 
 
-
-class SmoothnessPrior(PriorFromPenalty):
-    '''
-    '''
-    def __init__(self, delays=range(5), order=2, **kwargs):
-        '''
-        '''
-        penalty = tikutils.difference_operator(order, len(delays))
-        CTC = np.dot(penalty, penalty.T)
-        super(SmoothnessPrior, self).__init__(CTC, delays=delays, **kwargs)
 
 
 class WishartPrior(object):
