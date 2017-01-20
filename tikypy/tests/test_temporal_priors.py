@@ -279,3 +279,8 @@ def test_smoothness_prior():
     raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(len(fulldelays)))
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     assert np.allclose(raw_prior, prior.asarray)
+
+
+def test_gaussian_kernel_prior():
+    # TODO
+    prior = tp.GaussianKernelPrior(delays=range(10))

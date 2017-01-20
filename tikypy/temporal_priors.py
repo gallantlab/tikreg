@@ -3,7 +3,7 @@ import itertools
 
 from tikypy import BasePrior
 import tikypy.utils as tikutils
-
+from tikypy import kernels as tkernel
 
 ##############################
 # functions
@@ -160,7 +160,38 @@ class WishartPrior(object):
 class GaussianKernelPrior(TemporalPrior):
     '''Smoothness prior
     '''
-    def __init__(self, *args, **kwargs):
+    def __init__(self, delays=range(5), sigma=1.0,  **kwargs):
         '''
         '''
-        super(GaussianKernelPrior, self).__init__(*args, **kwargs)
+
+        full_delays = np.arange(max(delays)+1)
+        self.kernel_object = tkernel.lazy_kernel(full_delays[...,None],
+                                                 kernel_type='gaussian')
+
+        self.kernel_object.update(sigma)
+        prior = self.kernel_object.kernel
+        super(GaussianKernelPrior, self).__init__(prior, delays=delays, **kwargs)
+
+    def update_prior(self, sigma, detnorm):
+        if sigma == self.kernel_object.kernel_parameter:
+            # parameter already set, do nothing
+            return
+
+    def update_prior(self, sigma=1.0, dodetnorm=False):
+        '''
+        '''
+        if sigma == self.kernel_object.kernel_parameter:
+            # it's already set, do nothing
+            return
+
+        # compute prior
+        self.kernel_object.update(sigma)
+        prior = self.kernel_object.kernel
+        # select requested delays from prior
+        prior, delays = get_delays_from_prior(prior, self.delays)
+        # update object prior
+        self.prior = prior
+
+        if dodetnorm:
+            # normalize
+            self.normalize_prior()
