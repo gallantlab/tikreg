@@ -72,9 +72,12 @@ class PriorFromPenalty(TemporalPrior):
             penalty = self.penalty
         return penalty
 
-    def set_wishart(self, wishart_array):
-        assert np.allclose(wishart_array.shape, self.penalty.shape)
-        self.wishart = wishart_array
+    def set_wishart(self, wishart_prior):
+        if isinstance(wishart_prior, BasePrior):
+            wishart_prior = wishart_prior.asarray
+        assert np.allclose(wishart_prior.shape, self.penalty.shape)
+        self.wishart = wishart_prior
+        return self
 
     def update_prior(self, wishart_lambda=0.0, dodetnorm=False):
         '''
