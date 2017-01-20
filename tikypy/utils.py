@@ -43,6 +43,8 @@ def difference_operator(order, nobs):
     -------
     mat : (`nobs`,`nobs`) np.ndarray
     '''
+    if nobs == 1:
+        return np.asarray([[1]])
 
     depth = order + 1
     # pascal triangle row

@@ -72,9 +72,12 @@ class PriorFromPenalty(TemporalPrior):
             penalty = self.penalty
         return penalty
 
-    def set_wishart(self, wishart_array):
-        assert np.allclose(wishart_array.shape, self.penalty.shape)
-        self.wishart = wishart_array
+    def set_wishart(self, wishart_prior):
+        if isinstance(wishart_prior, BasePrior):
+            wishart_prior = wishart_prior.asarray
+        assert np.allclose(wishart_prior.shape, self.penalty.shape)
+        self.wishart = wishart_prior
+        return self
 
     def update_prior(self, wishart_lambda=0.0, dodetnorm=False):
         '''
@@ -122,7 +125,9 @@ class HRFPrior(TemporalPrior):
     def __init__(self, delays=None, dt=2.0, duration=20, **kwargs):
         '''
         '''
-
+        if delays is not None:
+            if len(delays) == 1 and delays[0] == 0:
+                raise ValueError('Using delay zero by itself is not allowed')
         H = tikutils.hrf_default_basis(dt=dt, duration=duration)
         raw_prior = np.dot(H, H.T).astype(np.float64)
         super(HRFPrior, self).__init__(raw_prior, delays=delays, **kwargs)
@@ -171,11 +176,6 @@ class GaussianKernelPrior(TemporalPrior):
         self.kernel_object.update(sigma)
         prior = self.kernel_object.kernel
         super(GaussianKernelPrior, self).__init__(prior, delays=delays, **kwargs)
-
-    def update_prior(self, sigma, detnorm):
-        if sigma == self.kernel_object.kernel_parameter:
-            # parameter already set, do nothing
-            return
 
     def update_prior(self, sigma=1.0, dodetnorm=False):
         '''
