@@ -125,7 +125,9 @@ class HRFPrior(TemporalPrior):
     def __init__(self, delays=None, dt=2.0, duration=20, **kwargs):
         '''
         '''
-
+        if delays is not None:
+            if len(delays) == 1 and delays[0] == 0:
+                raise ValueError('Using delay zero by itself is not allowed')
         H = tikutils.hrf_default_basis(dt=dt, duration=duration)
         raw_prior = np.dot(H, H.T).astype(np.float64)
         super(HRFPrior, self).__init__(raw_prior, delays=delays, **kwargs)
