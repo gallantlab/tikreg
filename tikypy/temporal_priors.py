@@ -172,11 +172,6 @@ class GaussianKernelPrior(TemporalPrior):
         prior = self.kernel_object.kernel
         super(GaussianKernelPrior, self).__init__(prior, delays=delays, **kwargs)
 
-    def update_prior(self, sigma, detnorm):
-        if sigma == self.kernel_object.kernel_parameter:
-            # parameter already set, do nothing
-            return
-
     def update_prior(self, sigma=1.0, dodetnorm=False):
         '''
         '''
