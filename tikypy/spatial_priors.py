@@ -13,6 +13,29 @@ class CustomPrior(BasePrior):
         super(CustomPrior, self).__init__(*args, **kwargs)
 
 
+class SphericalPrior(BasePrior):
+    '''Equivalent to ridge.
+    '''
+    def __init__(self, feature_space, **kwargs):
+        '''
+        '''
+        if isinstance(feature_space, np.ndarray):
+            nfeatures = feature_space.shape[-1]
+        elif np.isscalar(feature_space):
+            nfeatures = feature_space
+        elif isinstance(feature_space, tuple):
+            # last dimension is features
+            nfeatures = feature_space[1]
+        else:
+            raise ValueError('%s is not allowed'%type(feature_space))
+
+        raw_prior = np.eye(nfeatures)
+        super(SphericalPrior, self).__init__(raw_prior, **kwargs)
+
+    def get_prior(self, alpha):
+        return alpha*self.prior
+
+
 class PriorFromPenalty(BasePrior):
     '''
     '''
@@ -63,16 +86,3 @@ class PriorFromPenalty(BasePrior):
         if dodetnorm:
             # normalize
             self.normalize_prior()
-
-
-class SphericalPrior(BasePrior):
-    '''Equivalent to ridge.
-    '''
-    def __init__(self, nfeatures=20, **kwargs):
-        '''
-        '''
-        raw_prior = np.eye(nfeatures)
-        super(SphericalPrior, self).__init__(raw_prior, **kwargs)
-
-    def update_prior(self, nfeatures):
-        self.prior = np.eye(nfeatures)
