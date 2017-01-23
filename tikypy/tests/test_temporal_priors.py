@@ -201,16 +201,15 @@ def test_prior_from_penalty():
     assert np.allclose(prior.wishart, np.eye(raw_penalty.shape[0]))
 
     # regularize penalty before inverting
-    prior.get_prior(wishart_alpha=2.0, dodetnorm=False)
-    assert prior.wishart_alpha == 2.0
+    oprior = prior.get_prior(wishart_alpha=2.0, dodetnorm=False)
     raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(raw_penalty.shape[0]))
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
-    assert np.allclose(raw_prior, prior.asarray)
+    assert np.allclose(raw_prior, oprior)
 
     # regularize
-    prior.get_prior(wishart_alpha=2.0, dodetnorm=True)
-    detnorm = tikutils.determinant_normalizer(raw_prior )
-    assert np.allclose(raw_prior / detnorm, prior.asarray)
+    oprior = prior.get_prior(wishart_alpha=2.0, dodetnorm=True)
+    detnorm = tikutils.determinant_normalizer(raw_prior)
+    assert np.allclose(raw_prior / detnorm, oprior)
 
     # set a non-diagonal wishart prior
     a = np.random.randn(10,10)
