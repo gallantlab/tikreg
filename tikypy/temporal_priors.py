@@ -31,6 +31,9 @@ class TemporalPrior(BasePrior):
         self.ndelays = len(delays)
         super(TemporalPrior, self).__init__(prior, **kwargs)
 
+    def get_hyperparameters(self):
+        return np.asarray([1.0])
+
 
 class CustomPrior(TemporalPrior):
     '''Specify a custom prior
@@ -79,12 +82,11 @@ class PriorFromPenalty(TemporalPrior):
         self.wishart = wishart
 
 
-    def get_prior(self, alpha=1.0, wishart_alpha=0.0, dodetnorm=False):
+    def get_prior(self, alpha=1.0, hyperhyper=0.0, dodetnorm=False):
         '''
         '''
-
         # compute prior
-        prior = np.linalg.inv(self.penalty + wishart_alpha*self.wishart)
+        prior = np.linalg.inv(self.penalty + hyperhyper*self.wishart)
         # select requested delays from prior
         prior, delays = get_delays_from_prior(prior, self.delays)
         # update object prior
@@ -148,15 +150,15 @@ class GaussianKernelPrior(TemporalPrior):
         prior = self.kernel_object.kernel
         super(GaussianKernelPrior, self).__init__(prior, delays=delays, **kwargs)
 
-    def get_prior(self, alpha=1.0, sigma=1.0, dodetnorm=False):
+    def get_prior(self, alpha=1.0, hyperhyper=1.0, dodetnorm=False):
         '''
         '''
-        if sigma == self.kernel_object.kernel_parameter:
+        if hyperhyper == self.kernel_object.kernel_parameter:
             # it's already set, do nothing
             pass
         else:
             # update gaussian width
-            self.kernel_object.update(sigma)
+            self.kernel_object.update(hyperhyper)
 
         prior = self.kernel_object.kernel
         # select requested delays from prior
