@@ -6,8 +6,7 @@ from tikypy import (models,
                     utils as tikutils,
                     )
 
-def test_mkl_ols():
-    ndelays=1
+def get_abc_data():
     Af = np.random.randn(150, 10)
     Bf = np.random.randn(150, 20)
     Cf = np.random.randn(150, 30)
@@ -22,32 +21,38 @@ def test_mkl_ols():
     Cw = np.random.randn(Cf.shape[-1], nvox)
 
     Yf = np.dot(Af, Aw) + np.dot(Bf, Bw) + np.dot(Cf, Cw)
-    Ytrain, Ytest = Yf[:100], Yf[100:]
+    responses_train, responses_test = Yf[:100], Yf[100:]
 
 
     features_train = [A,B,C]
     features_test = [Atest, Btest, Ctest]
 
+    return (features_train, features_test,
+            responses_train, responses_test)
+
+
+def test_mkl_ols():
+    ndelays=1
     delays = range(ndelays)
+
+    features_train, features_test, responses_train, responses_test = get_abc_data()
+    features_sizes = [fs.shape[1] for fs in features_train]
 
     print('')
     direct_fit = models.solve_l2_primal(tikutils.delay_signal(np.hstack(features_train), delays),
-                                        Ytrain,
+                                        responses_train,
                                         tikutils.delay_signal(np.hstack(features_test), delays),
-                                        Ytest,
+                                        responses_test,
                                         verbose=True,
                                         weights=True, performance=True)
 
-    spatial_priors = [sps.SphericalPrior(),
-                      sps.SphericalPrior(),
-                      sps.SphericalPrior(),
+    spatial_priors = [sps.SphericalPrior(features_sizes[0]),
+                      sps.SphericalPrior(features_sizes[1]),
+                      sps.SphericalPrior(features_sizes[2]),
                       ]
 
 
-
-    wishart_prior = tps.SphericalPrior(delays)
-
-    tpriors = [tps.SmoothnessPrior(delays).set_wishart(wishart_prior),
+    tpriors = [tps.SmoothnessPrior(delays),
                tps.GaussianKernelPrior(delays),
                tps.HRFPrior([1] if delays == [0] else delays),
                tps.SphericalPrior(delays),
@@ -62,25 +67,25 @@ def test_mkl_ols():
         for fs_train, fs_test, feature_prior in zip(features_train,
                                                     features_test,
                                                     spatial_priors):
-            feature_prior.update_prior(fs_train.shape[-1])
+
             if hasattr(temporal_prior, 'update_prior'):
                 temporal_prior.update_prior()
-
+            alpha = 1.0
             kernel_train = models.kernel_spatiotemporal_prior(fs_train,
-                                                              temporal_prior.asarray,
-                                                              feature_prior.asarray,
+                                                              temporal_prior.get_prior(alpha),
+                                                              feature_prior.get_prior(alpha),
                                                               delays=delays)
             Ktrain += kernel_train
 
             kernel_test = models.kernel_spatiotemporal_prior(fs_train,
-                                                             temporal_prior.asarray,
-                                                             feature_prior.asarray,
+                                                             temporal_prior.get_prior(alpha),
+                                                             feature_prior.get_prior(alpha),
                                                              Xtest=fs_test,
                                                              delays=delays)
             Ktest += kernel_test
 
-        fit = models.solve_l2_dual(Ktrain, Ytrain,
-                                   Ktest, Ytest,
+        fit = models.solve_l2_dual(Ktrain, responses_train,
+                                   Ktest, responses_test,
                                    ridges=[0., 1e-03, 1., 10.0, 100.],
                                    verbose=True,
                                    weights=True, performance=True)
@@ -90,7 +95,7 @@ def test_mkl_ols():
 
         weights = np.tensordot(tikutils.delay_signal(np.hstack(features_train), delays).T,
                                fit['weights'], (1,1)).swapaxes(0,1)
-        if not np.allclose(temporal_prior.asarray, 1):
+        if not np.allclose(temporal_prior.get_prior(alpha), 1):
             # scale weights
-            weights *= temporal_prior.asarray
+            weights *= temporal_prior.get_prior(alpha)
         assert np.allclose(weights[0], direct_fit['weights'])
