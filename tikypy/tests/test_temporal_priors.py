@@ -201,13 +201,13 @@ def test_prior_from_penalty():
     assert np.allclose(prior.wishart, np.eye(raw_penalty.shape[0]))
 
     # regularize penalty before inverting
-    oprior = prior.get_prior(wishart_alpha=2.0, dodetnorm=False)
+    oprior = prior.get_prior(hyperhyper=2.0, dodetnorm=False)
     raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(raw_penalty.shape[0]))
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     assert np.allclose(raw_prior, oprior)
 
     # regularize
-    oprior = prior.get_prior(wishart_alpha=2.0, dodetnorm=True)
+    oprior = prior.get_prior(hyperhyper=2.0, dodetnorm=True)
     detnorm = tikutils.determinant_normalizer(raw_prior)
     assert np.allclose(raw_prior / detnorm, oprior)
 
@@ -217,7 +217,7 @@ def test_prior_from_penalty():
     prior.set_wishart(W)
     assert np.allclose(prior.wishart, W)
     # check the update works
-    prior.get_prior(wishart_alpha=2.0, dodetnorm=True)
+    prior.get_prior(hyperhyper=2.0, dodetnorm=True)
     raw_prior = np.linalg.inv(raw_penalty + 2.0*W)
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     detnorm = tikutils.determinant_normalizer(raw_prior )
@@ -243,7 +243,7 @@ def test_smoothness_prior():
         assert np.allclose(raw_prior, prior.asarray)
 
         # update regularizer
-        prior.get_prior(wishart_alpha=2.0, dodetnorm=False)
+        prior.get_prior(hyperhyper=2.0, dodetnorm=False)
         raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(ndelays))
         assert np.allclose(raw_prior, prior.asarray)
 
@@ -268,7 +268,7 @@ def test_smoothness_prior():
     assert np.allclose(raw_prior, prior.asarray)
 
     # update regularizer
-    prior.get_prior(wishart_alpha=2.0, dodetnorm=False)
+    prior.get_prior(hyperhyper=2.0, dodetnorm=False)
     raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(len(fulldelays)))
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     assert np.allclose(raw_prior, prior.asarray)
