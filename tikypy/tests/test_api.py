@@ -73,13 +73,13 @@ def test_mkl_ols():
 
             alpha = 1.0
             kernel_train = models.kernel_spatiotemporal_prior(fs_train,
-                                                              temporal_prior.get_prior(alpha),
+                                                              temporal_prior.get_prior(1.0),
                                                               feature_prior.get_prior(alpha),
                                                               delays=delays)
             Ktrain += kernel_train
 
             kernel_test = models.kernel_spatiotemporal_prior(fs_train,
-                                                             temporal_prior.get_prior(alpha),
+                                                             temporal_prior.get_prior(1.0),
                                                              feature_prior.get_prior(alpha),
                                                              Xtest=fs_test,
                                                              delays=delays)
