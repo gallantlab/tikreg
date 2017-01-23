@@ -27,8 +27,8 @@ class BasePrior(object):
     def asarray(self):
         return self.prior
 
-    def prior2penalty(self, regularizer=0.0, dodetnorm=False):
-        penalty = np.linalg.inv(self.prior + regularizer*np.eye(self.prior.shape[0]))
+    def prior2penalty(self, dodetnorm=False):
+        penalty = np.linalg.inv(self.prior) # must be invertible
         if self.penalty is None:
             # first time
             self.penalty = penalty
@@ -42,3 +42,6 @@ class BasePrior(object):
     def normalize_penalty(self):
         self.penalty_detnorm = tikutils.determinant_normalizer(self.penalty)
         self.penalty /= self.penalty_detnorm
+
+    def get_prior(self, alpha):
+        return alpha*self.prior
