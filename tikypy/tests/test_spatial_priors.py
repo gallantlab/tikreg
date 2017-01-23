@@ -7,4 +7,4 @@ def test_prior_from_penalty():
     tmp = np.random.randn(10, 10)
     raw_penalty = np.dot(tmp, tmp.T)
     prior = sp.PriorFromPenalty(raw_penalty)
-    prior.update_prior()
+    prior.get_prior()

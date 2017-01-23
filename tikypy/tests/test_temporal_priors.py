@@ -18,8 +18,8 @@ def test_base_prior():
     assert prior.detnorm == 1.0
     assert np.allclose(prior.asarray, raw_prior)
     # return penalty
-    penalty = np.linalg.inv(raw_prior + 1.0*np.eye(raw_prior.shape[0]))
-    assert np.allclose(prior.prior2penalty(regularizer=1.0, dodetnorm=False), penalty)
+    penalty = np.linalg.inv(raw_prior)
+    assert np.allclose(prior.prior2penalty(dodetnorm=False), penalty)
 
 
     #####
@@ -34,11 +34,11 @@ def test_base_prior():
     #####
     prior = tp.BasePrior(raw_prior, dodetnorm=False)
     # test penalty computation
-    penalty = np.linalg.inv(raw_prior + np.eye(raw_prior.shape[0]))
-    assert np.allclose(prior.prior2penalty(regularizer=1.0, dodetnorm=False), penalty)
+    penalty = np.linalg.inv(raw_prior)
+    assert np.allclose(prior.prior2penalty(dodetnorm=False), penalty)
     assert prior.penalty_detnorm == 1.0
     # test penalty with normalization
-    penalty_detnorm = prior.prior2penalty(regularizer=1.0, dodetnorm=True)
+    penalty_detnorm = prior.prior2penalty(dodetnorm=True)
     assert prior.penalty_detnorm == 1.0
 
     # update class
@@ -164,23 +164,21 @@ def test_prior_from_penalty():
     pdetnorm = tikutils.determinant_normalizer(raw_penalty)
     assert np.allclose(raw_penalty / pdetnorm, penalty)
 
-    # the prior from penalty is initialized with zeros
-    assert np.allclose(prior.asarray, 0)
     # this must break because the prior hasn't been updated
     try:
-        penalty = prior.prior2penalty(regularizer=1.0)
+        penalty = prior.prior2penalty()
     except AssertionError:
         pass
 
     # generate the prior from penalty
-    prior.update_prior(dodetnorm=False)
+    prior.get_prior(dodetnorm=False)
     raw_prior = np.linalg.inv(raw_penalty)
     assert np.allclose(raw_prior, prior.asarray)
     assert np.allclose(prior.penalty, raw_penalty)
 
     # generate a regularized prior from penalty
-    penalty = prior.prior2penalty(regularizer=1.0, dodetnorm=True)
-    reg_penalty = np.linalg.inv(raw_prior + 1.0*np.eye(raw_prior.shape[0]))
+    penalty = prior.prior2penalty(dodetnorm=True)
+    reg_penalty = np.linalg.inv(raw_prior)
     reg_pdetnorm = tikutils.determinant_normalizer(reg_penalty)
     assert np.allclose(prior.penalty, raw_penalty)
     assert np.allclose(reg_penalty / reg_pdetnorm, penalty)
@@ -191,7 +189,7 @@ def test_prior_from_penalty():
     assert np.allclose(prior.delays, delays)
 
     # generate prior
-    prior.update_prior(dodetnorm=False)
+    prior.get_prior(dodetnorm=False)
     raw_prior = np.linalg.inv(raw_penalty)
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     # prior should only contain delays of interest
@@ -203,14 +201,14 @@ def test_prior_from_penalty():
     assert np.allclose(prior.wishart, np.eye(raw_penalty.shape[0]))
 
     # regularize penalty before inverting
-    prior.update_prior(wishart_lambda=2.0, dodetnorm=False)
-    assert prior.wishart_lambda == 2.0
+    prior.get_prior(wishart_alpha=2.0, dodetnorm=False)
+    assert prior.wishart_alpha == 2.0
     raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(raw_penalty.shape[0]))
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     assert np.allclose(raw_prior, prior.asarray)
 
     # regularize
-    prior.update_prior(wishart_lambda=2.0, dodetnorm=True)
+    prior.get_prior(wishart_alpha=2.0, dodetnorm=True)
     detnorm = tikutils.determinant_normalizer(raw_prior )
     assert np.allclose(raw_prior / detnorm, prior.asarray)
 
@@ -220,7 +218,7 @@ def test_prior_from_penalty():
     prior.set_wishart(W)
     assert np.allclose(prior.wishart, W)
     # check the update works
-    prior.update_prior(wishart_lambda=2.0, dodetnorm=True)
+    prior.get_prior(wishart_alpha=2.0, dodetnorm=True)
     raw_prior = np.linalg.inv(raw_penalty + 2.0*W)
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     detnorm = tikutils.determinant_normalizer(raw_prior )
@@ -238,16 +236,15 @@ def test_smoothness_prior():
         # create object
         prior = tp.SmoothnessPrior(delays=delays, order=order)
         assert np.allclose(prior.asarray.shape, (ndelays,ndelays))
-        assert np.allclose(prior.asarray, np.zeros_like(raw_penalty)) # initializes to zero array
         assert np.allclose(prior.penalty, raw_penalty)
 
         # create prior
-        prior.update_prior(dodetnorm=False)
+        prior.get_prior(dodetnorm=False)
         raw_prior = np.linalg.inv(raw_penalty)
         assert np.allclose(raw_prior, prior.asarray)
 
         # update regularizer
-        prior.update_prior(wishart_lambda=2.0, dodetnorm=False)
+        prior.get_prior(wishart_alpha=2.0, dodetnorm=False)
         raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(ndelays))
         assert np.allclose(raw_prior, prior.asarray)
 
@@ -262,19 +259,17 @@ def test_smoothness_prior():
     # create object
     prior = tp.SmoothnessPrior(delays=delays, order=order)
     assert np.allclose(prior.asarray.shape, (ndelays,ndelays))
-    assert np.allclose(prior.asarray, 0) # initializes to zero array
-    assert np.allclose(prior.asarray, np.zeros((ndelays, ndelays)))
     assert np.allclose(prior.penalty.shape, len(fulldelays), len(fulldelays))
     assert np.allclose(prior.penalty, raw_penalty)
 
     # create prior
-    prior.update_prior(dodetnorm=False)
+    prior.get_prior(dodetnorm=False)
     raw_prior = np.linalg.inv(raw_penalty)
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     assert np.allclose(raw_prior, prior.asarray)
 
     # update regularizer
-    prior.update_prior(wishart_lambda=2.0, dodetnorm=False)
+    prior.get_prior(wishart_alpha=2.0, dodetnorm=False)
     raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(len(fulldelays)))
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     assert np.allclose(raw_prior, prior.asarray)
