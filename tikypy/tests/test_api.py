@@ -56,7 +56,7 @@ def test_mkl_ols():
                tps.SmoothnessPrior(delays, wishart=True),
                tps.SmoothnessPrior(delays, wishart=False),
                tps.SmoothnessPrior(delays, wishart=np.eye(len(delays))),
-               tps.GaussianKernelPrior(delays),
+               tps.GaussianKernelPrior(delays, sigma=2.0),
                tps.HRFPrior([1] if delays == [0] else delays),
                tps.SphericalPrior(delays),
                ]
