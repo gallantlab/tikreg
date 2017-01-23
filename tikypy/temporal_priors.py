@@ -44,7 +44,7 @@ class CustomPrior(TemporalPrior):
 class PriorFromPenalty(TemporalPrior):
     '''
     '''
-    def __init__(self, penalty, wishart=True, delays=None, **kwargs):
+    def __init__(self, penalty, delays=None, wishart=True, **kwargs):
         '''
         '''
         prior = np.zeros_like(penalty)
@@ -100,13 +100,13 @@ class PriorFromPenalty(TemporalPrior):
 class SmoothnessPrior(PriorFromPenalty):
     '''
     '''
-    def __init__(self, delays=range(5), order=2, **kwargs):
+    def __init__(self, delays=range(5), order=2, wishart=True, **kwargs):
         '''
         '''
         maxdelay = max(delays)+1
         penalty = tikutils.difference_operator(order, maxdelay)
         CTC = np.dot(penalty, penalty.T)
-        super(SmoothnessPrior, self).__init__(CTC, delays=delays, **kwargs)
+        super(SmoothnessPrior, self).__init__(CTC, delays=delays, wishart=wishart, **kwargs)
 
 
 
@@ -133,35 +133,6 @@ class HRFPrior(TemporalPrior):
         raw_prior = np.dot(H, H.T).astype(np.float64)
         super(HRFPrior, self).__init__(raw_prior, delays=delays, **kwargs)
 
-    def prior2penalty(self, regularizer=1e-08):
-        # default HRF prior is low rank, so need to regularize to invert
-        return super(HRFPrior, self).prior2penalty(regularizer=regularizer)
-
-
-
-
-class WishartPrior(object):
-    def __init__(self, prior, wishart_array):
-        '''
-        '''
-        self.prior = prior
-        self.wishart = wishart_array
-
-        self.wishart_lambda = 0.0
-        self.detnorm = 1.0
-        self.penalty = self.prior2penalty(self.prior)
-
-    def update_wishart(self, wishart_lambda=0.0):
-        self.wishart_lambda = wishart_lambda
-
-    def update_prior(self):
-        prior = np.linalg.inv(self.penalty + self.wishart_lambda*self.wishart)
-        self.detnorm = tikutils.determinant_normalizer(prior)
-        prior /= self.detnorm
-        self.prior = prior
-
-
-
 
 class GaussianKernelPrior(TemporalPrior):
     '''Smoothness prior
@@ -178,15 +149,16 @@ class GaussianKernelPrior(TemporalPrior):
         prior = self.kernel_object.kernel
         super(GaussianKernelPrior, self).__init__(prior, delays=delays, **kwargs)
 
-    def update_prior(self, sigma=1.0, dodetnorm=False):
+    def get_prior(self, alpha=1.0, sigma=1.0, dodetnorm=False):
         '''
         '''
         if sigma == self.kernel_object.kernel_parameter:
             # it's already set, do nothing
-            return
+            pass
+        else:
+            # update gaussian width
+            self.kernel_object.update(sigma)
 
-        # compute prior
-        self.kernel_object.update(sigma)
         prior = self.kernel_object.kernel
         # select requested delays from prior
         prior, delays = get_delays_from_prior(prior, self.delays)
@@ -196,3 +168,5 @@ class GaussianKernelPrior(TemporalPrior):
         if dodetnorm:
             # normalize
             self.normalize_prior()
+
+        return alpha*self.prior
