@@ -53,6 +53,9 @@ def test_mkl_ols():
 
 
     tpriors = [tps.SmoothnessPrior(delays),
+               tps.SmoothnessPrior(delays, wishart=True),
+               tps.SmoothnessPrior(delays, wishart=False),
+               tps.SmoothnessPrior(delays, wishart=np.eye(len(delays))),
                tps.GaussianKernelPrior(delays),
                tps.HRFPrior([1] if delays == [0] else delays),
                tps.SphericalPrior(delays),
@@ -68,8 +71,6 @@ def test_mkl_ols():
                                                     features_test,
                                                     spatial_priors):
 
-            if hasattr(temporal_prior, 'update_prior'):
-                temporal_prior.update_prior()
             alpha = 1.0
             kernel_train = models.kernel_spatiotemporal_prior(fs_train,
                                                               temporal_prior.get_prior(alpha),
