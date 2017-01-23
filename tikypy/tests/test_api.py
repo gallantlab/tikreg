@@ -1,10 +1,13 @@
 import numpy as np
+import itertools
+
 import tikypy as tk
 from tikypy import (models,
                     spatial_priors as sps,
                     temporal_priors as tps,
                     utils as tikutils,
                     )
+
 
 def get_abc_data():
     Af = np.random.randn(150, 10)
@@ -64,39 +67,53 @@ def test_mkl_ols():
 
     for temporal_prior in tpriors:
         print(temporal_prior)
+
+        all_temporal_hypers = [temporal_prior.get_hyperparameters()]
+        all_spatial_hypers = [[1.]]*len(spatial_priors)
+
+        # get all combinations of hyperparameters
+        all_hyperparams = itertools.product(*(all_temporal_hypers + all_spatial_hypers))
+
         Ktrain = 0.
         Ktest = 0.
 
-        for fs_train, fs_test, feature_prior in zip(features_train,
-                                                    features_test,
-                                                    spatial_priors):
+        for spatiotemporal_hyperparams in all_hyperparams:
+            temporal_hyperparam = spatiotemporal_hyperparams[0]
+            spatial_hyperparams = spatiotemporal_hyperparams[1:]
 
-            alpha = 1.0
-            kernel_train = models.kernel_spatiotemporal_prior(fs_train,
-                                                              temporal_prior.get_prior(1.0),
-                                                              feature_prior.get_prior(alpha),
-                                                              delays=delays)
-            Ktrain += kernel_train
+            this_temporal_prior = temporal_prior.get_prior(alpha=1.0,
+                                                           hyperhyper=temporal_hyperparam)
 
-            kernel_test = models.kernel_spatiotemporal_prior(fs_train,
-                                                             temporal_prior.get_prior(1.0),
-                                                             feature_prior.get_prior(alpha),
-                                                             Xtest=fs_test,
-                                                             delays=delays)
-            Ktest += kernel_test
+            for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
+                                                                              features_test,
+                                                                              spatial_priors,
+                                                                              spatial_hyperparams)):
 
-        fit = models.solve_l2_dual(Ktrain, responses_train,
-                                   Ktest, responses_test,
-                                   ridges=[0., 1e-03, 1., 10.0, 100.],
-                                   verbose=True,
-                                   weights=True, performance=True)
+                kernel_train = models.kernel_spatiotemporal_prior(fs_train,
+                                                                  this_temporal_prior,
+                                                                  fs_prior.get_prior(fs_hyper),
+                                                                  delays=delays)
+                Ktrain += kernel_train
+
+                kernel_test = models.kernel_spatiotemporal_prior(fs_train,
+                                                                 this_temporal_prior,
+                                                                 fs_prior.get_prior(fs_hyper),
+                                                                 Xtest=fs_test,
+                                                                 delays=delays)
+                Ktest += kernel_test
+
+            fit = models.solve_l2_dual(Ktrain, responses_train,
+                                       Ktest, responses_test,
+                                       ridges=[0., 1e-03, 1., 10.0, 100.],
+                                       verbose=True,
+                                       weights=True, performance=True)
 
 
-        assert np.allclose(fit['performance'][0], 1.)
+            assert np.allclose(fit['performance'][0], 1.)
 
-        weights = np.tensordot(tikutils.delay_signal(np.hstack(features_train), delays).T,
-                               fit['weights'], (1,1)).swapaxes(0,1)
-        if not np.allclose(temporal_prior.get_prior(alpha), 1):
-            # scale weights
-            weights *= temporal_prior.get_prior(alpha)
-        assert np.allclose(weights[0], direct_fit['weights'])
+            weights = np.tensordot(tikutils.delay_signal(np.hstack(features_train), delays).T,
+                                   fit['weights'], (1,1)).swapaxes(0,1)
+            if not np.allclose(this_temporal_prior, 1):
+                # scale weights
+                weights *= this_temporal_prior
+            assert np.allclose(weights[0], direct_fit['weights'])
