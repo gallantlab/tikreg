@@ -44,7 +44,7 @@ class CustomPrior(TemporalPrior):
 class PriorFromPenalty(TemporalPrior):
     '''
     '''
-    def __init__(self, penalty, delays=None, **kwargs):
+    def __init__(self, penalty, wishart=True, delays=None, **kwargs):
         '''
         '''
         prior = np.zeros_like(penalty)
@@ -55,37 +55,37 @@ class PriorFromPenalty(TemporalPrior):
 
         # overwrite penalty after init
         self.penalty = penalty.copy()
-        self.wishart = np.eye(penalty.shape[0])
-        self.wishart_lambda = 0.0
 
-    def prior2penalty(self, regularizer=0.0, dodetnorm=False):
-        if regularizer > 0.0:
-            # make sure we have a valid prior
-            assert not np.allclose(self.prior, 0)
-            penalty = super(PriorFromPenalty, self).prior2penalty(regularizer=regularizer,
-                                                                  dodetnorm=dodetnorm)
-        elif dodetnorm:
-            # re-scale
-            penalty = self.penalty / tikutils.determinant_normalizer(self.penalty)
+        # set prior on prior
+        if isinstance(wishart, np.ndarray):
+            assert np.allclose(wishart.shape, self.penalty.shape)
+            self.wishart = wishart
+        elif wishart is True:
+            self.wishart = np.eye(self.penalty.shape[0])
+        elif wishart is False:
+            self.wishart = np.zeros_like(self.penalty)
         else:
-            # exact
-            penalty = self.penalty
-        return penalty
-
-    def set_wishart(self, wishart_prior):
-        if isinstance(wishart_prior, BasePrior):
-            wishart_prior = wishart_prior.asarray
-        assert np.allclose(wishart_prior.shape, self.penalty.shape)
-        self.wishart = wishart_prior
-        return self
-
-    def update_prior(self, wishart_lambda=0.0, dodetnorm=False):
-        '''
-        '''
-        self.wishart_lambda = wishart_lambda
+            raise ValueError('invalid prior for prior')
 
         # compute prior
-        prior = np.linalg.inv(self.penalty + self.wishart_lambda*self.wishart)
+        self.prior = self.get_prior(alpha=1.0)
+
+
+
+    def set_wishart(self, wishart):
+        if isinstance(wishart, BasePrior):
+            wishart = wishart.asarray
+        assert np.allclose(wishart.shape, self.penalty.shape)
+        self.wishart = wishart
+
+
+    def get_prior(self, alpha=1.0, wishart_alpha=0.0, dodetnorm=False):
+        '''
+        '''
+        self.wishart_alpha = wishart_alpha
+
+        # compute prior
+        prior = np.linalg.inv(self.penalty + self.wishart_alpha*self.wishart)
         # select requested delays from prior
         prior, delays = get_delays_from_prior(prior, self.delays)
         # update object prior
@@ -95,6 +95,7 @@ class PriorFromPenalty(TemporalPrior):
             # normalize
             self.normalize_prior()
 
+        return alpha*self.prior
 
 class SmoothnessPrior(PriorFromPenalty):
     '''

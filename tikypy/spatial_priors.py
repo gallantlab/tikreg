@@ -32,18 +32,17 @@ class SphericalPrior(BasePrior):
         raw_prior = np.eye(nfeatures)
         super(SphericalPrior, self).__init__(raw_prior, **kwargs)
 
-    def get_prior(self, alpha):
+    def get_prior(self, alpha=1.0):
         return alpha*self.prior
 
 
 class PriorFromPenalty(BasePrior):
     '''
     '''
-    def __init__(self, penalty, **kwargs):
+    def __init__(self, penalty, wishart=True, **kwargs):
         '''
         '''
         prior = np.zeros_like(penalty)
-
         super(PriorFromPenalty, self).__init__(prior, **kwargs)
 
         # overwrite penalty after init
@@ -73,7 +72,7 @@ class PriorFromPenalty(BasePrior):
         assert np.allclose(wishart_prior.shape, self.penalty.shape)
         self.wishart = wishart_prior
 
-    def update_prior(self, wishart_lambda=0.0, dodetnorm=False):
+    def get_prior(self, alpha=1.0, wishart_lambda=0.0, dodetnorm=False):
         '''
         '''
         self.wishart_lambda = wishart_lambda
