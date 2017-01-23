@@ -82,10 +82,9 @@ class PriorFromPenalty(TemporalPrior):
     def get_prior(self, alpha=1.0, wishart_alpha=0.0, dodetnorm=False):
         '''
         '''
-        self.wishart_alpha = wishart_alpha
 
         # compute prior
-        prior = np.linalg.inv(self.penalty + self.wishart_alpha*self.wishart)
+        prior = np.linalg.inv(self.penalty + wishart_alpha*self.wishart)
         # select requested delays from prior
         prior, delays = get_delays_from_prior(prior, self.delays)
         # update object prior

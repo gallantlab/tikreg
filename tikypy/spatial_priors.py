@@ -48,7 +48,6 @@ class PriorFromPenalty(BasePrior):
         # overwrite penalty after init
         self.penalty = penalty.copy()
         self.wishart = np.eye(penalty.shape[0])
-        self.wishart_lambda = 0.0
 
     def prior2penalty(self, regularizer=0.0, dodetnorm=True):
         if regularizer > 0.0:
@@ -75,10 +74,8 @@ class PriorFromPenalty(BasePrior):
     def get_prior(self, alpha=1.0, wishart_lambda=0.0, dodetnorm=False):
         '''
         '''
-        self.wishart_lambda = wishart_lambda
-
         # compute prior
-        prior = np.linalg.inv(self.penalty + self.wishart_lambda*self.wishart)
+        prior = np.linalg.inv(self.penalty + wishart_lambda*self.wishart)
         # update object prior
         self.prior = prior
 
