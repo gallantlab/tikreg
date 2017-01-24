@@ -179,7 +179,7 @@ def test_cv_api(show_figures=False, ntest=50):
                                   ('ridges', np.float32),
                                   ('responses', np.float32),
                                   ])
-        from aone import *
+
         for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
             temporal_hyperparam = spatiotemporal_hyperparams[0]
             spatial_hyperparams = spatiotemporal_hyperparams[1:]
