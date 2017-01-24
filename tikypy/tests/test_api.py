@@ -117,3 +117,130 @@ def test_mkl_ols():
                 # scale weights
                 weights *= this_temporal_prior
             assert np.allclose(weights[0], direct_fit['weights'])
+
+
+def test_cv_api(show_figures=False):
+    ridges = [0., 1e-03, 1., 10.0, 100.]
+    nridges = len(ridges)
+    ndelays = 10
+    delays = range(ndelays)
+
+    features_train, features_test, responses_train, responses_test = get_abc_data()
+    features_sizes = [fs.shape[1] for fs in features_train]
+
+    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyperparameters=np.logspace(-3,3,7)),
+                      sps.SphericalPrior(features_sizes[1], hyperparameters=np.logspace(-3,3,7)),
+                      sps.SphericalPrior(features_sizes[2], hyperparameters=np.logspace(-3,3,7)),
+                      ]
+
+    # do not scale first. this removes duplicates
+    spatial_priors[0].set_hyperparameters(1.0)
+
+    # non-diagonal hyper-prior
+    W = np.random.randn(ndelays, ndelays)
+    W = np.dot(W.T, W)
+
+    tpriors = [tps.SmoothnessPrior(delays, hhparams=np.logspace(-3,1,8)),
+               tps.SmoothnessPrior(delays, wishart=True),
+               tps.SmoothnessPrior(delays, wishart=False),
+               tps.SmoothnessPrior(delays, wishart=W, hhparams=np.logspace(-3,3,5)),
+               tps.GaussianKernelPrior(delays, hhparams=np.linspace(1,ndelays/2,ndelays)),
+               tps.HRFPrior([1] if delays == [0] else delays),
+               tps.SphericalPrior(delays),
+               ]
+
+    nfolds = (2,5)                      # 2x 5-fold cross-validation
+    folds = tikutils.generate_trnval_folds(responses_train.shape[0], sampler='bcv', nfolds=nfolds)
+    nfolds = np.prod(nfolds)
+
+    for temporal_prior in tpriors:
+        print(temporal_prior)
+
+        all_temporal_hypers = [temporal_prior.get_hhparams()]
+        all_spatial_hypers = [t.get_hyperparameters() for t in spatial_priors]
+
+        # get all combinations of hyperparameters
+        all_hyperparams = list(itertools.product(*(all_temporal_hypers + all_spatial_hypers)))
+        nspatial_hyperparams = np.prod([len(t) for t in all_spatial_hypers])
+
+        ntemporal_hyperparams = np.prod([len(t) for t in all_temporal_hypers])
+        Ktrain = 0.
+        Kval = 0.
+
+        mean_cv_only = False
+        results = np.zeros((nfolds,
+                            ntemporal_hyperparams,
+                            nspatial_hyperparams,
+                            nridges,
+                            1 if mean_cv_only else responses_train.shape[-1]),
+                           dtype=[('fold', np.float32),
+                                  ('tp', np.float32),
+                                  ('sp', np.float32),
+                                  ('ridges', np.float32),
+                                  ('responses', np.float32),
+                                  ])
+        from aone import *
+        for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
+            temporal_hyperparam = spatiotemporal_hyperparams[0]
+            spatial_hyperparams = spatiotemporal_hyperparams[1:]
+            spatial_hyperparams /= np.linalg.norm(spatial_hyperparams)
+
+            # get indices
+            shyperidx = np.mod(hyperidx, nspatial_hyperparams)
+            thyperidx = int(hyperidx // nspatial_hyperparams)
+            print (thyperidx, temporal_hyperparam), (shyperidx, spatial_hyperparams)
+
+            this_temporal_prior = temporal_prior.get_prior(alpha=1.0, hyperhyper=temporal_hyperparam)
+
+            if show_figures:
+                from matplotlib import pyplot as plt
+
+                if (hyperidx == 0) and (thyperidx == 0):
+                    # show points in 3D
+                    from tikypy import priors
+                    cartesian_points = [t[1:]/np.linalg.norm(t[1:]) for t in all_hyperparams]
+                    angles = priors.cartesian2polar(np.asarray(cartesian_points))
+                    priors.show_spherical_angles(angles[:,0], angles[:,1])
+
+                if hyperidx == 0:
+                    # show priors with different hyper-priors
+                    oldthyper = 0
+                    st.symmatshow(this_temporal_prior)
+                else:
+                    if thyperidx > oldthyper:
+                        oldthyper = thyperidx
+                        plt.matshow(this_temporal_prior)
+
+            # only run a few
+            if hyperidx > 20:
+                continue
+
+            for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
+                                                                              features_test,
+                                                                              spatial_priors,
+                                                                              spatial_hyperparams)):
+
+                kernel_train = models.kernel_spatiotemporal_prior(fs_train,
+                                                                  this_temporal_prior,
+                                                                  fs_prior.get_prior(fs_hyper),
+                                                                  delays=delays)
+                Ktrain += kernel_train
+
+            kernel_normalizer = tikutils.determinant_normalizer(Ktrain)
+            Ktrain /= kernel_normalizer
+
+            # cross-validation
+            for ifold, (trnidx, validx) in enumerate(folds):
+                ktrn = tikutils.fast_indexing(Ktrain, trnidx, trnidx)
+                kval = tikutils.fast_indexing(Ktrain, validx, trnidx)
+
+                fit = models.solve_l2_dual(ktrn, responses_train[trnidx],
+                                           kval, responses_train[validx],
+                                           ridges=ridges,
+                                           verbose=False,
+                                           performance=True)
+                if mean_cv_only:
+                    cvfold = np.nan_to_num(fit['performance']).mean(-1)[...,None]
+                else:
+                    cvfold = fit['performance']
+                results[ifold, thyperidx, shyperidx] = cvfold
