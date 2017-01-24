@@ -87,11 +87,11 @@ class PriorFromPenalty(TemporalPrior):
         assert np.allclose(wishart.shape, self.penalty.shape)
         self.wishart = wishart
 
-    def get_prior(self, alpha=1.0, hyperhyper=0.0, dodetnorm=False):
+    def get_prior(self, alpha=1.0, hhparam=0.0, dodetnorm=False):
         '''
         '''
         # compute prior
-        prior = np.linalg.inv(self.penalty + hyperhyper*self.wishart)
+        prior = np.linalg.inv(self.penalty + hhparam*self.wishart)
 
         # select requested delays from prior
         prior, delays = get_delays_from_prior(prior, self.delays)
@@ -153,15 +153,15 @@ class GaussianKernelPrior(TemporalPrior):
         prior = self.kernel_object.kernel
         super(GaussianKernelPrior, self).__init__(prior, delays=delays, **kwargs)
 
-    def get_prior(self, alpha=1.0, hyperhyper=1.0, dodetnorm=False):
+    def get_prior(self, alpha=1.0, hhparam=1.0, dodetnorm=False):
         '''
         '''
-        if hyperhyper == self.kernel_object.kernel_parameter:
+        if hhparam == self.kernel_object.kernel_parameter:
             # it's already set, do nothing
             pass
         else:
             # update gaussian width
-            self.kernel_object.update(hyperhyper)
+            self.kernel_object.update(hhparam)
 
         prior = self.kernel_object.kernel
         # select requested delays from prior
