@@ -730,7 +730,7 @@ def spatiotemporal_mvn_prior_regression(features_train,
                                         performance=True,
                                         noise_ceiling_correction=False,
                                         mean_cv_only=False,
-                                        nfolds=(1,5),
+                                        folds=(1,5),
                                         method='SVD',
                                         verbosity=1,
                                         ):
@@ -749,14 +749,24 @@ def spatiotemporal_mvn_prior_regression(features_train,
     nresponses = responses_train.shape[-1]
     ntrain = responses_train.shape[0]
 
-    if np.isscalar(nfolds):
+
+    if isinstance(folds, list):
+        # pre-defined folds
+        nfolds = len(folds)
+    elif np.isscalar(folds):
         # 1x n-fold cross-validation
-        nfolds = (1, nfolds)
-    folds = tikutils.generate_trnval_folds(ntrain,
-                                           sampler='bcv',
-                                           nfolds=nfolds)
+        nfolds = (1, folds)
+
+    if isinstance(folds, tuple):
+        # get cv folds
+        nfolds = folds
+        folds = tikutils.generate_trnval_folds(ntrain,
+                                               sampler='bcv',
+                                               nfolds=nfolds)
+        nfolds = np.prod(nfolds)
+
     folds = list(folds)
-    nfolds = np.prod(nfolds)
+
 
 
     all_temporal_hhparams = [temporal_prior.get_hhparams()]
