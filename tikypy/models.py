@@ -145,7 +145,7 @@ def solve_l2_primal(Xtrain, Ytrain,
     if zscore_ytest:
         Ytest = zscore(Ytest)
 
-    if method is 'SVD':
+    if method == 'SVD':
         U, S, Vt = SVD(Xtrain, full_matrices=False)
         V = Vt.T
         del Vt
@@ -159,25 +159,25 @@ def solve_l2_primal(Xtrain, Ytrain,
         if predictions or performance:
             XtestV = np.dot(Xtest, V)
 
-    elif method is 'Chol':
+    elif method == 'Chol':
         XtY = np.dot(Xtrain.T, Ytrain)
         XtX = np.dot(Xtrain.T, Xtrain)
 
 
     for lidx, rlambda in enumerate(ridges):
-        if method is 'SVD':
+        if method == 'SVD':
             D = S / (S**2 + rlambda**2)
-        elif method is 'Chol':
+        elif method == 'Chol':
             XtXI = XtX + rlambda**2 * np.eye(Xtrain.shape[-1])
             L, lower = cho_factor(XtXI, lower=True)
             del XtXI
 
         if performance:
             # Compute performance
-            if method is 'SVD':
+            if method == 'SVD':
                 XVD = tikutils.mult_diag(D, XtestV, left=False)
                 Ypred = np.dot(XVD, UTY)
-            elif method is 'Chol':
+            elif method == 'Chol':
                 Ypred = np.dot(Xtest, cho_solve((L, lower), XtY))
             cc = tikutils.columnwise_correlation(Ypred, Ytest, axis=0)
             results['performance'].append(cc)
@@ -195,17 +195,17 @@ def solve_l2_primal(Xtrain, Ytrain,
             results['predictions'].append(Ypred)
         elif predictions:
             # only predictions
-            if method is 'SVD':
+            if method == 'SVD':
                 XVD = tikutils.mult_diag(D, XtestV, left=False)
                 Ypred = np.dot(XVD, UTY)
-            elif method is 'Chol':
+            elif method == 'Chol':
                 Ypred = np.dot(Xtest, cho_solve((L, lower), XtY))
             results['predictions'].append(Ypred)
         if weights:
             # weights
-            if method is 'SVD':
+            if method == 'SVD':
                 betas = np.dot(tikutils.mult_diag(D, V, left=False), UTY)
-            elif method is 'Chol':
+            elif method == 'Chol':
                 betas = cho_solve((L, lower), XtY)
             results['weights'].append(betas)
 
@@ -273,7 +273,7 @@ def solve_l2_dual(Ktrain, Ytrain,
         Ytest = atleast_2d(Ytest)
 
 
-    if method is 'SVD':
+    if method == 'SVD':
         L, Q = LA.eigh(Ktrain)
         gidx = L > EPS
         L = L[gidx]
@@ -284,18 +284,18 @@ def solve_l2_dual(Ktrain, Ytrain,
             KtestQ = np.dot(Ktest, Q)
 
     for rdx, rlambda in enumerate(ridges):
-        if method is 'SVD':
+        if method == 'SVD':
             D = 1.0 / (L + rlambda**2)
-        elif method is 'Chol':
+        elif method == 'Chol':
             KtKI = Ktrain + rlambda**2 * np.eye(Ktrain.shape[0])
             L, lower = cho_factor(KtKI, lower=True, check_finite=False)
             del KtKI
 
         if performance:
-            if method is 'SVD':
+            if method == 'SVD':
                 KtestQD = tikutils.mult_diag(D, KtestQ, left=False)
                 Ypred = np.dot(KtestQD, QTY)
-            elif method is 'Chol':
+            elif method == 'Chol':
                 Ypred = np.dot(Ktest, cho_solve((L, lower), Ytrain))
 
             cc = tikutils.columnwise_correlation(Ypred, Ytest)
@@ -313,20 +313,20 @@ def solve_l2_dual(Ktrain, Ytrain,
         if predictions and performance:
             results['predictions'].append(Ypred)
         elif predictions:
-            if method is 'SVD':
+            if method == 'SVD':
                 KtestQD = tikutils.mult_diag(D, KtestQ, left=False)
                 Ypred = np.dot(KtestQD, QTY)
-            elif method is 'Chol':
+            elif method == 'Chol':
                 Ypred = np.dot(Ktest, cho_solve((L, lower), Ytrain))
             results['predictions'].append(Ypred)
 
         if weights:
-            if method is 'SVD':
+            if method == 'SVD':
                 QD = tikutils.mult_diag(D, Q, left=False)
-                rlambdas = np.dot(QD, QTY)
-            elif method is 'Chol':
-                rlambdas = cho_solve((L, lower), Ytrain)
-            results['weights'].append(rlambdas)
+                kernel_weights = np.dot(QD, QTY)
+            elif method == 'Chol':
+                kernel_weights = cho_solve((L, lower), Ytrain)
+            results['weights'].append(kernel_weights)
 
     return clean_results_dict(dict(results))
 
