@@ -208,7 +208,7 @@ def test_prior_from_penalty():
 
     # regularize
     oprior = prior.get_prior(hyperhyper=2.0, dodetnorm=True)
-    detnorm = tikutils.determinant_normalizer(raw_prior)
+    detnorm = tikutils.determinant_normalizer(raw_prior )
     assert np.allclose(raw_prior / detnorm, oprior)
 
     # set a non-diagonal wishart prior
@@ -217,11 +217,11 @@ def test_prior_from_penalty():
     prior.set_wishart(W)
     assert np.allclose(prior.wishart, W)
     # check the update works
-    prior.get_prior(hyperhyper=2.0, dodetnorm=True)
+    oprior = prior.get_prior(hyperhyper=2.0, dodetnorm=True)
     raw_prior = np.linalg.inv(raw_penalty + 2.0*W)
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
     detnorm = tikutils.determinant_normalizer(raw_prior )
-    assert np.allclose(raw_prior / detnorm, prior.asarray)
+    assert np.allclose(raw_prior / detnorm, oprior)
 
 
 def test_smoothness_prior():
@@ -243,9 +243,9 @@ def test_smoothness_prior():
         assert np.allclose(raw_prior, prior.asarray)
 
         # update regularizer
-        prior.get_prior(hyperhyper=2.0, dodetnorm=False)
+        oprior = prior.get_prior(hyperhyper=2.0, dodetnorm=False)
         raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(ndelays))
-        assert np.allclose(raw_prior, prior.asarray)
+        assert np.allclose(raw_prior, oprior)
 
     # check delay sub-selection
     delays = np.asarray([1,3,6,8])
@@ -257,7 +257,7 @@ def test_smoothness_prior():
 
     # create object
     prior = tp.SmoothnessPrior(delays=delays, order=order)
-    assert np.allclose(prior.asarray.shape, (ndelays,ndelays))
+    assert np.allclose(prior.get_prior().shape, (ndelays,ndelays))
     assert np.allclose(prior.penalty.shape, len(fulldelays), len(fulldelays))
     assert np.allclose(prior.penalty, raw_penalty)
 
@@ -268,10 +268,10 @@ def test_smoothness_prior():
     assert np.allclose(raw_prior, prior.asarray)
 
     # update regularizer
-    prior.get_prior(hyperhyper=2.0, dodetnorm=False)
+    oprior = prior.get_prior(hyperhyper=2.0, dodetnorm=False)
     raw_prior = np.linalg.inv(raw_penalty + 2.0*np.eye(len(fulldelays)))
     raw_prior = tikutils.fast_indexing(raw_prior, delays, delays)
-    assert np.allclose(raw_prior, prior.asarray)
+    assert np.allclose(raw_prior, oprior)
 
 
 def test_gaussian_kernel_prior():
