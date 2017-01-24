@@ -30,7 +30,7 @@ def test_generators(N=100, testpct=0.2, nchunks=5, nfolds=5):
     ntest = int(N*(1./nfolds))
     ntrain = N - ntest
     alltrn = []
-    folds = tikutils.generate_trntest_folds(N, 'cv', testpct=testpct,
+    folds = tikutils.generate_trnval_folds(N, 'cv', testpct=testpct,
                                             nfolds=nfolds, nchunks=nchunks)
     for idx, (trn, val) in enumerate(folds):
         # none of the trn is in the val
@@ -43,7 +43,7 @@ def test_generators(N=100, testpct=0.2, nchunks=5, nfolds=5):
     ntrain = int(np.ceil(N - ntest))
     remainder = np.mod(ntrain, nchunks)
     nfolds = 10
-    folds = tikutils.generate_trntest_folds(N, 'nbb', nfolds=nfolds,
+    folds = tikutils.generate_trnval_folds(N, 'nbb', nfolds=nfolds,
                                             testpct=testpct, nchunks=nchunks)
     for idx, (trn, val) in enumerate(folds):
         # none of the trn is in the val
@@ -53,7 +53,7 @@ def test_generators(N=100, testpct=0.2, nchunks=5, nfolds=5):
     assert idx+1 == nfolds
 
     nfolds = 100
-    folds = tikutils.generate_trntest_folds(N, 'mbb', nfolds=nfolds,
+    folds = tikutils.generate_trnval_folds(N, 'mbb', nfolds=nfolds,
                                             testpct=testpct, nchunks=nchunks)
     for idx, (trn, val) in enumerate(folds):
         # none of the trn is in the val

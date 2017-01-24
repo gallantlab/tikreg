@@ -373,7 +373,7 @@ def columnwise_correlation(y, ypred, zscorea=True, zscoreb=True, axis=0):
 
 
 
-def generate_trntest_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
+def generate_trnval_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
     '''
     N : int
         The number of samples in the training set
@@ -396,9 +396,9 @@ def generate_trntest_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
         np.random.shuffle(samples)
         sets = np.array_split(np.arange(len(samples)), nfolds)
         for i,v in enumerate(sets):
-            test = np.asarray(append([samples[t] for t in v]))
-            train = allidx[~np.in1d(allidx, test)]
-            yield train, test
+            val = np.asarray(append([samples[t] for t in v]))
+            train = allidx[~np.in1d(allidx, val)]
+            yield train, val
     elif sampler == 'bcv':
         # Repeat the cross-validation N times
         assert isinstance(nfolds, tuple)
@@ -407,16 +407,16 @@ def generate_trntest_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
             np.random.shuffle(samples)
             sets = np.array_split(np.arange(len(samples)), nfolds)
             for i,v in enumerate(sets):
-                test = np.asarray(append([samples[t] for t in v]))
-                train = allidx[~np.in1d(allidx, test)]
-                yield train, test
+                val = np.asarray(append([samples[t] for t in v]))
+                train = allidx[~np.in1d(allidx, val)]
+                yield train, val
 
     elif sampler == 'nbb' or sampler == 'mbb':
         fun = lambda x: [x[t] for t in np.random.randint(0, N, ntrain/nchunks)]
         for bdx in range(nfolds):
             train = np.asarray(append(fun(samples)))
-            test = allidx[~np.in1d(allidx, train)]
-            yield train, test
+            val = allidx[~np.in1d(allidx, train)]
+            yield train, val
 
 
 

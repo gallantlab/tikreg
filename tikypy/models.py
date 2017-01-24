@@ -358,7 +358,7 @@ def kernel_cvridge(Ktrain, Ytrain,
 
     n = Ktrain.shape[0]
     if not isinstance(folds, list):
-        folds = tikutils.generate_trntest_folds(n, sampler=folds,
+        folds = tikutils.generate_trnval_folds(n, sampler=folds,
                                             nfolds=nfolds,
                                             testpct=1-trainpct,
                                             nchunks=blocklen)
@@ -521,7 +521,7 @@ def cvridge(Xtrain, Ytrain,
     n, p = Xtrain.shape
 
     if not isinstance(folds, list):
-        folds = tikutils.generate_trntest_folds(n, sampler=folds,
+        folds = tikutils.generate_trnval_folds(n, sampler=folds,
                                             nfolds=nfolds,
                                             testpct=1-trainpct,
                                             nchunks=blocklen)
