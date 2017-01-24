@@ -101,13 +101,11 @@ def fast_indexing(a, rows, cols=None):
     return a.take(idx)
 
 
-def determinant_normalizer(mat, thresh=1e-08):
+def determinant_normalizer(mat):
     '''get the (pseudo-) determinant of the matrix
     '''
-    evals = np.linalg.eigvalsh(mat)
-    gdx = evals > thresh
-    det = np.prod(evals[gdx])
-    return det**(1./gdx.sum())
+    logdet = np.linalg.slogdet(mat)[1]
+    return np.exp(logdet * (1. / mat.shape[0]))
 
 
 def delay2slice(delay):

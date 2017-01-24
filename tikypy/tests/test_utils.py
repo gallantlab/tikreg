@@ -2,6 +2,14 @@ import numpy as np
 
 import tikypy.utils as tikutils
 
+def test_determinant_normalizer():
+    mat = np.random.randn(100,100)
+    mat = np.dot(mat.T, mat)
+    evals = np.linalg.eigvalsh(mat)
+    det = np.prod(evals)
+    det = det**(1./len(evals))
+    assert np.allclose(tikutils.determinant_normalizer(mat), det)
+
 def test_fast_indexing():
     D = np.random.randn(1000, 1000)
     rows = np.random.randint(0, 1000, (400))
