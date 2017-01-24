@@ -1,7 +1,8 @@
+from collections import defaultdict as ddic
+import itertools
+
 import numpy as np
 from scipy import linalg as LA
-
-from collections import defaultdict as ddic
 from scipy.linalg import cho_factor, cho_solve
 
 
@@ -713,6 +714,136 @@ def _generalized_tikhonov_dual(X, Y, Li, ridge=10.0):
     weights = np.dot(A.T, rlambdas)
     betas = np.dot(Li, weights)
     return betas
+
+
+
+def spatiotemporal_mvn_prior_regression(features_train,
+                                        responses_train,
+                                        features_test=None,
+                                        responses_test=None,
+                                        ridges=np.logspace(0,3,10),
+                                        delays=[0],
+                                        temporal_prior=None,
+                                        feature_priors=None,
+                                        weights=False,
+                                        predictions=False,
+                                        performance=True,
+                                        noise_ceiling_correction=False,
+                                        mean_cv_only=False,
+                                        nfolds=(1,5),
+                                        method='SVD',
+                                        verbosity=1,
+                                        ):
+    '''
+    '''
+    if isinstance(verbosity, bool):
+        verbosity = 1 if verbosity else 0
+    if isinstance(features_train, np.ndarray):
+        features_train = [features_train]
+    if isinstance(features_test, np.ndarray) or (features_test is None):
+        features_test = [features_test]
+
+    nridges = len(ridges)
+    ndelays = len(delays)
+    nfeatures = [fs.shape[1] for fs in features_train]
+    nresponses = responses_train.shape[-1]
+    ntrain = responses_train.shape[0]
+
+    if np.isscalar(nfolds):
+        # 1x n-fold cross-validation
+        nfolds = (1, nfolds)
+    folds = tikutils.generate_trnval_folds(ntrain,
+                                           sampler='bcv',
+                                           nfolds=nfolds)
+    folds = list(folds)
+    nfolds = np.prod(nfolds)
+
+
+    all_temporal_hhparams = [temporal_prior.get_hhparams()]
+    all_spatial_hyparams= [t.get_hyperparameters() for t in feature_priors]
+    all_hyperparams = list(itertools.product(*(all_temporal_hhparams + all_spatial_hyparams)))
+    nall_cvparams = len(all_hyperparams)
+
+    ntemporal_hhparams = np.prod([len(t) for t in all_temporal_hhparams])
+    nspatial_hyparams = np.prod([len(t) for t in all_spatial_hyparams])
+
+    results = np.zeros((nfolds,
+                        ntemporal_hhparams,
+                        nspatial_hyparams,
+                        nridges,
+                        1 if mean_cv_only else responses_train.shape[-1]),
+                       )
+
+    for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
+        temporal_hhparam = spatiotemporal_hyperparams[0]
+        spatial_hyparams = spatiotemporal_hyperparams[1:]
+        spatial_hyparams /= np.linalg.norm(spatial_hyparams)
+
+        # get indices
+        shyperidx = np.mod(hyperidx, nspatial_hyparams)
+        thyperidx = int(hyperidx // nspatial_hyparams)
+        this_temporal_prior = temporal_prior.get_prior(hhparam=temporal_hhparam)
+
+        if verbosity:
+            hyperdesc = (hyperidx+1, nall_cvparams,
+                         thyperidx+1, ntemporal_hhparams, temporal_hhparam,
+                         shyperidx+1, nspatial_hyparams) + tuple(spatial_hyparams)
+            hypertxt = "%i/%i: temporal %i/%i=%0.03f, "
+            hypertxt += "features %i/%i=(%0.04f, "
+            hypertxt += ', '.join(["%0.04f"]*(len(spatial_hyparams)-1)) + ')'
+            print(hypertxt % hyperdesc)
+
+        Ktrain = 0.0
+        for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
+                                                                          features_test,
+                                                                          feature_priors,
+                                                                          spatial_hyparams)):
+            kernel_train = kernel_spatiotemporal_prior(fs_train,
+                                                       this_temporal_prior,
+                                                       fs_prior.get_prior(fs_hyper),
+                                                       delays=delays)
+            Ktrain += kernel_train
+
+        kernel_normalizer = tikutils.determinant_normalizer(Ktrain)
+        Ktrain /= kernel_normalizer
+
+        # cross-validation
+        for ifold, (trnidx, validx) in enumerate(folds):
+            ktrn = tikutils.fast_indexing(Ktrain, trnidx, trnidx)
+            kval = tikutils.fast_indexing(Ktrain, validx, trnidx)
+
+            if verbosity > 1:
+                txt = (ifold+1,nfolds,len(trnidx),len(validx))
+                print('train fold  %i/%i: ntrain=%i, ntest=%i'%txt)
+
+
+            fit = solve_l2_dual(ktrn, responses_train[trnidx],
+                                kval, responses_train[validx],
+                                ridges=ridges,
+                                performance=True,
+                                verbose=verbosity > 1,
+                                method=method,
+                                )
+            if mean_cv_only:
+                cvfold = np.nan_to_num(fit['performance']).mean(-1)[...,None]
+            else:
+                cvfold = fit['performance']
+            results[ifold, thyperidx, shyperidx] = cvfold
+
+        if verbosity:
+            # performance for this hyperparameter set
+            perf = nan_to_num(results[:,thyperidx,shyperidx].mean(0))
+            group_ridge = ridges[np.argmax(perf.mean(-1))]
+            contents = (group_ridge, np.mean(perf),
+                        np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
+                        np.sum(perf < 0.25), np.sum(perf > 0.75))
+            txt = "pop.cv.best: %6.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
+            txt += "(0.2<r>0.8): (%03i,%03i)\n"
+            print(txt % contents)
+
+
+
+    return results
 
 
 

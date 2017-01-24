@@ -82,7 +82,7 @@ def test_mkl_ols():
             spatial_hyperparams = spatiotemporal_hyperparams[1:]
 
             this_temporal_prior = temporal_prior.get_prior(alpha=1.0,
-                                                           hyperhyper=temporal_hyperparam)
+                                                           hhparam=temporal_hyperparam)
 
             for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
                                                                               features_test,
@@ -162,10 +162,7 @@ def test_cv_api(show_figures=False, ntest=50):
         # get all combinations of hyperparameters
         all_hyperparams = list(itertools.product(*(all_temporal_hypers + all_spatial_hypers)))
         nspatial_hyperparams = np.prod([len(t) for t in all_spatial_hypers])
-
         ntemporal_hyperparams = np.prod([len(t) for t in all_temporal_hypers])
-        Ktrain = 0.
-        Kval = 0.
 
         mean_cv_only = False
         results = np.zeros((nfolds,
@@ -190,7 +187,7 @@ def test_cv_api(show_figures=False, ntest=50):
             thyperidx = int(hyperidx // nspatial_hyperparams)
             print (thyperidx, temporal_hyperparam), (shyperidx, spatial_hyperparams)
 
-            this_temporal_prior = temporal_prior.get_prior(alpha=1.0, hyperhyper=temporal_hyperparam)
+            this_temporal_prior = temporal_prior.get_prior(alpha=1.0, hhparam=temporal_hyperparam)
 
             if show_figures:
                 from matplotlib import pyplot as plt
@@ -214,6 +211,9 @@ def test_cv_api(show_figures=False, ntest=50):
             # only run a few
             if hyperidx > ntest:
                 continue
+
+            Ktrain = 0.
+            Kval = 0.
 
             for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
                                                                               features_test,
@@ -244,3 +244,49 @@ def test_cv_api(show_figures=False, ntest=50):
                 else:
                     cvfold = fit['performance']
                 results[ifold, thyperidx, shyperidx] = cvfold
+
+
+def test_stmvn_prior(method='SVD'):
+    ridges = np.logspace(0,3,5)
+    nridges = len(ridges)
+    ndelays = 10
+    delays = range(ndelays)
+
+
+    features_train, features_test, responses_train, responses_test = get_abc_data()
+    features_sizes = [fs.shape[1] for fs in features_train]
+
+    spatial_priors = [sps.SphericalPrior(features_sizes[0]),
+                      sps.SphericalPrior(features_sizes[1], hyperparameters=np.logspace(-3,3,7)),
+                      sps.SphericalPrior(features_sizes[2], hyperparameters=np.logspace(-3,3,7)),
+                      ]
+
+    # do not scale first. this removes duplicates
+    spatial_priors[0].set_hyperparameters(1.0)
+
+    # non-diagonal hyper-prior
+    W = np.random.randn(ndelays, ndelays)
+    W = np.dot(W.T, W)
+
+    tpriors = [tps.SphericalPrior(delays),
+               tps.SmoothnessPrior(delays, hhparams=np.logspace(-3,1,5)),
+               tps.SmoothnessPrior(delays, wishart=True),
+               tps.SmoothnessPrior(delays, wishart=False),
+               tps.SmoothnessPrior(delays, wishart=W, hhparams=np.logspace(-3,3,5)),
+               tps.GaussianKernelPrior(delays, hhparams=np.linspace(1,ndelays/2,ndelays)),
+               tps.HRFPrior([1] if delays == [0] else delays),
+               ]
+
+
+    from tikypy import models
+    reload(models)
+    res = models.spatiotemporal_mvn_prior_regression(features_train,
+                                                     responses_train,
+                                                     delays=delays,
+                                                     temporal_prior=tpriors[1],
+                                                     feature_priors=spatial_priors,
+                                                     nfolds=(1,5),
+                                                     ridges=ridges,
+                                                     verbosity=2,
+                                                     method=method,
+                                                     )
