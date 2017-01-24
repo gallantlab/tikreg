@@ -33,7 +33,7 @@ class SphericalPrior(BasePrior):
         super(SphericalPrior, self).__init__(raw_prior, **kwargs)
 
     def get_prior(self, alpha=1.0):
-        return alpha*self.prior
+        return alpha*self.asarray
 
 
 class PriorFromPenalty(BasePrior):
@@ -76,9 +76,8 @@ class PriorFromPenalty(BasePrior):
         '''
         # compute prior
         prior = np.linalg.inv(self.penalty + wishart_lambda*self.wishart)
-        # update object prior
-        self.prior = prior
 
         if dodetnorm:
-            # normalize
-            self.normalize_prior()
+            prior /= tikutils.determinant_normalizer(prior)
+
+        return alpha*prior

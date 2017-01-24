@@ -44,8 +44,12 @@ class BasePrior(object):
         self.penalty_detnorm = tikutils.determinant_normalizer(self.penalty)
         self.penalty /= self.penalty_detnorm
 
-    def get_prior(self, alpha=1.0, **kwargs):
-        return alpha*self.asarray
+    def get_prior(self, alpha=1.0, dodetnorm=False, **kwargs):
+        if dodetnorm:
+            prior = self.asarray / tikutils.determinant_normalizer(self.asarray)
+        else:
+            prior = self.asarray
+        return alpha*prior
 
     def set_hyperparameters(self, hyperparameters):
         if np.isscalar(hyperparameters):
