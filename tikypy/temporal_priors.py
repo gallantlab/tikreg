@@ -23,16 +23,24 @@ def get_delays_from_prior(raw_prior, delays):
 class TemporalPrior(BasePrior):
     '''Basic temporal prior
     '''
-    def __init__(self, prior, delays=None, **kwargs):
+    def __init__(self, prior, delays=None, hhparams=[1.0], **kwargs):
         '''
         '''
         prior, delays = get_delays_from_prior(prior, delays)
         self.delays = delays
         self.ndelays = len(delays)
+        self.hhparams = np.atleast_1d(hhparams)
+
         super(TemporalPrior, self).__init__(prior, **kwargs)
 
-    def get_hyperparameters(self):
-        return np.asarray([1.0])
+    def set_hhparameters(self, hhparams):
+        if np.isscalar(hhparams):
+            hhparams = np.atleast_1d(hhparams)
+        self.hhparams = hhparams
+
+    def get_hhparams(self):
+        return self.hhparams
+
 
 
 class CustomPrior(TemporalPrior):
@@ -73,30 +81,25 @@ class PriorFromPenalty(TemporalPrior):
         # compute prior
         self.prior = self.get_prior(alpha=1.0)
 
-
-
     def set_wishart(self, wishart):
         if isinstance(wishart, BasePrior):
             wishart = wishart.asarray
         assert np.allclose(wishart.shape, self.penalty.shape)
         self.wishart = wishart
 
-
     def get_prior(self, alpha=1.0, hyperhyper=0.0, dodetnorm=False):
         '''
         '''
         # compute prior
         prior = np.linalg.inv(self.penalty + hyperhyper*self.wishart)
+
         # select requested delays from prior
         prior, delays = get_delays_from_prior(prior, self.delays)
-        # update object prior
-        self.prior = prior
 
         if dodetnorm:
-            # normalize
-            self.normalize_prior()
+            prior /= tikutils.determinant_normalizer(prior)
 
-        return alpha*self.prior
+        return alpha*prior
 
 class SmoothnessPrior(PriorFromPenalty):
     '''
@@ -163,11 +166,8 @@ class GaussianKernelPrior(TemporalPrior):
         prior = self.kernel_object.kernel
         # select requested delays from prior
         prior, delays = get_delays_from_prior(prior, self.delays)
-        # update object prior
-        self.prior = prior
 
         if dodetnorm:
-            # normalize
-            self.normalize_prior()
+            prior /= tikutils.determinant_normalizer(prior)
 
-        return alpha*self.prior
+        return alpha*prior
