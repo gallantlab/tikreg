@@ -119,7 +119,7 @@ def test_mkl_ols():
             assert np.allclose(weights[0], direct_fit['weights'])
 
 
-def test_cv_api(show_figures=False):
+def test_cv_api(show_figures=False, ntest=50):
     ridges = [0., 1e-03, 1., 10.0, 100.]
     nridges = len(ridges)
     ndelays = 10
@@ -128,7 +128,7 @@ def test_cv_api(show_figures=False):
     features_train, features_test, responses_train, responses_test = get_abc_data()
     features_sizes = [fs.shape[1] for fs in features_train]
 
-    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyperparameters=np.logspace(-3,3,7)),
+    spatial_priors = [sps.SphericalPrior(features_sizes[0]),
                       sps.SphericalPrior(features_sizes[1], hyperparameters=np.logspace(-3,3,7)),
                       sps.SphericalPrior(features_sizes[2], hyperparameters=np.logspace(-3,3,7)),
                       ]
@@ -140,20 +140,20 @@ def test_cv_api(show_figures=False):
     W = np.random.randn(ndelays, ndelays)
     W = np.dot(W.T, W)
 
-    tpriors = [tps.SmoothnessPrior(delays, hhparams=np.logspace(-3,1,8)),
+    tpriors = [tps.SphericalPrior(delays),
+               tps.SmoothnessPrior(delays, hhparams=np.logspace(-3,1,8)),
                tps.SmoothnessPrior(delays, wishart=True),
                tps.SmoothnessPrior(delays, wishart=False),
                tps.SmoothnessPrior(delays, wishart=W, hhparams=np.logspace(-3,3,5)),
                tps.GaussianKernelPrior(delays, hhparams=np.linspace(1,ndelays/2,ndelays)),
                tps.HRFPrior([1] if delays == [0] else delays),
-               tps.SphericalPrior(delays),
                ]
 
-    nfolds = (2,5)                      # 2x 5-fold cross-validation
+    nfolds = (1,5)                      # x times 5-fold cross-validation
     folds = tikutils.generate_trnval_folds(responses_train.shape[0], sampler='bcv', nfolds=nfolds)
     nfolds = np.prod(nfolds)
 
-    for temporal_prior in tpriors:
+    for ntp, temporal_prior in enumerate(tpriors):
         print(temporal_prior)
 
         all_temporal_hypers = [temporal_prior.get_hhparams()]
@@ -195,7 +195,7 @@ def test_cv_api(show_figures=False):
             if show_figures:
                 from matplotlib import pyplot as plt
 
-                if (hyperidx == 0) and (thyperidx == 0):
+                if (hyperidx == 0) and (ntp == 0):
                     # show points in 3D
                     from tikypy import priors
                     cartesian_points = [t[1:]/np.linalg.norm(t[1:]) for t in all_hyperparams]
@@ -205,14 +205,14 @@ def test_cv_api(show_figures=False):
                 if hyperidx == 0:
                     # show priors with different hyper-priors
                     oldthyper = 0
-                    st.symmatshow(this_temporal_prior)
+                    plt.matshow(this_temporal_prior, cmap='inferno')
                 else:
                     if thyperidx > oldthyper:
                         oldthyper = thyperidx
-                        plt.matshow(this_temporal_prior)
+                        plt.matshow(this_temporal_prior, cmap='inferno')
 
             # only run a few
-            if hyperidx > 20:
+            if hyperidx > ntest:
                 continue
 
             for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
