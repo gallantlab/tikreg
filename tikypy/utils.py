@@ -431,3 +431,52 @@ def fast_indexing(a, rows, cols=None):
         cols = np.arange(a.shape[-1])
     idx = rows.reshape(-1,1)*a.shape[1] + cols
     return a.take(idx)
+
+def hrf_convolution(input_responses, HRF=None, do_convolution=True, dt=None):
+    '''Convolve a series of impulses in a matrix with a given HRF
+
+    Parameters
+    ----------
+    input_responses (n by p)
+         A matrix containing ``p`` impulse time courses of length ``n``.
+    HRF (m, or None)
+         The HRF to convolve the impulses with. If ``None`` we will
+         use the canonical given by :func:`hrf`
+    dt (scalar)
+         The sampling rate. This is only used to get the hemodynamic response
+         function to convolve with if ``HRF`` is None.
+    do_convolution (bool, or list of bools (p,))
+         This tells us which responses to convolve and which to leave alone
+         Defaults to ``True``, which convolves all responses
+
+    Returns
+    --------
+    bold (n by p)
+         The convolved impulses
+
+    Examples
+    ----------
+    >>> impulses = np.zeros((100, 2))
+    >>> impulses[5, 0] = 1
+    >>> impulses[25, 1] = 1
+    >>> bold = hrf_convolution(impulses, dt=1.0) # Default peak at 6s
+    '''
+    if input_responses.ndim == 1:
+        input_responses = input_responses[...,None]
+
+    bold = np.zeros_like(input_responses).astype(np.float)
+    nresp = input_responses.shape[-1]
+
+    if HRF is None:
+        HRF = hrf_default_basis(dt=dt)[:, 0]
+
+    if do_convolution is True:
+        do_convolution = [True]*nresp
+    for sidx in xrange(nresp):
+        signal = input_responses[:, sidx]
+        if do_convolution[sidx]:
+            conv = np.convolve(signal, HRF, 'full')[:len(signal)]
+        else:
+            conv = 0.0
+        bold[:, sidx] = conv
+    return bold

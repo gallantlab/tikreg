@@ -49,7 +49,7 @@ class BasePrior(object):
             prior = self.asarray / tikutils.determinant_normalizer(self.asarray)
         else:
             prior = self.asarray
-        return alpha*prior
+        return alpha**2 * prior
 
     def set_hyperparameters(self, hyperparameters):
         if np.isscalar(hyperparameters):

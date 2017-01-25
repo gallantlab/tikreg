@@ -9,7 +9,47 @@ from tikypy import (models,
                     )
 
 
-def get_abc_data():
+def get_abc_data(banded=True):
+    from scipy.stats import zscore
+
+    if banded:
+        weights = np.asarray([1.0, 100.0, 10000.])
+    else:
+        weights = np.ones(3)
+
+    weights /= np.linalg.norm(weights)
+
+    Aw, (A, Atest), (Yat, Yav) = tikutils.generate_data(n=100, p=50, v=20, testsize=50,
+                                                        feature_sparsity=0.5, noise=0.)
+    Bw, (B, Btest), (Ybt, Ybv) = tikutils.generate_data(n=100, p=50, v=20, testsize=50,
+                                                        feature_sparsity=0.5, noise=0.)
+    Cw, (C, Ctest), (Yct, Ycv) = tikutils.generate_data(n=100, p=50, v=20, testsize=50,
+                                                        feature_sparsity=0.5, noise=0.)
+
+
+
+    responses_train = zscore(Yat*weights[0] + Ybt*weights[1] + Yct*weights[2])
+    responses_test = zscore(Yav*weights[0] + Ybv*weights[1] + Ycv*weights[2])
+
+    for rdx in xrange(responses_train.shape[-1]):
+        # different noise levels
+        noise = np.log(rdx + 1)
+        responses_train[:, rdx] += np.random.randn(responses_train.shape[0])*noise
+        responses_test[:, rdx] += np.random.randn(responses_test.shape[0])*noise
+    responses_train = tikutils.hrf_convolution(responses_train)
+    responses_test = tikutils.hrf_convolution(responses_test)
+
+    features_train = [A,B,C]
+    features_test = [Atest, Btest, Ctest]
+
+    return (features_train, features_test,
+            responses_train, responses_test)
+
+
+def test_mkl_ols():
+    ndelays=1
+    delays = range(ndelays)
+
     Af = np.random.randn(150, 10)
     Bf = np.random.randn(150, 20)
     Cf = np.random.randn(150, 30)
@@ -26,19 +66,9 @@ def get_abc_data():
     Yf = np.dot(Af, Aw) + np.dot(Bf, Bw) + np.dot(Cf, Cw)
     responses_train, responses_test = Yf[:100], Yf[100:]
 
-
     features_train = [A,B,C]
     features_test = [Atest, Btest, Ctest]
 
-    return (features_train, features_test,
-            responses_train, responses_test)
-
-
-def test_mkl_ols():
-    ndelays=1
-    delays = range(ndelays)
-
-    features_train, features_test, responses_train, responses_test = get_abc_data()
     features_sizes = [fs.shape[1] for fs in features_train]
 
     print('')
@@ -247,11 +277,10 @@ def test_cv_api(show_figures=False, ntest=50):
 
 
 def test_stmvn_prior(method='SVD'):
-    ridges = np.logspace(0,3,5)
+    ridges = np.logspace(0,1,5)
     nridges = len(ridges)
     ndelays = 10
     delays = range(ndelays)
-
 
     features_train, features_test, responses_train, responses_test = get_abc_data()
     features_sizes = [fs.shape[1] for fs in features_train]
@@ -269,24 +298,99 @@ def test_stmvn_prior(method='SVD'):
     W = np.dot(W.T, W)
 
     tpriors = [tps.SphericalPrior(delays),
-               tps.SmoothnessPrior(delays, hhparams=np.logspace(-3,1,5)),
+               tps.GaussianKernelPrior(delays, hhparams=np.linspace(1,ndelays/2,ndelays)),
+               tps.SmoothnessPrior(delays, hhparams=np.logspace(-3,1,4)),
+               tps.SmoothnessPrior(delays, wishart=W, hhparams=np.logspace(-3,3,5)),
                tps.SmoothnessPrior(delays, wishart=True),
                tps.SmoothnessPrior(delays, wishart=False),
-               tps.SmoothnessPrior(delays, wishart=W, hhparams=np.logspace(-3,3,5)),
-               tps.GaussianKernelPrior(delays, hhparams=np.linspace(1,ndelays/2,ndelays)),
                tps.HRFPrior([1] if delays == [0] else delays),
                ]
-
 
     from tikypy import models
     reload(models)
     res = models.spatiotemporal_mvn_prior_regression(features_train,
                                                      responses_train,
                                                      delays=delays,
-                                                     temporal_prior=tpriors[1],
+                                                     temporal_prior=tpriors[2],
                                                      feature_priors=spatial_priors,
                                                      folds=(1,5),
                                                      ridges=ridges,
-                                                     verbosity=2,
+                                                     verbosity=1,
                                                      method=method,
                                                      )
+
+    cvmean = res['cvresults'].mean(0)
+    population_optimal = False
+    if population_optimal is True:
+        cvmean = np.nan_to_num(cvmean).mean(-1)[...,None]
+
+    for idx in range(cvmean.shape[-1]):
+        tpopt, spopt = models.find_optimum_mvn(cvmean[...,idx],
+                                               res['temporal'],
+                                               res['spatial'],
+                                               )
+        print "temporal=%0.03f," % float(tpopt),
+        print "spatial=(%0.03f,%0.03f, %0.03f)"%tuple(spopt)
+
+    return res
+
+
+def test_ridge_solution(method='SVD'):
+    method = 'SVD'
+    ridges = np.logspace(0,1,5)
+    nridges = len(ridges)
+    ndelays = 10
+    delays = range(ndelays)
+
+    features_train, features_test, responses_train, responses_test = get_abc_data()
+    features_sizes = [fs.shape[1] for fs in features_train]
+
+    spatial_priors = [sps.SphericalPrior(features_sizes[0]),
+                      sps.SphericalPrior(features_sizes[1]),
+                      sps.SphericalPrior(features_sizes[2]),
+                      ]
+
+    reload(models)
+    tpriors = [tps.SphericalPrior(delays)]
+    folds = tikutils.generate_trnval_folds(responses_train.shape[0],
+                                           sampler='bcv',
+                                           nfolds=(1,5),
+                                           )
+    folds = list(folds)
+
+
+    normalize_ridges = False
+    res = models.spatiotemporal_mvn_prior_regression(features_train,
+                                                     responses_train,
+                                                     delays=[0],
+                                                     temporal_prior=tpriors[0],
+                                                     feature_priors=spatial_priors,
+                                                     folds=folds,
+                                                     ridges=ridges,
+                                                     verbosity=2,
+                                                     method=method,
+                                                     normalize_ridges=normalize_ridges,
+                                                     )
+
+    X = np.hstack(features_train)
+    K = np.dot(X, X.T)
+    kernel_norm_sqrt = np.sqrt(tikutils.determinant_normalizer(K))
+    if normalize_ridges:
+        nridges = ridges*kernel_norm_sqrt
+    else:
+        nridges = ridges*np.linalg.norm(np.ones(len(features_train)))
+
+    fit = models.cvridge(X,
+                         responses_train,
+                         folds=folds,
+                         ridges=nridges,
+                         verbose=True
+                         )
+    print(nridges)
+    print(res['spatial'].squeeze())
+    assert np.allclose(res['spatial'][0], res['spatial'][1])
+    assert np.allclose(res['spatial'][1], res['spatial'][2])
+    assert np.allclose(res['spatial'][2], res['spatial'][0])
+    # assert np.allclose(res['spatial'][0][1:], nridges)
+    assert np.allclose(fit['cvresults'].squeeze(), res['cvresults'].squeeze())
+    return res, fit

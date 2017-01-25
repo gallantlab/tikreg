@@ -717,18 +717,35 @@ def _generalized_tikhonov_dual(X, Y, Li, ridge=10.0):
 
 
 
+def find_optimum_mvn(response_cvmean, temporal_hhparams, spatial_hyparams):
+    '''
+    '''
+    optimum = np.unravel_index(np.argmax(response_cvmean),
+                               response_cvmean.shape)
+    temporal_argmax = optimum[0]
+    temporal_optimum = temporal_hhparams[temporal_argmax]
+
+    spatial_argmax = optimum[1:]
+    spatial_optimum = spatial_hyparams[:, spatial_argmax[0], spatial_argmax[1]]
+
+    return temporal_optimum, spatial_optimum
+
+
+
+
 def spatiotemporal_mvn_prior_regression(features_train,
                                         responses_train,
-                                        features_test=None,
-                                        responses_test=None,
+                                        # features_test=None,
+                                        # responses_test=None,
                                         ridges=np.logspace(0,3,10),
+                                        normalize_ridges=True,
                                         delays=[0],
                                         temporal_prior=None,
                                         feature_priors=None,
-                                        weights=False,
-                                        predictions=False,
+                                        # weights=False,
+                                        # predictions=False,
                                         performance=True,
-                                        noise_ceiling_correction=False,
+                                        # noise_ceiling_correction=False,
                                         mean_cv_only=False,
                                         folds=(1,5),
                                         method='SVD',
@@ -736,12 +753,15 @@ def spatiotemporal_mvn_prior_regression(features_train,
                                         ):
     '''
     '''
+    import time
+    start_time = time.time()
+
     if isinstance(verbosity, bool):
         verbosity = 1 if verbosity else 0
     if isinstance(features_train, np.ndarray):
         features_train = [features_train]
-    if isinstance(features_test, np.ndarray) or (features_test is None):
-        features_test = [features_test]
+    # if isinstance(features_test, np.ndarray) or (features_test is None):
+    #     features_test = [features_test]
 
     nridges = len(ridges)
     ndelays = len(delays)
@@ -749,13 +769,14 @@ def spatiotemporal_mvn_prior_regression(features_train,
     nresponses = responses_train.shape[-1]
     ntrain = responses_train.shape[0]
 
-
     if isinstance(folds, list):
         # pre-defined folds
         nfolds = len(folds)
     elif np.isscalar(folds):
         # 1x n-fold cross-validation
         nfolds = (1, folds)
+    else:
+        assert isinstance(folds, tuple)
 
     if isinstance(folds, tuple):
         # get cv folds
@@ -766,8 +787,6 @@ def spatiotemporal_mvn_prior_regression(features_train,
         nfolds = np.prod(nfolds)
 
     folds = list(folds)
-
-
 
     all_temporal_hhparams = [temporal_prior.get_hhparams()]
     all_spatial_hyparams= [t.get_hyperparameters() for t in feature_priors]
@@ -787,6 +806,7 @@ def spatiotemporal_mvn_prior_regression(features_train,
     for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
         temporal_hhparam = spatiotemporal_hyperparams[0]
         spatial_hyparams = spatiotemporal_hyperparams[1:]
+
         spatial_hyparams /= np.linalg.norm(spatial_hyparams)
 
         # get indices
@@ -804,18 +824,18 @@ def spatiotemporal_mvn_prior_regression(features_train,
             print(hypertxt % hyperdesc)
 
         Ktrain = 0.0
-        for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
-                                                                          features_test,
-                                                                          feature_priors,
-                                                                          spatial_hyparams)):
+        for fdx, (fs_train, fs_prior, fs_hyper) in enumerate(zip(features_train,
+                                                                 feature_priors,
+                                                                 spatial_hyparams)):
             kernel_train = kernel_spatiotemporal_prior(fs_train,
                                                        this_temporal_prior,
                                                        fs_prior.get_prior(fs_hyper),
                                                        delays=delays)
             Ktrain += kernel_train
 
-        kernel_normalizer = tikutils.determinant_normalizer(Ktrain)
-        Ktrain /= kernel_normalizer
+        if normalize_ridges:
+            kernel_normalizer = tikutils.determinant_normalizer(Ktrain)
+            Ktrain /= kernel_normalizer
 
         # cross-validation
         for ifold, (trnidx, validx) in enumerate(folds):
@@ -825,7 +845,6 @@ def spatiotemporal_mvn_prior_regression(features_train,
             if verbosity > 1:
                 txt = (ifold+1,nfolds,len(trnidx),len(validx))
                 print('train fold  %i/%i: ntrain=%i, ntest=%i'%txt)
-
 
             fit = solve_l2_dual(ktrn, responses_train[trnidx],
                                 kval, responses_train[validx],
@@ -851,10 +870,34 @@ def spatiotemporal_mvn_prior_regression(features_train,
             txt += "(0.2<r>0.8): (%03i,%03i)\n"
             print(txt % contents)
 
+    sp_hyparams = list(itertools.product(*all_spatial_hyparams))
+    sp_hyparams = np.asarray([t / np.linalg.norm(t) for t in sp_hyparams])
+
+    if normalize_ridges:
+        # un-do the normalizations
+        norm_factor = np.linalg.norm(np.ones(len(features_train)))**2
+        norm_factor *= np.sqrt(kernel_normalizer)
+    else:
+        norm_factor = np.linalg.norm(np.ones(len(features_train)))
 
 
-    return results
+    sp_hyparams = np.asarray([np.asarray(sp_hyparams)*ridge*norm_factor for ridge in ridges]).T
 
+    dims = (('nfolds', nfolds),
+            ('ntemporal_hhparams', ntemporal_hhparams),
+            ('nspatial_hyparams', nspatial_hyparams),
+            ('nridges', nridges),
+            ('nresponses', results.shape[-1]),
+            ),
+
+    if verbosity:
+        print('Duration %0.04f[mins]' % ((time.time()-start_time)/60.))
+
+    return {'cvresults' : results,
+            'dims' : dims,
+            'spatial' : sp_hyparams,
+            'temporal' : temporal_prior.get_hhparams(),
+            }
 
 
 
