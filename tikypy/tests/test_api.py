@@ -46,10 +46,13 @@ def get_abc_data(banded=True):
             responses_train, responses_test)
 
 
-def test_mkl_ols():
-    ndelays=1
-    delays = range(ndelays)
+def test_ols():
+    # test we can get OLS solution
+    delays = [0]
+    ndelays = len(delays)
 
+    # make some features and signal for which we know
+    # the optimal ridge parameter is zero
     Af = np.random.randn(150, 10)
     Bf = np.random.randn(150, 20)
     Cf = np.random.randn(150, 30)
@@ -68,29 +71,33 @@ def test_mkl_ols():
 
     features_train = [A,B,C]
     features_test = [Atest, Btest, Ctest]
-
     features_sizes = [fs.shape[1] for fs in features_train]
 
-    print('')
+    # solve for OLS using L2 machinery
     direct_fit = models.solve_l2_primal(tikutils.delay_signal(np.hstack(features_train), delays),
                                         responses_train,
                                         tikutils.delay_signal(np.hstack(features_test), delays),
                                         responses_test,
                                         verbose=True,
-                                        weights=True, performance=True)
+                                        ridges=[0.],
+                                        weights=True,
+                                        performance=True,
+                                        predictions=True)
 
-    spatial_priors = [sps.SphericalPrior(features_sizes[0]),
-                      sps.SphericalPrior(features_sizes[1]),
-                      sps.SphericalPrior(features_sizes[2]),
+    # create feature priors
+    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyperparameters=[1]),
+                      sps.SphericalPrior(features_sizes[1], hyperparameters=[1]),
+                      sps.SphericalPrior(features_sizes[2], hyperparameters=[1]),
                       ]
 
 
+    # test all priors
     tpriors = [tps.SmoothnessPrior(delays),
                tps.SmoothnessPrior(delays, wishart=True),
                tps.SmoothnessPrior(delays, wishart=False),
                tps.SmoothnessPrior(delays, wishart=np.eye(len(delays))),
                tps.GaussianKernelPrior(delays, sigma=2.0),
-               tps.HRFPrior([1] if delays == [0] else delays),
+               tps.HRFPrior([1] if delays == [0] else delays), # b/c delay at 0 has no covariance
                tps.SphericalPrior(delays),
                ]
 
@@ -136,20 +143,28 @@ def test_mkl_ols():
                                        Ktest, responses_test,
                                        ridges=[0., 1e-03, 1., 10.0, 100.],
                                        verbose=True,
-                                       weights=True, performance=True)
+                                       weights=True,
+                                       performance=True,
+                                       predictions=True)
 
 
+            # make sure we can predict perfectly
             assert np.allclose(fit['performance'][0], 1.)
 
+            # get the feature weights from the kernel weights
             weights = np.tensordot(tikutils.delay_signal(np.hstack(features_train), delays).T,
                                    fit['weights'], (1,1)).swapaxes(0,1)
             if not np.allclose(this_temporal_prior, 1):
-                # scale weights
+                # scale weights to account for temporal hyper-prior scale
                 weights *= this_temporal_prior
             assert np.allclose(weights[0], direct_fit['weights'])
+            assert np.allclose(fit['predictions'][0], direct_fit['predictions'].squeeze())
 
 
 def test_cv_api(show_figures=False, ntest=50):
+    # if show_figures=True, this function will create
+    # images of the temporal priors, and the feature prior hyperparameters in 3D
+
     ridges = [0., 1e-03, 1., 10.0, 100.]
     nridges = len(ridges)
     ndelays = 10
@@ -179,7 +194,7 @@ def test_cv_api(show_figures=False, ntest=50):
                tps.HRFPrior([1] if delays == [0] else delays),
                ]
 
-    nfolds = (1,5)                      # x times 5-fold cross-validation
+    nfolds = (1,5)                      # 1 times 5-fold cross-validation
     folds = tikutils.generate_trnval_folds(responses_train.shape[0], sampler='bcv', nfolds=nfolds)
     nfolds = np.prod(nfolds)
 
@@ -319,6 +334,7 @@ def test_stmvn_prior(method='SVD'):
                                                      method=method,
                                                      )
 
+    # find optima
     cvmean = res['cvresults'].mean(0)
     population_optimal = False
     if population_optimal is True:
@@ -335,8 +351,8 @@ def test_stmvn_prior(method='SVD'):
     return res
 
 
-def test_ridge_solution(method='SVD'):
-    method = 'SVD'
+def test_ridge_solution(normalize_ridges=True, method='SVD'):
+    # make sure we can recover the ridge solution
     ridges = np.logspace(0,1,5)
     nridges = len(ridges)
     ndelays = 10
@@ -359,7 +375,7 @@ def test_ridge_solution(method='SVD'):
     folds = list(folds)
 
 
-    normalize_ridges = False
+
     res = models.spatiotemporal_mvn_prior_regression(features_train,
                                                      responses_train,
                                                      delays=[0],
@@ -391,6 +407,21 @@ def test_ridge_solution(method='SVD'):
     assert np.allclose(res['spatial'][0], res['spatial'][1])
     assert np.allclose(res['spatial'][1], res['spatial'][2])
     assert np.allclose(res['spatial'][2], res['spatial'][0])
-    # assert np.allclose(res['spatial'][0][1:], nridges)
+    assert np.allclose(res['spatial'][0], nridges)
     assert np.allclose(fit['cvresults'].squeeze(), res['cvresults'].squeeze())
     return res, fit
+
+def test_ridge_solution_raw():
+    # make sure we recover the ridge solution
+    # when we don't normalize hyperparameters
+    test_ridge_solution(normalize_ridges=False)
+
+
+def test_ridge_solution_chol():
+    # test the ridge solution recovery using cholesky decomposition
+    test_ridge_solution(normalize_ridges=True, method='Chol')
+
+def test_ridge_solution_raw_chol():
+    # test the ridge solution recovery using cholesky decomposition
+    # and no kernel normalizations
+    test_ridge_solution(normalize_ridges=False, method='Chol')

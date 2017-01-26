@@ -769,17 +769,19 @@ def spatiotemporal_mvn_prior_regression(features_train,
     nresponses = responses_train.shape[-1]
     ntrain = responses_train.shape[0]
 
+    #### handle cross-validation folds options
     if isinstance(folds, list):
         # pre-defined folds
         nfolds = len(folds)
     elif np.isscalar(folds):
-        # 1x n-fold cross-validation
+        # do k-fold cross-validation only once
         nfolds = (1, folds)
     else:
+        # do k-fold cross-validation N times
         assert isinstance(folds, tuple)
 
     if isinstance(folds, tuple):
-        # get cv folds
+        # get cv folds (train, val) indeces
         nfolds = folds
         folds = tikutils.generate_trnval_folds(ntrain,
                                                sampler='bcv',
@@ -788,14 +790,19 @@ def spatiotemporal_mvn_prior_regression(features_train,
 
     folds = list(folds)
 
+    # get temporal hyper-prior hyper-parameters from object
     all_temporal_hhparams = [temporal_prior.get_hhparams()]
+    # get feature prior hyper parameters
     all_spatial_hyparams= [t.get_hyperparameters() for t in feature_priors]
+    # all combinations
     all_hyperparams = list(itertools.product(*(all_temporal_hhparams + all_spatial_hyparams)))
     nall_cvparams = len(all_hyperparams)
 
+    # count parametres
     ntemporal_hhparams = np.prod([len(t) for t in all_temporal_hhparams])
     nspatial_hyparams = np.prod([len(t) for t in all_spatial_hyparams])
 
+    # store cross-validation performance
     results = np.zeros((nfolds,
                         ntemporal_hhparams,
                         nspatial_hyparams,
@@ -803,16 +810,20 @@ def spatiotemporal_mvn_prior_regression(features_train,
                         1 if mean_cv_only else responses_train.shape[-1]),
                        )
 
+    # start iterating through spatio-temporal hyperparameters
     for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
         temporal_hhparam = spatiotemporal_hyperparams[0]
         spatial_hyparams = spatiotemporal_hyperparams[1:]
 
+        # map hyperparameters to surface of sphere
         spatial_hyparams /= np.linalg.norm(spatial_hyparams)
 
-        # get indices
+        # apply the hyperparameter to the hyper-prior on the temporal prior
+        this_temporal_prior = temporal_prior.get_prior(hhparam=temporal_hhparam)
+
+        # get spatial and temporal parameter indeces
         shyperidx = np.mod(hyperidx, nspatial_hyparams)
         thyperidx = int(hyperidx // nspatial_hyparams)
-        this_temporal_prior = temporal_prior.get_prior(hhparam=temporal_hhparam)
 
         if verbosity:
             hyperdesc = (hyperidx+1, nall_cvparams,
@@ -824,21 +835,28 @@ def spatiotemporal_mvn_prior_regression(features_train,
             print(hypertxt % hyperdesc)
 
         Ktrain = 0.0
+        # iterate through feature  matrices, priors, and hyperparameters
+        # to construct spatio-temporal kernel for full training set
         for fdx, (fs_train, fs_prior, fs_hyper) in enumerate(zip(features_train,
                                                                  feature_priors,
                                                                  spatial_hyparams)):
+            # compute spatio-temporal kernel for this feature space given
+            # spatial prior hyperparameters, and temporal prior hyper-prior hyperparameters
             kernel_train = kernel_spatiotemporal_prior(fs_train,
                                                        this_temporal_prior,
                                                        fs_prior.get_prior(fs_hyper),
                                                        delays=delays)
+            # store this feature space spatio-temporal kernel
             Ktrain += kernel_train
 
         if normalize_ridges:
+            # normalize by the determinant of the training set kernel
             kernel_normalizer = tikutils.determinant_normalizer(Ktrain)
             Ktrain /= kernel_normalizer
 
-        # cross-validation
+        # perform cross-validation procedure
         for ifold, (trnidx, validx) in enumerate(folds):
+            # extract training and validation sets from full kernel
             ktrn = tikutils.fast_indexing(Ktrain, trnidx, trnidx)
             kval = tikutils.fast_indexing(Ktrain, validx, trnidx)
 
@@ -846,6 +864,7 @@ def spatiotemporal_mvn_prior_regression(features_train,
                 txt = (ifold+1,nfolds,len(trnidx),len(validx))
                 print('train fold  %i/%i: ntrain=%i, ntest=%i'%txt)
 
+            # solve the regression problem
             fit = solve_l2_dual(ktrn, responses_train[trnidx],
                                 kval, responses_train[validx],
                                 ridges=ridges,
@@ -853,14 +872,17 @@ def spatiotemporal_mvn_prior_regression(features_train,
                                 verbose=verbosity > 1,
                                 method=method,
                                 )
+
             if mean_cv_only:
+                # only keep mean population performance on the validation set
                 cvfold = np.nan_to_num(fit['performance']).mean(-1)[...,None]
             else:
+                # keep all individual responses' performance on validtion set
                 cvfold = fit['performance']
             results[ifold, thyperidx, shyperidx] = cvfold
 
         if verbosity:
-            # performance for this hyperparameter set
+            # print performance for this spatio-temporal hyperparameter set
             perf = nan_to_num(results[:,thyperidx,shyperidx].mean(0))
             group_ridge = ridges[np.argmax(perf.mean(-1))]
             contents = (group_ridge, np.mean(perf),
@@ -870,19 +892,20 @@ def spatiotemporal_mvn_prior_regression(features_train,
             txt += "(0.2<r>0.8): (%03i,%03i)\n"
             print(txt % contents)
 
+
+
     sp_hyparams = list(itertools.product(*all_spatial_hyparams))
-    sp_hyparams = np.asarray([t / np.linalg.norm(t) for t in sp_hyparams])
+    # effective ridges evaludated (undo projection onto sphere)
+    norm_factor = np.linalg.norm(np.ones(len(features_train)))
 
     if normalize_ridges:
-        # un-do the normalizations
-        norm_factor = np.linalg.norm(np.ones(len(features_train)))**2
+        # undo the kernel normalization
         norm_factor *= np.sqrt(kernel_normalizer)
-    else:
-        norm_factor = np.linalg.norm(np.ones(len(features_train)))
 
-
+    #### return list of spatial prior hyperparameters properly scaled
     sp_hyparams = np.asarray([np.asarray(sp_hyparams)*ridge*norm_factor for ridge in ridges]).T
 
+    # dimensions explored
     dims = (('nfolds', nfolds),
             ('ntemporal_hhparams', ntemporal_hhparams),
             ('nspatial_hyparams', nspatial_hyparams),
