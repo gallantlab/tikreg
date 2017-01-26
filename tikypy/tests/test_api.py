@@ -425,3 +425,50 @@ def test_ridge_solution_raw_chol():
     # test the ridge solution recovery using cholesky decomposition
     # and no kernel normalizations
     test_ridge_solution(normalize_ridges=False, method='Chol')
+
+
+
+def test_fullfit():
+# if 1:
+    ridges = np.logspace(-3,3,10)
+    nridges = len(ridges)
+    ndelays = 5
+    delays = range(ndelays)
+
+    oo = get_abc_data(banded=True)
+    features_train, features_test, responses_train, responses_test = oo
+    features_sizes = [fs.shape[1] for fs in features_train]
+
+    spatial_priors = [sps.SphericalPrior(features_sizes[0]),
+                      sps.SphericalPrior(features_sizes[1]),
+                      sps.SphericalPrior(features_sizes[2]),
+                      ]
+
+    reload(models)
+    tpriors = [tps.SphericalPrior(delays)]
+    folds = tikutils.generate_trnval_folds(responses_train.shape[0],
+                                           sampler='bcv',
+                                           nfolds=(1,5),
+                                           )
+    folds = list(folds)
+
+    reload(models)
+    fit = models.crossval_rmvnp(features_train,
+                                responses_train,
+                                features_test,
+                                responses_test,
+                                ridges=ridges,
+                                delays=delays,
+                                normalize_ridges=False,
+                                temporal_prior=tpriors[0],
+                                feature_priors=spatial_priors,
+                                weights=True,
+                                performance=True,
+                                predictions=False,
+                                # noise_ceiling_correction=False,
+                                mean_cv_only=False,
+                                folds=(1,5),
+                                method='SVD',
+                                verbosity=2,
+                                cvresults=None,
+                                )

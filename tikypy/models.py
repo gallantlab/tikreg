@@ -923,6 +923,107 @@ def spatiotemporal_mvn_prior_regression(features_train,
             }
 
 
+def crossval_rmvnp(features_train,
+                   responses_train,
+                   features_test=None,
+                   responses_test=None,
+                   ridges=np.logspace(0,3,10),
+                   normalize_ridges=True,
+                   delays=[0],
+                   temporal_prior=None,
+                   feature_priors=None,
+                   weights=False,
+                   predictions=False,
+                   performance=True,
+                   # noise_ceiling_correction=False,
+                   mean_cv_only=False,
+                   folds=(1,5),
+                   method='SVD',
+                   verbosity=1,
+                   cvresults=None,
+                   ):
+    '''
+    '''
+    # delays = temporal_prior.delays
+    ndelays = len(delays)
+
+    if features_test is None:
+        features_test = [features_test]*len(features_train)
+
+    if cvresults is None:
+        # find optimal hyperparamters via Nx k-fold cross-validation
+        cvresults = spatiotemporal_mvn_prior_regression(features_train,
+                                                        responses_train,
+                                                        ridges=ridges,
+                                                        normalize_ridges=normalize_ridges,
+                                                        delays=delays,
+                                                        temporal_prior=temporal_prior,
+                                                        feature_priors=feature_priors,
+                                                        mean_cv_only=mean_cv_only,
+                                                        folds=folds,
+                                                        method=method,
+                                                        verbosity=verbosity,
+                                                        )
+    if (weights is False) and (performance is False) and (prediction is False):
+        return cvresults
+
+    # find optima
+    cvmean = cvresults['cvresults'].mean(0)
+    population_optimal = False
+    if population_optimal is True:
+        cvmean = np.nan_to_num(cvmean).mean(-1)[...,None]
+
+    nresponses = cvmean.shape[-1]
+    for idx in range(nresponses):
+        temporal_opt, spatial_opt = find_optimum_mvn(cvmean[...,idx],
+                                                     cvresults['temporal'],
+                                                     cvresults['spatial'],
+                                                     )
+
+        Ktrain = 0.
+        Ktest = 0.
+        this_temporal_prior = temporal_prior.get_prior(hhparam=temporal_opt)
+        for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
+                                                                          features_test,
+                                                                          feature_priors,
+                                                                          spatial_opt)):
+            Ktrain += kernel_spatiotemporal_prior(fs_train,
+                                                  this_temporal_prior,
+                                                  fs_prior.get_prior(fs_hyper),
+                                                  delays=delays)
+
+            if fs_test is not None:
+                Ktest += kernel_spatiotemporal_prior(fs_train,
+                                                     this_temporal_prior,
+                                                     fs_prior.get_prior(fs_hyper),
+                                                     delays=delays,
+                                                     Xtest=fs_test)
+
+        if np.allclose(Ktest, 0.0):
+            Ktest = None
+
+        response_solution = solve_l2_dual(Ktrain, responses_train[:,[idx]],
+                                          Ktest=Ktest,
+                                          Ytest=responses_test[:,[idx]],
+                                          ridges=[1.],
+                                          performance=performance,
+                                          predictions=predictions,
+                                          weights=weights,
+                                          verbose=verbosity > 1,
+                                          method=method,
+                                          )
+
+        if verbosity:
+            itxt = 'response %i/%i optimal parameters:'%(idx+1, nresponses)
+            ttxt = "temporal=%0.03f," % float(temporal_opt)
+            stxt = "spatial=("
+            stxt += ', '.join(["%0.03f"]*(len(spatial_opt)))
+            stxt = stxt%tuple(spatial_opt) + ')'
+            perf = 'perf=%0.04f'%response_solution['performance'].mean()
+            print(' '.join([itxt, ttxt, stxt, perf]))
+
+        print response_solution.keys()
+
 
 if __name__ == '__main__':
     pass
