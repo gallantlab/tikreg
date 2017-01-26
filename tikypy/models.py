@@ -905,13 +905,21 @@ def spatiotemporal_mvn_prior_regression(features_train,
     #### return list of spatial prior hyperparameters properly scaled
     sp_hyparams = np.asarray([np.asarray(sp_hyparams)*ridge*norm_factor for ridge in ridges]).T
 
-    # dimensions explored
-    dims = (('nfolds', nfolds),
-            ('ntemporal_hhparams', ntemporal_hhparams),
-            ('nspatial_hyparams', nspatial_hyparams),
-            ('nridges', nridges),
-            ('nresponses', results.shape[-1]),
-            ),
+    #### dimensions explored
+    dtype = np.dtype([('nfolds', np.int),
+                      ('ntemporal_hhparams', np.int),
+                      ('nspatial_hyparams', np.int),
+                      ('nridges', np.int),
+                      ('nresponses', np.int),
+                      ('nfspaces', np.int)])
+
+    dims = np.recarray(shape=(1), dtype=dtype)
+    dims[0] = np.asarray([nfolds,
+                          ntemporal_hhparams,
+                          nspatial_hyparams,
+                          nridges,
+                          results.shape[-1],
+                          len(features_train)])
 
     if verbosity:
         print('Duration %0.04f[mins]' % ((time.time()-start_time)/60.))
@@ -967,18 +975,25 @@ def crossval_rmvnp(features_train,
     if (weights is False) and (performance is False) and (prediction is False):
         return cvresults
 
+    dims = cvresults['dims']
     # find optima
     cvmean = cvresults['cvresults'].mean(0)
     population_optimal = False
     if population_optimal is True:
         cvmean = np.nan_to_num(cvmean).mean(-1)[...,None]
 
-    nresponses = cvmean.shape[-1]
+    nresponses = int(dims.nresponses)
+    nfspaces = int(dims.nfspaces)
+    ntspaces = 1
+    optima = np.zeros((nresponses, nfspaces + ntspaces))
+
     for idx in range(nresponses):
         temporal_opt, spatial_opt = find_optimum_mvn(cvmean[...,idx],
                                                      cvresults['temporal'],
                                                      cvresults['spatial'],
                                                      )
+        optima[idx] = tuple([temporal_opt])+tuple(spatial_opt)
+
 
         Ktrain = 0.
         Ktest = 0.
@@ -1021,9 +1036,10 @@ def crossval_rmvnp(features_train,
             stxt = stxt%tuple(spatial_opt) + ')'
             perf = 'perf=%0.04f'%response_solution['performance'].mean()
             print(' '.join([itxt, ttxt, stxt, perf]))
-
         print response_solution.keys()
 
+    cvresults['optima'] = optima
+    return cvresults
 
 if __name__ == '__main__':
     pass
