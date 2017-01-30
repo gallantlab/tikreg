@@ -721,7 +721,10 @@ def _generalized_tikhonov_dual(X, Y, Li, ridge=10.0):
 
 
 
-def find_optimum_mvn(response_cvmean, temporal_hhparams, spatial_hyparams):
+def find_optimum_mvn(response_cvmean,
+                     temporal_hhparams,
+                     spatial_hyparams,
+                     ridge_hyparams):
     '''
     '''
     optimum = np.unravel_index(np.argmax(response_cvmean),
@@ -729,37 +732,22 @@ def find_optimum_mvn(response_cvmean, temporal_hhparams, spatial_hyparams):
     temporal_argmax = optimum[0]
     temporal_optimum = temporal_hhparams[temporal_argmax]
 
-    spatial_argmax = optimum[1:]
-    spatial_optimum = spatial_hyparams[:, spatial_argmax[0], spatial_argmax[1]]
+    spatial_argmax = optimum[1]
+    spatial_optimum = spatial_hyparams[spatial_argmax]
 
-    return temporal_optimum, spatial_optimum
+    ridge_argmax = optimum[2]
+    ridge_optimum = ridge_hyparams[ridge_argmax]
 
+    return temporal_optimum, spatial_optimum, ridge_optimum
 
-def estimate_stem_wmvnp(features_train,
-                        responses_train,
-                        # features_test=None,
-                        # responses_test=None,
-                        ridges=np.logspace(0,3,10),
-                        delays=[0],
-                        temporal_prior=None,
-                        feature_priors=None,
-                        ):
-    '''
-    '''
 
 def crossval_stem_wmvnp(features_train,
                         responses_train,
-                        # features_test=None,
-                        # responses_test=None,
                         ridges=np.logspace(0,3,10),
-                        normalize_ridges=True,
-                        # delays=[0],
+                        normalize_kernel=True,
                         temporal_prior=None,
                         feature_priors=None,
-                        # weights=False,
-                        # predictions=False,
                         performance=True,
-                        # noise_ceiling_correction=False,
                         mean_cv_only=False,
                         folds=(1,5),
                         method='SVD',
@@ -771,13 +759,10 @@ def crossval_stem_wmvnp(features_train,
     import time
     start_time = time.time()
 
-
     if isinstance(verbosity, bool):
         verbosity = 1 if verbosity else 0
     if isinstance(features_train, np.ndarray):
         features_train = [features_train]
-    # if isinstance(features_test, np.ndarray) or (features_test is None):
-    #     features_test = [features_test]
 
     nridges = len(ridges)
     delays = temporal_prior.delays
@@ -785,6 +770,7 @@ def crossval_stem_wmvnp(features_train,
     nfeatures = [fs.shape[1] for fs in features_train]
     nresponses = responses_train.shape[-1]
     ntrain = responses_train.shape[0]
+    kernel_normalizer = 1.0
 
     #### handle cross-validation folds options
     if isinstance(folds, list):
@@ -827,6 +813,9 @@ def crossval_stem_wmvnp(features_train,
                         1 if mean_cv_only else responses_train.shape[-1]),
                        )
 
+    sp_hyparams = []
+    scaled_ridges = ridges.copy()
+
     # start iterating through spatio-temporal hyperparameters
     for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
         temporal_hhparam = spatiotemporal_hyperparams[0]
@@ -834,6 +823,7 @@ def crossval_stem_wmvnp(features_train,
 
         # map hyperparameters to surface of sphere
         spatial_hyparams /= np.linalg.norm(spatial_hyparams)
+        sp_hyparams.append(spatial_hyparams)
 
         # apply the hyperparameter to the hyper-prior on the temporal prior
         this_temporal_prior = temporal_prior.get_prior(hhparam=temporal_hhparam)
@@ -866,10 +856,16 @@ def crossval_stem_wmvnp(features_train,
             # store this feature space spatio-temporal kernel
             Ktrain += kernel_train
 
-        if normalize_ridges:
-            # normalize by the determinant of the training set kernel
+
+        if (normalize_kernel is True) and (hyperidx == 0):
+            # normalize all ridges by the determinant of the first kernel
             kernel_normalizer = tikutils.determinant_normalizer(Ktrain)
-            Ktrain /= kernel_normalizer
+            if np.allclose(kernel_normalizer, 0):
+                # invalid determinant, do not scale
+                kernel_normalizer = 1.0
+            scaled_ridges *= np.sqrt(kernel_normalizer)
+
+        Ktrain /= kernel_normalizer
 
         # perform cross-validation procedure
         for ifold, (trnidx, validx) in enumerate(folds):
@@ -909,19 +905,6 @@ def crossval_stem_wmvnp(features_train,
             txt += "(0.2<r>0.8): (%03i,%03i)\n"
             print(txt % contents)
 
-
-
-    sp_hyparams = list(itertools.product(*all_spatial_hyparams))
-    # effective ridges evaludated (undo projection onto sphere)
-    norm_factor = np.linalg.norm(np.ones(len(features_train)))
-
-    if normalize_ridges:
-        # undo the kernel normalization
-        norm_factor *= np.sqrt(kernel_normalizer)
-
-    #### return list of spatial prior hyperparameters properly scaled
-    sp_hyparams = np.asarray([np.asarray(sp_hyparams)*ridge*norm_factor for ridge in ridges]).T
-
     #### dimensions explored
     dtype = np.dtype([('nfolds', np.int),
                       ('ntemporal_hhparams', np.int),
@@ -938,12 +921,16 @@ def crossval_stem_wmvnp(features_train,
                           results.shape[-1],
                           len(features_train)])
 
+    # spatial hyperparameters. all the same across temporal
+    sp_hyparams = np.asarray(sp_hyparams)[:nspatial_hyparams]
+
     if verbosity:
         print('Duration %0.04f[mins]' % ((time.time()-start_time)/60.))
 
     return {'cvresults' : results,
             'dims' : dims,
             'spatial' : sp_hyparams,
+            'ridges' : scaled_ridges,
             'temporal' : temporal_prior.get_hhparams(),
             }
 
@@ -953,8 +940,7 @@ def estimate_stem_wmvnp(features_train,
                         features_test=None,
                         responses_test=None,
                         ridges=np.logspace(0,3,10),
-                        normalize_ridges=True,
-                        # delays=[0],
+                        normalize_kernel=True,
                         temporal_prior=None,
                         feature_priors=None,
                         weights=False,
@@ -981,7 +967,7 @@ def estimate_stem_wmvnp(features_train,
         cvresults = crossval_stem_wmvnp(features_train,
                                         responses_train,
                                         ridges=ridges,
-                                        normalize_ridges=normalize_ridges,
+                                        normalize_kernel=normalize_kernel,
                                         # delays=delays,
                                         temporal_prior=temporal_prior,
                                         feature_priors=feature_priors,
@@ -1007,11 +993,12 @@ def estimate_stem_wmvnp(features_train,
     optima = np.zeros((nresponses, nfspaces + ntspaces))
 
     for idx in range(nresponses):
-        temporal_opt, spatial_opt = find_optimum_mvn(cvmean[...,idx],
-                                                     cvresults['temporal'],
-                                                     cvresults['spatial'],
-                                                     )
-        optima[idx] = tuple([temporal_opt])+tuple(spatial_opt)
+        temporal_opt, spatial_opt, ridge_opt = find_optimum_mvn(cvmean[...,idx],
+                                                                cvresults['temporal'],
+                                                                cvresults['spatial'],
+                                                                cvresults['ridges'],
+                                                                )
+        optima[idx] = tuple([temporal_opt])+tuple(spatial_opt*ridge_opt)
 
 
         Ktrain = 0.
@@ -1036,10 +1023,11 @@ def estimate_stem_wmvnp(features_train,
         if np.allclose(Ktest, 0.0):
             Ktest = None
 
+        # solve for this response
         response_solution = solve_l2_dual(Ktrain, responses_train[:,[idx]],
                                           Ktest=Ktest,
                                           Ytest=responses_test[:,[idx]],
-                                          ridges=[1.],
+                                          ridges=[ridge_opt],
                                           performance=performance,
                                           predictions=predictions,
                                           weights=weights,
