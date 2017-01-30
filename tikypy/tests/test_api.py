@@ -34,25 +34,25 @@ def test_fullfit():
     folds = list(folds)
 
     reload(models)
-    fit = models.crossval_rmvnp(features_train,
-                                responses_train,
-                                features_test,
-                                responses_test,
-                                ridges=ridges,
-                                delays=delays,
-                                normalize_ridges=False,
-                                temporal_prior=tpriors[0],
-                                feature_priors=spatial_priors,
-                                weights=True,
-                                performance=True,
-                                predictions=False,
-                                # noise_ceiling_correction=False,
-                                mean_cv_only=False,
-                                folds=(1,5),
-                                method='SVD',
-                                verbosity=2,
-                                cvresults=None,
-                                )
+    fit = models.estimate_stem_wmvnp(features_train,
+                                     responses_train,
+                                     features_test,
+                                     responses_test,
+                                     ridges=ridges,
+                                     delays=delays,
+                                     normalize_ridges=False,
+                                     temporal_prior=tpriors[0],
+                                     feature_priors=spatial_priors,
+                                     weights=True,
+                                     performance=True,
+                                     predictions=False,
+                                     # noise_ceiling_correction=False,
+                                     mean_cv_only=False,
+                                     folds=(1,5),
+                                     method='SVD',
+                                     verbosity=2,
+                                     cvresults=None,
+                                     )
 
 
 
@@ -217,6 +217,9 @@ def test_ridge_solution(normalize_ridges=True, method='SVD'):
     ndelays = 10
     delays = range(ndelays)
 
+    delays = np.unique(np.random.randint(0,10,6))
+    ndelays = len(delays)
+
     features_train, features_test, responses_train, responses_test = get_abc_data()
     features_sizes = [fs.shape[1] for fs in features_train]
 
@@ -233,21 +236,20 @@ def test_ridge_solution(normalize_ridges=True, method='SVD'):
                                            )
     folds = list(folds)
 
-
-
-    res = models.spatiotemporal_mvn_prior_regression(features_train,
-                                                     responses_train,
-                                                     delays=[0],
-                                                     temporal_prior=tpriors[0],
-                                                     feature_priors=spatial_priors,
-                                                     folds=folds,
-                                                     ridges=ridges,
-                                                     verbosity=2,
-                                                     method=method,
-                                                     normalize_ridges=normalize_ridges,
-                                                     )
+    res = models.crossval_stem_wmvnp(features_train,
+                                     responses_train,
+                                     delays=delays,
+                                     temporal_prior=tpriors[0],
+                                     feature_priors=spatial_priors,
+                                     folds=folds,
+                                     ridges=ridges,
+                                     verbosity=2,
+                                     method=method,
+                                     normalize_ridges=normalize_ridges,
+                                     )
 
     X = np.hstack(features_train)
+    X = tikutils.delay_signal(X, delays)
     K = np.dot(X, X.T)
     kernel_norm_sqrt = np.sqrt(tikutils.determinant_normalizer(K))
     if normalize_ridges:
@@ -263,12 +265,13 @@ def test_ridge_solution(normalize_ridges=True, method='SVD'):
                          )
     print(nridges)
     print(res['spatial'].squeeze())
+    assert np.allclose(fit['cvresults'].squeeze(), res['cvresults'].squeeze())
     assert np.allclose(res['spatial'][0], res['spatial'][1])
     assert np.allclose(res['spatial'][1], res['spatial'][2])
     assert np.allclose(res['spatial'][2], res['spatial'][0])
     assert np.allclose(res['spatial'][0], nridges)
-    assert np.allclose(fit['cvresults'].squeeze(), res['cvresults'].squeeze())
     return res, fit
+
 
 def test_ridge_solution_raw():
     # make sure we recover the ridge solution
@@ -449,16 +452,16 @@ def test_stmvn_prior(method='SVD'):
 
     from tikypy import models
     reload(models)
-    res = models.spatiotemporal_mvn_prior_regression(features_train,
-                                                     responses_train,
-                                                     delays=delays,
-                                                     temporal_prior=tpriors[2],
-                                                     feature_priors=spatial_priors,
-                                                     folds=(1,5),
-                                                     ridges=ridges,
-                                                     verbosity=1,
-                                                     method=method,
-                                                     )
+    res = models.crossval_stem_wmvnp(features_train,
+                                     responses_train,
+                                     delays=delays,
+                                     temporal_prior=tpriors[2],
+                                     feature_priors=spatial_priors,
+                                     folds=(1,5),
+                                     ridges=ridges,
+                                     verbosity=1,
+                                     method=method,
+                                     )
 
     # find optima
     cvmean = res['cvresults'].mean(0)

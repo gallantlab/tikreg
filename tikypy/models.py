@@ -334,16 +334,19 @@ def solve_l2_dual(Ktrain, Ytrain,
 
 def kernel_spatiotemporal_prior(Xtrain, temporal_prior, spatial_prior,
                                 Xtest=None, delays=[1,2,3,4]):
-    '''Compute the kernel matrix of a model with a spatio-temporal prior'''
+    '''Compute the kernel matrix of a model with a spatio-temporal prior
+
+    temporal_prior (d, d): d = len(delays)
+    '''
 
     if Xtest is None:
         Xtest = Xtrain
     kernel = np.zeros((Xtest.shape[0], Xtrain.shape[0]))
-    for idx in delays:
+    for ii, idx in enumerate(delays):
         Xi = Xtrain[tikutils.delay2slice(idx)]
-        for ddx in delays:
+        for jj, ddx in enumerate(delays):
             Xd = Xtest[tikutils.delay2slice(ddx)]
-            kernel[ddx:,idx:] += np.dot(temporal_prior[ddx,idx]*np.dot(Xd, spatial_prior), Xi.T)
+            kernel[ddx:,idx:] += np.dot(temporal_prior[jj,ii]*np.dot(Xd, spatial_prior), Xi.T)
     return kernel
 
 
@@ -731,30 +734,42 @@ def find_optimum_mvn(response_cvmean, temporal_hhparams, spatial_hyparams):
     return temporal_optimum, spatial_optimum
 
 
-
-
-def spatiotemporal_mvn_prior_regression(features_train,
-                                        responses_train,
-                                        # features_test=None,
-                                        # responses_test=None,
-                                        ridges=np.logspace(0,3,10),
-                                        normalize_ridges=True,
-                                        delays=[0],
-                                        temporal_prior=None,
-                                        feature_priors=None,
-                                        # weights=False,
-                                        # predictions=False,
-                                        performance=True,
-                                        # noise_ceiling_correction=False,
-                                        mean_cv_only=False,
-                                        folds=(1,5),
-                                        method='SVD',
-                                        verbosity=1,
-                                        ):
+def estimate_stem_wmvnp(features_train,
+                        responses_train,
+                        # features_test=None,
+                        # responses_test=None,
+                        ridges=np.logspace(0,3,10),
+                        delays=[0],
+                        temporal_prior=None,
+                        feature_priors=None,
+                        ):
     '''
+    '''
+
+def crossval_stem_wmvnp(features_train,
+                        responses_train,
+                        # features_test=None,
+                        # responses_test=None,
+                        ridges=np.logspace(0,3,10),
+                        normalize_ridges=True,
+                        delays=[0],
+                        temporal_prior=None,
+                        feature_priors=None,
+                        # weights=False,
+                        # predictions=False,
+                        performance=True,
+                        # noise_ceiling_correction=False,
+                        mean_cv_only=False,
+                        folds=(1,5),
+                        method='SVD',
+                        verbosity=1,
+                        ):
+    '''Cross-validation procedure for
+    spatio-temporal encoding models with MVN priors.
     '''
     import time
     start_time = time.time()
+    delays = temporal_prior.delays
 
     if isinstance(verbosity, bool):
         verbosity = 1 if verbosity else 0
@@ -931,25 +946,26 @@ def spatiotemporal_mvn_prior_regression(features_train,
             }
 
 
-def crossval_rmvnp(features_train,
-                   responses_train,
-                   features_test=None,
-                   responses_test=None,
-                   ridges=np.logspace(0,3,10),
-                   normalize_ridges=True,
-                   delays=[0],
-                   temporal_prior=None,
-                   feature_priors=None,
-                   weights=False,
-                   predictions=False,
-                   performance=True,
-                   # noise_ceiling_correction=False,
-                   mean_cv_only=False,
-                   folds=(1,5),
-                   method='SVD',
-                   verbosity=1,
-                   cvresults=None,
-                   ):
+def estimate_stem_wmvnp(features_train,
+                        responses_train,
+                        features_test=None,
+                        responses_test=None,
+                        ridges=np.logspace(0,3,10),
+                        normalize_ridges=True,
+                        delays=[0],
+                        temporal_prior=None,
+                        feature_priors=None,
+                        weights=False,
+                        predictions=False,
+                        performance=True,
+                        # noise_ceiling_correction=False,
+                        mean_cv_only=False,
+                        folds=(1,5),
+                        method='SVD',
+                        verbosity=1,
+                        cvresults=None,
+                        population_optimal = False
+                        ):
     '''
     '''
     # delays = temporal_prior.delays
@@ -960,26 +976,27 @@ def crossval_rmvnp(features_train,
 
     if cvresults is None:
         # find optimal hyperparamters via Nx k-fold cross-validation
-        cvresults = spatiotemporal_mvn_prior_regression(features_train,
-                                                        responses_train,
-                                                        ridges=ridges,
-                                                        normalize_ridges=normalize_ridges,
-                                                        delays=delays,
-                                                        temporal_prior=temporal_prior,
-                                                        feature_priors=feature_priors,
-                                                        mean_cv_only=mean_cv_only,
-                                                        folds=folds,
-                                                        method=method,
-                                                        verbosity=verbosity,
-                                                        )
+        cvresults = crossval_stem_wmvnp(features_train,
+                                        responses_train,
+                                        ridges=ridges,
+                                        normalize_ridges=normalize_ridges,
+                                        delays=delays,
+                                        temporal_prior=temporal_prior,
+                                        feature_priors=feature_priors,
+                                        mean_cv_only=mean_cv_only,
+                                        folds=folds,
+                                        method=method,
+                                        verbosity=verbosity,
+                                        )
+
     if (weights is False) and (performance is False) and (prediction is False):
         return cvresults
 
     dims = cvresults['dims']
-    # find optima
+    # find optima across cross-validation folds
     cvmean = cvresults['cvresults'].mean(0)
-    population_optimal = False
-    if population_optimal is True:
+
+    if population_optimal is True and (dims.nresponses > 1):
         cvmean = np.nan_to_num(cvmean).mean(-1)[...,None]
 
     nresponses = int(dims.nresponses)
