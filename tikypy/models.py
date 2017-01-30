@@ -996,10 +996,9 @@ def estimate_stem_wmvnp(features_train,
         temporal_opt, spatial_opt, ridge_opt = find_optimum_mvn(cvmean[...,idx],
                                                                 cvresults['temporal'],
                                                                 cvresults['spatial'],
-                                                                cvresults['ridges'],
-                                                                )
-        optima[idx] = tuple([temporal_opt])+tuple(spatial_opt*ridge_opt)
+                                                                cvresults['ridges'])
 
+        optima[idx] = tuple([temporal_opt])+tuple(spatial_opt*ridge_opt)
 
         Ktrain = 0.
         Ktest = 0.
@@ -1032,8 +1031,7 @@ def estimate_stem_wmvnp(features_train,
                                           predictions=predictions,
                                           weights=weights,
                                           verbose=verbosity > 1,
-                                          method=method,
-                                          )
+                                          method=method)
 
         if verbosity:
             itxt = 'response %i/%i optimal parameters:'%(idx+1, nresponses)
@@ -1047,6 +1045,84 @@ def estimate_stem_wmvnp(features_train,
 
     cvresults['optima'] = optima
     return cvresults
+
+def dual2primal_weights(kernel_weights,
+                        feature_matrices,
+                        feature_priors,
+                        feature_hyparams,
+                        delays,
+                        ):
+    '''
+    '''
+    # WIP: need to fix for kron kernel
+    weights = []
+    for fi, features in enumerate(feature_matrices):
+        Xi = tikutils.delay_signal(features, delays)
+        Wi = np.dot(Xi.T, kernel_weights)
+        weights.append(Wi)
+    return weights
+
+
+def estimate_simple_stem_wmvnp(features_train,
+                               responses_train,
+                               features_test=None,
+                               responses_test=None,
+                               temporal_prior=None,
+                               temporal_hhparam=1.0,
+                               feature_priors=None,
+                               feature_hyparams=None,
+                               weights=False,
+                               performance=False,
+                               predictions=False,
+                               ridge_scale=1.0,
+                               verbosity=2,
+                               method='SVD',
+                               ):
+    '''
+    '''
+    if feature_hyparams is None:
+        feature_hyparams = [1.0]*len(features_train)
+
+    if features_test is None:
+        features_test = [features_test]*len(features_train)
+
+    # we're only using one set in this function
+    assert len(feature_hyparams) == len(features_train)
+
+    Ktrain = 0.
+    Ktest = 0.
+    this_temporal_prior = temporal_prior.get_prior(hhparam=temporal_hhparam)
+    for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
+                                                                      features_test,
+                                                                      feature_priors,
+                                                                      feature_hyparams)):
+        Ktrain += kernel_spatiotemporal_prior(fs_train,
+                                              this_temporal_prior,
+                                              fs_prior.get_prior(fs_hyper),
+                                              delays=temporal_prior.delays)
+
+        if fs_test is not None:
+            Ktest += kernel_spatiotemporal_prior(fs_train,
+                                                 this_temporal_prior,
+                                                 fs_prior.get_prior(fs_hyper),
+                                                 delays=temporal_prior.delays,
+                                                 Xtest=fs_test)
+
+    if np.allclose(Ktest, 0.0):
+        Ktest = None
+
+    # solve for this response
+    response_solution = solve_l2_dual(Ktrain, responses_train,
+                                      Ktest=Ktest,
+                                      Ytest=responses_test,
+                                      ridges=[ridge_scale],
+                                      performance=performance,
+                                      predictions=predictions,
+                                      weights=weights,
+                                      verbose=verbosity > 1,
+                                      method=method)
+
+    return response_solution
 
 if __name__ == '__main__':
     pass
