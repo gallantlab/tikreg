@@ -342,11 +342,12 @@ def kernel_spatiotemporal_prior(Xtrain, temporal_prior, spatial_prior,
     if Xtest is None:
         Xtest = Xtrain
     kernel = np.zeros((Xtest.shape[0], Xtrain.shape[0]))
-    for ii, idx in enumerate(delays):
-        Xi = Xtrain[tikutils.delay2slice(idx)]
-        for jj, ddx in enumerate(delays):
-            Xd = Xtest[tikutils.delay2slice(ddx)]
-            kernel[ddx:,idx:] += np.dot(temporal_prior[jj,ii]*np.dot(Xd, spatial_prior), Xi.T)
+    for jdx, jdelay in enumerate(delays):
+        Xj = Xtrain[tikutils.delay2slice(jdelay)]
+        for idx, idelay in enumerate(delays):
+            Xi = Xtest[tikutils.delay2slice(idelay)]
+            kernel[idelay:,jdelay:] += np.dot(temporal_prior[idx,jdx]*np.dot(Xi, spatial_prior),
+                                              Xj.T)
     return kernel
 
 
@@ -752,7 +753,7 @@ def crossval_stem_wmvnp(features_train,
                         # responses_test=None,
                         ridges=np.logspace(0,3,10),
                         normalize_ridges=True,
-                        delays=[0],
+                        # delays=[0],
                         temporal_prior=None,
                         feature_priors=None,
                         # weights=False,
@@ -769,7 +770,7 @@ def crossval_stem_wmvnp(features_train,
     '''
     import time
     start_time = time.time()
-    delays = temporal_prior.delays
+
 
     if isinstance(verbosity, bool):
         verbosity = 1 if verbosity else 0
@@ -779,6 +780,7 @@ def crossval_stem_wmvnp(features_train,
     #     features_test = [features_test]
 
     nridges = len(ridges)
+    delays = temporal_prior.delays
     ndelays = len(delays)
     nfeatures = [fs.shape[1] for fs in features_train]
     nresponses = responses_train.shape[-1]
@@ -952,7 +954,7 @@ def estimate_stem_wmvnp(features_train,
                         responses_test=None,
                         ridges=np.logspace(0,3,10),
                         normalize_ridges=True,
-                        delays=[0],
+                        # delays=[0],
                         temporal_prior=None,
                         feature_priors=None,
                         weights=False,
@@ -968,7 +970,7 @@ def estimate_stem_wmvnp(features_train,
                         ):
     '''
     '''
-    # delays = temporal_prior.delays
+    delays = temporal_prior.delays
     ndelays = len(delays)
 
     if features_test is None:
@@ -980,7 +982,7 @@ def estimate_stem_wmvnp(features_train,
                                         responses_train,
                                         ridges=ridges,
                                         normalize_ridges=normalize_ridges,
-                                        delays=delays,
+                                        # delays=delays,
                                         temporal_prior=temporal_prior,
                                         feature_priors=feature_priors,
                                         mean_cv_only=mean_cv_only,

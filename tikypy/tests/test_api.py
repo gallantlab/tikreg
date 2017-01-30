@@ -8,6 +8,8 @@ from tikypy import (models,
                     utils as tikutils,
                     )
 
+np.random.seed(1337)
+
 
 def test_fullfit():
 # if 1:
@@ -39,7 +41,7 @@ def test_fullfit():
                                      features_test,
                                      responses_test,
                                      ridges=ridges,
-                                     delays=delays,
+                                     # delays=delays,
                                      normalize_ridges=False,
                                      temporal_prior=tpriors[0],
                                      feature_priors=spatial_priors,
@@ -217,7 +219,7 @@ def test_ridge_solution(normalize_ridges=True, method='SVD'):
     ndelays = 10
     delays = range(ndelays)
 
-    delays = np.unique(np.random.randint(0,10,6))
+    delays = np.unique(np.random.randint(0,10,10))
     ndelays = len(delays)
 
     features_train, features_test, responses_train, responses_test = get_abc_data()
@@ -238,7 +240,7 @@ def test_ridge_solution(normalize_ridges=True, method='SVD'):
 
     res = models.crossval_stem_wmvnp(features_train,
                                      responses_train,
-                                     delays=delays,
+                                     # delays=delays,
                                      temporal_prior=tpriors[0],
                                      feature_priors=spatial_priors,
                                      folds=folds,
@@ -454,7 +456,7 @@ def test_stmvn_prior(method='SVD'):
     reload(models)
     res = models.crossval_stem_wmvnp(features_train,
                                      responses_train,
-                                     delays=delays,
+                                     # delays=delays,
                                      temporal_prior=tpriors[2],
                                      feature_priors=spatial_priors,
                                      folds=(1,5),
