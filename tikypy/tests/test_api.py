@@ -42,12 +42,12 @@ def get_abc_data(banded=True, p=50, n=100):
     responses_train = tikutils.hrf_convolution(responses_train)
     responses_test = tikutils.hrf_convolution(responses_test)
 
-    features_train = [A.astype(np.float32),
-                      B.astype(np.float32),
-                      C.astype(np.float32)]
-    features_test = [Atest.astype(np.float32),
-                     Btest.astype(np.float32),
-                     Ctest.astype(np.float32)]
+    features_train = [A.astype(np.float64),
+                      B.astype(np.float64),
+                      C.astype(np.float64)]
+    features_test = [Atest.astype(np.float64),
+                     Btest.astype(np.float64),
+                     Ctest.astype(np.float64)]
 
     return (features_train, features_test,
             responses_train, responses_test)

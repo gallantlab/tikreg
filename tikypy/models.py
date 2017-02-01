@@ -341,7 +341,15 @@ def kernel_spatiotemporal_prior(Xtrain, temporal_prior, spatial_prior,
     matrix_mult = np.dot
     # if tikutils.isdiag(spatial_prior):
     #     # TODO: this is slower for some reason.... must debug
-    #     matrix_mult = lambda x,y: tikutils.mult_diag(np.diag(y), x, left=False)
+    #     def matrix_mult(xx,yy):
+    #         di = np.diag(yy)
+    #         if np.allclose(di, di[0]):
+    #             # constant diagonal
+    #             res = xx*di[0]
+    #         else:
+    #             res = tikutils.mult_diag(di, xx, left=False)
+    #         return res
+
 
     if Xtest is None:
         Xtest = Xtrain
