@@ -5,6 +5,32 @@ from scipy.linalg import toeplitz
 from scipy.misc import comb
 
 
+
+def isdiag(mat):
+    if mat.ndim != 2:
+        return False
+
+    if mat.shape[0] != mat.shape[1]:
+        return False
+
+    if not np.allclose(mat[-1,:-1], 0):
+        # last row has non-zero elements
+        return False
+
+    # zeros in lower triangular
+    idxs = np.tril_indices_from(mat, -1)
+    if not np.allclose(mat[idxs], 0):
+        return False
+
+    # zeros in upper triangular
+    idxs = np.triu_indices_from(mat, 1)
+    if not np.allclose(mat[idxs], 0):
+        return False
+
+    return True
+
+
+
 def SVD(X, **kwargs):
     '''
     Wrapper for SVD factorization

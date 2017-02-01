@@ -338,6 +338,10 @@ def kernel_spatiotemporal_prior(Xtrain, temporal_prior, spatial_prior,
 
     temporal_prior (d, d): d = len(delays)
     '''
+    matrix_mult = np.dot
+    # if tikutils.isdiag(spatial_prior):
+    #     # TODO: this is slower for some reason.... must debug
+    #     matrix_mult = lambda x,y: tikutils.mult_diag(np.diag(y), x, left=False)
 
     if Xtest is None:
         Xtest = Xtrain
@@ -345,9 +349,11 @@ def kernel_spatiotemporal_prior(Xtrain, temporal_prior, spatial_prior,
     for jdx, jdelay in enumerate(delays):
         Xj = Xtrain[tikutils.delay2slice(jdelay)]
         for idx, idelay in enumerate(delays):
+            if temporal_prior[idx,jdx] == 0:
+                continue
             Xi = Xtest[tikutils.delay2slice(idelay)]
-            kernel[idelay:,jdelay:] += np.dot(temporal_prior[idx,jdx]*np.dot(Xi, spatial_prior),
-                                              Xj.T)
+            tmp = np.dot(temporal_prior[idx,jdx]*matrix_mult(Xi, spatial_prior), Xj.T)
+            kernel[idelay:,jdelay:] += tmp
     return kernel
 
 

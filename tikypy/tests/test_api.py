@@ -12,7 +12,7 @@ from tikypy import (models,
                     )
 
 
-def get_abc_data(banded=True):
+def get_abc_data(banded=True, p=50, n=100):
     from scipy.stats import zscore
 
     if banded:
@@ -22,13 +22,12 @@ def get_abc_data(banded=True):
 
     weights /= np.linalg.norm(weights)
 
-    Aw, (A, Atest), (Yat, Yav) = tikutils.generate_data(n=100, p=50, v=20, testsize=50,
+    Aw, (A, Atest), (Yat, Yav) = tikutils.generate_data(n=n, p=p, v=20, testsize=50,
                                                         feature_sparsity=0.5, noise=0.)
-    Bw, (B, Btest), (Ybt, Ybv) = tikutils.generate_data(n=100, p=50, v=20, testsize=50,
+    Bw, (B, Btest), (Ybt, Ybv) = tikutils.generate_data(n=n, p=p, v=20, testsize=50,
                                                         feature_sparsity=0.5, noise=0.)
-    Cw, (C, Ctest), (Yct, Ycv) = tikutils.generate_data(n=100, p=50, v=20, testsize=50,
+    Cw, (C, Ctest), (Yct, Ycv) = tikutils.generate_data(n=n, p=p, v=20, testsize=50,
                                                         feature_sparsity=0.5, noise=0.)
-
 
 
     responses_train = zscore(Yat*weights[0] + Ybt*weights[1] + Yct*weights[2])
@@ -54,13 +53,13 @@ def get_abc_data(banded=True):
             responses_train, responses_test)
 
 
-def test_fullfit():
+def test_fullfit(n=100, p=50):
     ridges = np.logspace(-3,3,10)
     nridges = len(ridges)
     ndelays = 5
     delays = range(ndelays)
 
-    oo = get_abc_data(banded=True)
+    oo = get_abc_data(banded=True, n=n, p=p)
     features_train, features_test, responses_train, responses_test = oo
     features_sizes = [fs.shape[1] for fs in features_train]
 
