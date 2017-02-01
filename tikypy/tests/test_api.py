@@ -108,31 +108,31 @@ def test_fullfit():
                                                                           features_test,
                                                                           spatial_priors,
                                                                           spatial_opt)):
-            Ktrain += kernel_spatiotemporal_prior(fs_train,
-                                                  this_temporal_prior,
-                                                  fs_prior.get_prior(fs_hyper),
-                                                  delays=temporal_prior.delays)
+            Ktrain += models.kernel_spatiotemporal_prior(fs_train,
+                                                         this_temporal_prior,
+                                                         fs_prior.get_prior(fs_hyper),
+                                                         delays=temporal_prior.delays)
 
             if fs_test is not None:
-                Ktest += kernel_spatiotemporal_prior(fs_train,
-                                                     this_temporal_prior,
-                                                     fs_prior.get_prior(fs_hyper),
-                                                     delays=temporal_prior.delays,
-                                                     Xtest=fs_test)
+                Ktest += models.kernel_spatiotemporal_prior(fs_train,
+                                                            this_temporal_prior,
+                                                            fs_prior.get_prior(fs_hyper),
+                                                            delays=temporal_prior.delays,
+                                                            Xtest=fs_test)
 
         if np.allclose(Ktest, 0.0):
             Ktest = None
 
         # solve for this response
-        response_solution = solve_l2_dual(Ktrain, responses_train[:, [rdx]],
-                                          Ktest=Ktest,
-                                          Ytest=responses_test[:, [rdx]],
-                                          ridges=[ridge_scale],
-                                          performance=True,
-                                          predictions=True,
-                                          weights=True,
-                                          verbose=1,
-                                          method='SVD')
+        response_solution = models.solve_l2_dual(Ktrain, responses_train[:, [rdx]],
+                                                 Ktest=Ktest,
+                                                 Ytest=responses_test[:, [rdx]],
+                                                 ridges=[ridge_scale],
+                                                 performance=True,
+                                                 predictions=True,
+                                                 weights=True,
+                                                 verbose=1,
+                                                 method='SVD')
 
 
         for k,v in response_solution.items():
@@ -299,7 +299,7 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
     newridges = res['ridges']
 
     # direct fit
-    X = np.hstack([tikutils.delay_signal(t.astype(np.float64), delays)*sprior_ridge[i]\
+    X = np.hstack([tikutils.delay_signal(t.astype(np.float64), delays)*(sprior_ridge[i]**-1)\
                    for i,t in enumerate(features_train)])
 
     fit = models.cvridge(X,
@@ -548,13 +548,98 @@ def test_mkl_scaling():
                                                 delays=temporal_prior.delays)
 
         if fi == 0:
-            scale = sprior_ridge[0]
-            kk = np.dot(tikutils.delay_signal(features_train[0]*scale, delays),
-                        tikutils.delay_signal(features_train[0]*scale, delays).T)
+            # test the first feature space
+            scale = sprior_ridge[0]**-2
+            kk = np.dot(tikutils.delay_signal(features_train[0], delays),
+                        tikutils.delay_signal(features_train[0], delays).T)*scale
             assert np.allclose(kk, K)
 
-    X = np.hstack([tikutils.delay_signal(t.astype(np.float64), delays)*sprior_ridge[i]\
+    X = np.hstack([tikutils.delay_signal(t.astype(np.float64), delays)*sprior_ridge[i]**-1 \
                    for i,t in enumerate(features_train)])
     Kn = np.dot(X, X.T)
 
     assert np.allclose(K, Kn)
+
+
+def test_hyperopt_functionality():
+    import hyperopt
+    from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
+
+
+    delays = np.arange(5)#np.unique(np.random.randint(0,10,10))
+    ndelays = len(delays)
+
+    features_train, features_test, responses_train, responses_test = get_abc_data()
+    features_sizes = [fs.shape[1] for fs in features_train]
+
+    feature_priors = [sps.SphericalPrior(features_sizes[0]),
+                      sps.SphericalPrior(features_sizes[1]),
+                      sps.SphericalPrior(features_sizes[2]),
+                      ]
+
+    reload(models)
+    tpriors = [tps.SphericalPrior(delays)]
+    # tpriors = [tps.SmoothnessPrior(delays, hhparams=np.linspace(0,10,5))]
+    temporal_prior = tpriors[0]
+
+    folds = tikutils.generate_trnval_folds(responses_train.shape[0],
+                                           sampler='bcv',
+                                           nfolds=(1,5),
+                                           )
+    folds = list(folds)
+
+
+    # count = 0
+    # def increase_count_by_one():
+    #     global count    # Needed to modify global copy of globvar
+    #     count = count + 1
+
+
+    def objective(params):
+        # increase_count_by_one()
+        feature_hyparams = params[:-1]
+        scale_hyparams = params[-1]
+
+        temporal_prior.set_hhparameters(1.)
+
+        for fi, feature_prior in enumerate(feature_priors[1:]):
+            feature_prior.set_hyperparameters(feature_hyparams[fi])
+
+        # does not affect
+        feature_priors[0].set_hyperparameters(1.)
+        res = models.crossval_stem_wmvnp(features_train,
+                                         responses_train,
+                                         ridges=np.asarray([scale_hyparams]),
+                                         normalize_kernel=False,
+                                         temporal_prior=temporal_prior,
+                                         feature_priors=feature_priors,
+                                         performance=True,
+                                         folds=(2,5),
+                                         method='SVD',
+                                         verbosity=2,
+                                         )
+        cvres = res['cvresults'].mean(0).mean(-1).mean()
+        print 'features:', feature_hyparams
+        print 'ridges:', scale_hyparams
+        print res['spatial'], res['temporal'], res['ridges']
+        print cvres
+        return (1 - cvres)**2#np.max(cvres, 0)
+
+
+    space = (hp.loguniform('rB', 0, 7),
+             hp.loguniform('rC', 0, 7),
+             hp.loguniform('ridge', -7, 7),
+             )
+
+
+    ntrials = 100
+    trials = Trials()
+
+    best_params = fmin(objective,
+                       space=space,
+                       algo=tpe.suggest,
+                       max_evals=ntrials,
+                       trials=trials)
+
+
+    print best_params
