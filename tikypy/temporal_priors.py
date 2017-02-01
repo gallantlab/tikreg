@@ -99,7 +99,7 @@ class PriorFromPenalty(TemporalPrior):
         if dodetnorm:
             prior /= tikutils.determinant_normalizer(prior)
 
-        return alpha**2 * prior
+        return alpha**-2 * prior
 
 class SmoothnessPrior(PriorFromPenalty):
     '''
@@ -170,4 +170,4 @@ class GaussianKernelPrior(TemporalPrior):
         if dodetnorm:
             prior /= tikutils.determinant_normalizer(prior)
 
-        return alpha**2 * prior
+        return alpha**-2 * prior
