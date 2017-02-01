@@ -814,7 +814,7 @@ def crossval_stem_wmvnp(features_train,
                        )
 
     sp_hyparams = []
-    scaled_ridges = ridges.copy()
+    scaled_ridges = np.atleast_1d(ridges).copy()
 
     # start iterating through spatio-temporal hyperparameters
     for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
