@@ -1,5 +1,5 @@
 import numpy as np
-np.set_printoptions(precision=5, suppress=True)
+np.set_printoptions(precision=4, suppress=True)
 np.random.seed(1337)
 
 import itertools
@@ -64,13 +64,14 @@ def test_fullfit():
     features_train, features_test, responses_train, responses_test = oo
     features_sizes = [fs.shape[1] for fs in features_train]
 
-    spatial_priors = [sps.SphericalPrior(features_sizes[0]),
-                      sps.SphericalPrior(features_sizes[1]),
-                      sps.SphericalPrior(features_sizes[2]),
+    hyparams = np.logspace(0,3,5)
+    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyperparameters=[1.]),
+                      sps.SphericalPrior(features_sizes[1], hyperparameters=hyparams),
+                      sps.SphericalPrior(features_sizes[2], hyperparameters=hyparams),
                       ]
 
     reload(models)
-    tpriors = [tps.SphericalPrior(delays)]
+    temporal_prior = tps.SphericalPrior(delays)
     folds = tikutils.generate_trnval_folds(responses_train.shape[0],
                                            sampler='bcv',
                                            nfolds=(1,5),
@@ -78,23 +79,67 @@ def test_fullfit():
     folds = list(folds)
 
     reload(models)
-    fit = models.estimate_stem_wmvnp(features_train,
-                                     responses_train,
-                                     features_test,
-                                     responses_test,
-                                     ridges=ridges,
-                                     normalize_kernel=True,
-                                     temporal_prior=tpriors[0],
-                                     feature_priors=spatial_priors,
-                                     weights=True,
-                                     performance=True,
-                                     predictions=False,
-                                     mean_cv_only=False,
-                                     folds=(1,5),
-                                     method='SVD',
-                                     verbosity=2,
-                                     cvresults=None,
-                                     )
+    res  = models.estimate_stem_wmvnp(features_train,
+                                      responses_train,
+                                      features_test,
+                                      responses_test,
+                                      ridges=ridges,
+                                      normalize_kernel=True,
+                                      temporal_prior=temporal_prior,
+                                      feature_priors=spatial_priors,
+                                      weights=True,
+                                      performance=True,
+                                      predictions=True,
+                                      mean_cv_only=False,
+                                      folds=(1,5),
+                                      method='SVD',
+                                      verbosity=1,
+                                      cvresults=None,
+                                      )
+
+    for rdx in range(responses_train.shape[-1]):
+        optima = res['optima'][rdx]
+        temporal_opt, spatial_opt, ridge_scale = optima[0], optima[1:-1], optima[-1]
+
+        Ktrain = 0.
+        Ktest = 0.
+        this_temporal_prior = temporal_prior.get_prior(hhparam=temporal_opt)
+        for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
+                                                                          features_test,
+                                                                          spatial_priors,
+                                                                          spatial_opt)):
+            Ktrain += kernel_spatiotemporal_prior(fs_train,
+                                                  this_temporal_prior,
+                                                  fs_prior.get_prior(fs_hyper),
+                                                  delays=temporal_prior.delays)
+
+            if fs_test is not None:
+                Ktest += kernel_spatiotemporal_prior(fs_train,
+                                                     this_temporal_prior,
+                                                     fs_prior.get_prior(fs_hyper),
+                                                     delays=temporal_prior.delays,
+                                                     Xtest=fs_test)
+
+        if np.allclose(Ktest, 0.0):
+            Ktest = None
+
+        # solve for this response
+        response_solution = solve_l2_dual(Ktrain, responses_train[:, [rdx]],
+                                          Ktest=Ktest,
+                                          Ytest=responses_test[:, [rdx]],
+                                          ridges=[ridge_scale],
+                                          performance=True,
+                                          predictions=True,
+                                          weights=True,
+                                          verbose=1,
+                                          method='SVD')
+
+
+        for k,v in response_solution.items():
+            # compare each vector output
+            assert np.allclose(res[k][:, rdx].squeeze(), response_solution[k].squeeze())
+
+
 
 
 

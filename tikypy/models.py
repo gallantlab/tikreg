@@ -1,4 +1,4 @@
-from collections import defaultdict as ddic
+from collections import defaultdict as ddict
 import itertools
 
 import numpy as np
@@ -132,7 +132,7 @@ def solve_l2_primal(Xtrain, Ytrain,
                     performance=False, predictions=False, weights=False):
     '''Solve the (primal) L2 regression problem for each L2 parameter.
     '''
-    results = ddic(list)
+    results = ddict(list)
     Ytrain = atleast_2d(Ytrain)
 
     if predictions:
@@ -265,7 +265,7 @@ def solve_l2_dual(Ktrain, Ytrain,
                   performance=False, predictions=False, weights=False):
     '''Solve the dual (kernel) L2 regression problem for each L2 parameter.
     '''
-    results = ddic(list)
+    results = ddict(list)
 
     if predictions:
         assert Ktest is not None
@@ -968,7 +968,6 @@ def estimate_stem_wmvnp(features_train,
                                         responses_train,
                                         ridges=ridges,
                                         normalize_kernel=normalize_kernel,
-                                        # delays=delays,
                                         temporal_prior=temporal_prior,
                                         feature_priors=feature_priors,
                                         mean_cv_only=mean_cv_only,
@@ -990,61 +989,66 @@ def estimate_stem_wmvnp(features_train,
     nresponses = int(dims.nresponses)
     nfspaces = int(dims.nfspaces)
     ntspaces = 1
-    optima = np.zeros((nresponses, nfspaces + ntspaces))
-
+    optima = np.zeros((nresponses, nfspaces + ntspaces + 1))
     for idx in range(nresponses):
+        # find response optima
         temporal_opt, spatial_opt, ridge_opt = find_optimum_mvn(cvmean[...,idx],
                                                                 cvresults['temporal'],
                                                                 cvresults['spatial'],
                                                                 cvresults['ridges'])
+        optima[idx] = tuple([temporal_opt])+tuple(spatial_opt)+tuple([ridge_opt])
 
-        optima[idx] = tuple([temporal_opt])+tuple(spatial_opt*ridge_opt)
+    cvresults['optima'] = optima                                 # store optima
+    unique_optima = np.vstack(set(tuple(row) for row in optima)) # get unique rows
 
-        Ktrain = 0.
-        Ktest = 0.
-        this_temporal_prior = temporal_prior.get_prior(hhparam=temporal_opt)
-        for fdx, (fs_train, fs_test, fs_prior, fs_hyper) in enumerate(zip(features_train,
-                                                                          features_test,
-                                                                          feature_priors,
-                                                                          spatial_opt)):
-            Ktrain += kernel_spatiotemporal_prior(fs_train,
-                                                  this_temporal_prior,
-                                                  fs_prior.get_prior(fs_hyper),
-                                                  delays=delays)
+    # estimate solutions
+    solutions = [[]]*nresponses
+    for idx in range(unique_optima.shape[0]):
+        # get hyper parameters
+        uopt = unique_optima[idx][0], unique_optima[idx][1:-1], unique_optima[idx][-1]
+        temporal_opt, spatial_opt, ridge_opt = uopt
 
-            if fs_test is not None:
-                Ktest += kernel_spatiotemporal_prior(fs_train,
-                                                     this_temporal_prior,
-                                                     fs_prior.get_prior(fs_hyper),
-                                                     delays=delays,
-                                                     Xtest=fs_test)
-
-        if np.allclose(Ktest, 0.0):
-            Ktest = None
-
-        # solve for this response
-        response_solution = solve_l2_dual(Ktrain, responses_train[:,[idx]],
-                                          Ktest=Ktest,
-                                          Ytest=responses_test[:,[idx]],
-                                          ridges=[ridge_opt],
-                                          performance=performance,
-                                          predictions=predictions,
-                                          weights=weights,
-                                          verbose=verbosity > 1,
-                                          method=method)
+        # fit responses that have this optimum
+        responses_mask = np.asarray([np.allclose(row, unique_optima[idx]) for row in optima])
+        test_responses = None if responses_test is None else responses_test[:, responses_mask]
+        response_solution = estimate_simple_stem_wmvnp(features_train,
+                                                       responses_train[:, responses_mask],
+                                                       features_test=features_test,
+                                                       responses_test=test_responses,
+                                                       temporal_prior=temporal_prior,
+                                                       temporal_hhparam=temporal_opt,
+                                                       feature_priors=feature_priors,
+                                                       feature_hyparams=spatial_opt,
+                                                       weights=weights,
+                                                       performance=weights,
+                                                       predictions=predictions,
+                                                       ridge_scale=ridge_opt,
+                                                       verbosity=verbosity,
+                                                       method=method,
+                                                       )
+        # store the solutions
+        for rdx, response_index in enumerate(responses_mask.nonzero()[0]):
+            solutions[response_index] = {k:v[...,rdx] for k,v in response_solution.items()}
 
         if verbosity:
-            itxt = 'response %i/%i optimal parameters:'%(idx+1, nresponses)
-            ttxt = "temporal=%0.03f," % float(temporal_opt)
+            itxt = '%i responses:'%(responses_mask.sum())
+            ttxt = "ridge=%9.03f, temporal=%0.03f," % (ridge_opt, temporal_opt)
             stxt = "spatial=("
             stxt += ', '.join(["%0.03f"]*(len(spatial_opt)))
             stxt = stxt%tuple(spatial_opt) + ')'
             perf = 'perf=%0.04f'%response_solution['performance'].mean()
             print(' '.join([itxt, ttxt, stxt, perf]))
-        print response_solution.keys()
 
-    cvresults['optima'] = optima
+    fits = ddict(list)
+    for solution in solutions:
+        for k,v in solution.items():
+            fits[k].append(v)
+    for k,v in fits.items():
+        v = np.asarray(v).T
+        cvresults[k] = v
+    del fits, solutions
     return cvresults
+
 
 def dual2primal_weights(kernel_weights,
                         feature_matrices,
