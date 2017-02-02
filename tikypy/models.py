@@ -276,7 +276,10 @@ def solve_l2_dual(Ktrain, Ytrain,
 
     if method == 'SVD':
         L, Q = LA.eigh(Ktrain)
-        gidx = L > EPS
+        if EPS is None:
+            gidx = np.ones(len(L), dtype=np.bool)
+        else:
+            gidx = L > EPS
         L = L[gidx]
         Q = Q[:, gidx]
         QTY = np.dot(Q.T, Ytrain)
@@ -1214,12 +1217,12 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                   verbosity=verbosity,
                                   )
 
-        print params
+        print(params)
         cvres = res['cvresults'].mean(0).mean(-1).mean()
-        print 'features:', feature_hyparams
-        print 'ridges:', scale_hyparam
-        print res['spatial'], res['temporal'], res['ridges']
-        print cvres
+        print('features:',feature_hyparams)
+        print('ridges:', scale_hyparam)
+        print((res['spatial'], res['temporal'], res['ridges']))
+        print(cvres)
         return {'loss' : (1 - cvres)**2,
                 'attachments' : {'internals' : pickle.dumps({'temporal' : res['temporal'],
                                                              'spatial' : res['spatial'],
@@ -1247,7 +1250,7 @@ def hyperopt_estimate_stem_wmvnp(features_train,
 
 
 
-    print best_params
+    print(best_params)
     return trials
 
 if __name__ == '__main__':

@@ -86,12 +86,12 @@ class lazy_kernel(object):
                 raise SwitchError(msg)
 
         if self.kernel_type == 'linear' and kernel_type == 'linear':
-            if verbose: print 'kernel is already set:', self
+            if verbose: print('kernel is already set: %s'%self)
             return
 
         # Check if we already have this update, in which case just return verbosely
         if (kernel_type == self.kernel_type) and (self.kernel_parameter == kernel_parameter):
-            print 'kernel is already set:', self
+            print('kernel is already set: %s'%self)
             return
 
         self.kernel_parameter = kernel_parameter
@@ -109,7 +109,7 @@ class lazy_kernel(object):
         else:
             raise ValueError('Kernel "%s" is not available. Choose from: %s' % (kernel_type, ','.join(self.kernel_types)))
         if verbose:
-            print self
+            print(self)
 
 
 ##############################

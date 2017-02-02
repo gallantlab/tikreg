@@ -17,13 +17,13 @@ def test_kernel_kron():
 
     Xtrn = tikutils.delay_signal(Xtrain, delays)
     Xtst = tikutils.delay_signal(Xtest, delays)
-    XSXtrn = reduce(np.dot, [Xtrn, sigma, Xtrn.T])
+    XSXtrn = np.linalg.multi_dot([Xtrn, sigma, Xtrn.T])
 
     K = kernel_spatiotemporal_prior(Xtrain, sigma_t, sigma_x, delays=delays)
     assert np.allclose(XSXtrn, K)
     assert np.allclose(np.corrcoef(XSXtrn.ravel(), K.ravel())[0,1], 1)
 
-    XSXtst = reduce(np.dot, [Xtst, sigma, Xtrn.T])
+    XSXtst = np.linalg.multi_dot([Xtst, sigma, Xtrn.T])
     K = kernel_spatiotemporal_prior(Xtrain, sigma_t, sigma_x, Xtest=Xtest, delays=delays)
     assert np.allclose(XSXtst, K)
     assert np.allclose(np.corrcoef(XSXtst.ravel(), K.ravel())[0,1], 1)
@@ -211,7 +211,7 @@ def test_cvridge():
                       verbose=False, EPS=0, withinset_test=False,
                       performance=True, predictions=True, weights=True)
         cvres = fit['cvresults']
-        for fdx in xrange(len(folds)):
+        for fdx in range(len(folds)):
             # compute the fold prediction performance
             B = simple_ridge_primal(Xt[folds[fdx][0]],
                                     Yt[folds[fdx][0]],

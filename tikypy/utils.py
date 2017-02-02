@@ -4,7 +4,10 @@ from scipy.stats import zscore
 from scipy.linalg import toeplitz
 from scipy.misc import comb
 
-
+try:
+    reduce
+except NameError:
+    from functools import reduce
 
 def isdiag(mat):
     if mat.ndim != 2:
@@ -79,7 +82,7 @@ def difference_operator(order, nobs):
     kernel *= sign
     vec = np.zeros(nobs)
     if order % 2 == 0:
-        lkern = len(kernel)/2
+        lkern = int(len(kernel)/2)
         vec[:len(kernel)-lkern] = kernel[lkern:]
         convmat = toeplitz(vec, np.zeros(nobs))
         convmat += np.tril(convmat, -1).T
@@ -89,7 +92,6 @@ def difference_operator(order, nobs):
     else:
         raise NotImplementedError
     return convmat
-
 
 
 def hrf_default_basis(dt=2.0, duration=32):
@@ -414,7 +416,7 @@ def generate_trnval_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
     step = 1 if sampler == 'mbb' else nchunks
     samples = [samples[idx:idx+nchunks] for idx in range(0,N-nchunks+1, step)]
     N = len(samples)
-    samples = map(list, samples)
+    samples = [list(tt) for tt in samples]
 
     append = lambda z: reduce(lambda x, y: x+y, z)
     allidx = np.arange(oN)
@@ -498,7 +500,7 @@ def hrf_convolution(input_responses, HRF=None, do_convolution=True, dt=None):
 
     if do_convolution is True:
         do_convolution = [True]*nresp
-    for sidx in xrange(nresp):
+    for sidx in range(nresp):
         signal = input_responses[:, sidx]
         if do_convolution[sidx]:
             conv = np.convolve(signal, HRF, 'full')[:len(signal)]

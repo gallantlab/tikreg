@@ -154,8 +154,8 @@ def test_vector_norm_sq():
     ydata = np.random.rand(6,5)
 
     res = np.zeros((xdata.shape[0], ydata.shape[0]))
-    for idx in xrange(xdata.shape[0]):
-        for jdx in xrange(ydata.shape[0]):
+    for idx in range(xdata.shape[0]):
+        for jdx in range(ydata.shape[0]):
             # d = np.sum((xdata[idx] - ydata[jdx])**2)
             d = np.linalg.norm(xdata[idx] - ydata[jdx])**2
             res[idx,jdx] = d

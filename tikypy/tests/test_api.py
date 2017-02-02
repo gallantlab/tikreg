@@ -33,7 +33,7 @@ def get_abc_data(banded=True, p=50, n=100):
     responses_train = zscore(Yat*weights[0] + Ybt*weights[1] + Yct*weights[2])
     responses_test = zscore(Yav*weights[0] + Ybv*weights[1] + Ycv*weights[2])
 
-    for rdx in xrange(responses_train.shape[-1]):
+    for rdx in range(responses_train.shape[-1]):
         # different noise levels
         noise = np.log(rdx + 1)
         responses_train[:, rdx] += np.random.randn(responses_train.shape[0])*noise
@@ -69,7 +69,7 @@ def test_fullfit(n=100, p=50):
                       sps.SphericalPrior(features_sizes[2], hyperparameters=hyparams),
                       ]
 
-    reload(models)
+
     temporal_prior = tps.SphericalPrior(delays)
     folds = tikutils.generate_trnval_folds(responses_train.shape[0],
                                            sampler='bcv',
@@ -77,7 +77,7 @@ def test_fullfit(n=100, p=50):
                                            )
     folds = list(folds)
 
-    reload(models)
+
     res  = models.estimate_stem_wmvnp(features_train,
                                       responses_train,
                                       features_test,
@@ -274,7 +274,7 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
                       sps.SphericalPrior(features_sizes[2], hyperparameters=[0.1, 1]),
                       ]
 
-    reload(models)
+
     tpriors = [tps.SphericalPrior(delays)]
     temporal_prior = tpriors[0]
     folds = tikutils.generate_trnval_folds(responses_train.shape[0],
@@ -562,7 +562,7 @@ def test_stmvn_prior(method='SVD'):
                ]
 
     from tikypy import models
-    reload(models)
+
     res = models.crossval_stem_wmvnp(features_train,
                                      responses_train,
                                      # delays=delays,
@@ -586,10 +586,9 @@ def test_stmvn_prior(method='SVD'):
                                                      res['spatial'],
                                                      res['ridges'],
                                                      )
-        print "temporal=%0.03f," % float(tpopt),
-        print "spatial=(%0.03f,%0.03f, %0.03f)"%tuple(spopt)
-        print "ridge=%0.03f"%float(ropt)
-
+        txt = "temporal=%0.03f, spatial=(%0.03f,%0.03f, %0.03f), ridge=%0.03f"
+        content = tuple([tpopt])+tuple(spopt)+tuple([ropt])
+        print(txt % content)
     return res
 
 
@@ -647,7 +646,7 @@ def test_hyperopt_functionality():
                       sps.SphericalPrior(features_sizes[2]),
                       ]
 
-    reload(models)
+
     tpriors = [tps.SphericalPrior(delays)]
     # tpriors = [tps.SmoothnessPrior(delays, hhparams=np.linspace(0,10,5))]
     temporal_prior = tpriors[0]
@@ -689,11 +688,11 @@ def test_hyperopt_functionality():
                                          verbosity=2,
                                          )
         cvres = res['cvresults'].mean(0).mean(-1).mean()
-        print 'features:', feature_hyparams
-        print 'ridges:', scale_hyparams
-        print res['spatial'], res['temporal'], res['ridges']
-        print cvres
-        return (1 - cvres)**2#np.max(cvres, 0)
+        print('features:',feature_hyparams)
+        print('ridges:',scale_hyparams)
+        print(res['spatial'], res['temporal'], res['ridges'])
+        print(cvres)
+        return (1 - cvres)**2
 
 
     space = (hp.loguniform('rB', 0, 7),
@@ -712,7 +711,7 @@ def test_hyperopt_functionality():
                        trials=trials)
 
 
-    print best_params
+    print(best_params)
 
 
 
@@ -720,7 +719,7 @@ def test_hyperopt_functionality():
 def test_hyperopt_cossval():
 
     from tikypy import models
-    reload(models)
+
 
     delays = np.arange(10)#np.unique(np.random.randint(0,10,10))
     ndelays = len(delays)
@@ -737,7 +736,7 @@ def test_hyperopt_cossval():
                       sps.SphericalPrior(features_sizes[2]),
                       ]
 
-    reload(models)
+
     tpriors = [tps.HRFPrior(delays)]
     # tpriors = [tps.SmoothnessPrior(delays, hhparams=np.linspace(0,10,5))]
     temporal_prior = tpriors[0]
@@ -766,7 +765,7 @@ def test_hyperopt_cossval():
                                                     folds=(2,5),
                                                     )
 
-    print time.time() - start_time
+    print(time.time() - start_time)
     internal_best = cvresults.trial_attachments(cvresults.trials[cvresults.best_trial['tid']])['internals']
     import pickle
     oo = pickle.loads(internal_best)

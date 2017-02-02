@@ -32,7 +32,7 @@ def test_generators(N=100, testpct=0.2, nchunks=5, nfolds=5):
     alltrn = []
     folds = tikutils.generate_trnval_folds(N, 'cv', testpct=testpct,
                                             nfolds=nfolds, nchunks=nchunks)
-    for idx, (trn, val) in enumerate(folds):
+    for idx, (trn, val) in enumerate(list(folds)):
         # none of the trn is in the val
         assert np.in1d(trn, val).sum() == 0
         assert np.in1d(val, trn).sum() == 0
@@ -45,7 +45,7 @@ def test_generators(N=100, testpct=0.2, nchunks=5, nfolds=5):
     nfolds = 10
     folds = tikutils.generate_trnval_folds(N, 'nbb', nfolds=nfolds,
                                             testpct=testpct, nchunks=nchunks)
-    for idx, (trn, val) in enumerate(folds):
+    for idx, (trn, val) in enumerate(list(folds)):
         # none of the trn is in the val
         assert np.in1d(trn, val).sum() == 0
         assert np.in1d(val, trn).sum() == 0
@@ -55,7 +55,7 @@ def test_generators(N=100, testpct=0.2, nchunks=5, nfolds=5):
     nfolds = 100
     folds = tikutils.generate_trnval_folds(N, 'mbb', nfolds=nfolds,
                                             testpct=testpct, nchunks=nchunks)
-    for idx, (trn, val) in enumerate(folds):
+    for idx, (trn, val) in enumerate(list(folds)):
         # none of the trn is in the val
         assert np.in1d(trn, val).sum() == 0
         assert np.in1d(val, trn).sum() == 0
