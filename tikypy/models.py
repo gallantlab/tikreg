@@ -966,7 +966,7 @@ def estimate_stem_wmvnp(features_train,
                         method='SVD',
                         verbosity=1,
                         cvresults=None,
-                        population_optimal = False
+                        population_optimal=False
                         ):
     '''
     '''
@@ -1141,6 +1141,109 @@ def estimate_simple_stem_wmvnp(features_train,
                                       method=method)
 
     return response_solution
+
+
+
+
+def hyperopt_estimate_stem_wmvnp(features_train,
+                                 responses_train,
+                                 features_test=None,
+                                 responses_test=None,
+                                 normalize_kernel=True,
+                                 temporal_prior=None,
+                                 feature_priors=None,
+                                 weights=False,
+                                 predictions=False,
+                                 performance=True,
+                                 # noise_ceiling_correction=False,
+                                 mean_cv_only=False,
+                                 folds=(1,5),
+                                 method='SVD',
+                                 verbosity=1,
+                                 cvresults=None,
+                                 population_optimal=False,
+                                 ntrials=100,
+                                 ridge_limits=(-7, 7),
+                                 feature_limits=[(0,7)],
+                                 spatial_sampler=None,
+                                 temporal_sampler=None,
+                                 ridge_sampler=None,
+                                 ):
+    import pickle
+    from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
+
+    if spatial_sampler is None:
+        spatial_sampler = hp.loguniform
+
+    if ridge_sampler is None:
+        ridge_sampler = hp.loguniform
+
+    delays = temporal_prior.delays
+    ndelays = len(delays)
+
+    if features_test is None:
+        features_test = [features_test]*len(features_train)
+
+    if len(feature_limits) == 1:
+        feature_limits = feature_limits*len(features_train)
+
+    def objective(params):
+        # temporal_hhparam = params[0]
+        feature_hyparams = params[:-1]
+        scale_hyparam = params[-1]
+
+        temporal_prior.set_hhparameters(1.)#temporal_hhparam)
+
+        for fi, feature_prior in enumerate(feature_priors):
+            feature_prior.set_hyperparameters(feature_hyparams[fi])
+
+        res = crossval_stem_wmvnp(features_train,
+                                  responses_train,
+                                  ridges=np.asarray([scale_hyparam]),
+                                  normalize_kernel=False,
+                                  temporal_prior=temporal_prior,
+                                  feature_priors=feature_priors,
+                                  performance=True,
+                                  folds=folds,
+                                  method=method,
+                                  verbosity=verbosity,
+                                  )
+
+        print params
+        cvres = res['cvresults'].mean(0).mean(-1).mean()
+        print 'features:', feature_hyparams
+        print 'ridges:', scale_hyparam
+        print res['spatial'], res['temporal'], res['ridges']
+        print cvres
+        return {'loss' : (1 - cvres)**2,
+                'attachments' : {'internals' : pickle.dumps({'temporal' : res['temporal'],
+                                                             'spatial' : res['spatial'],
+                                                             'ridges' : res['ridges']}),
+                                 },
+                'status': STATUS_OK,
+                }
+
+
+
+    spaces = []
+    for i in range(len(features_train)):
+        sampler = spatial_sampler('x%0i'%i, feature_limits[i][0], feature_limits[i][1])
+        spaces.append(sampler)
+
+    spaces.append(ridge_sampler('ridge_scale', ridge_limits[0], ridge_limits[1]))
+
+
+    trials = Trials()
+    best_params = fmin(objective,
+                       space=spaces,
+                       algo=tpe.suggest,
+                       max_evals=ntrials,
+                       trials=trials)
+
+
+
+    print best_params
+    return trials
 
 if __name__ == '__main__':
     pass
