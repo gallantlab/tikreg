@@ -642,3 +642,60 @@ def test_hyperopt_functionality():
 
 
     print best_params
+
+
+
+
+def test_hyperopt_cossval():
+
+    from tikypy import models
+    reload(models)
+
+    delays = np.arange(10)#np.unique(np.random.randint(0,10,10))
+    ndelays = len(delays)
+
+
+    features_train, features_test, responses_train, responses_test = get_abc_data()
+    features_sizes = [fs.shape[1] for fs in features_train]
+
+    # features_train, features_test, responses_train, responses_test = get_abc_data()
+    features_sizes = [fs.shape[1] for fs in features_train]
+
+    feature_priors = [sps.SphericalPrior(features_sizes[0]),
+                      sps.SphericalPrior(features_sizes[1]),
+                      sps.SphericalPrior(features_sizes[2]),
+                      ]
+
+    reload(models)
+    tpriors = [tps.HRFPrior(delays)]
+    # tpriors = [tps.SmoothnessPrior(delays, hhparams=np.linspace(0,10,5))]
+    temporal_prior = tpriors[0]
+
+    folds = tikutils.generate_trnval_folds(responses_train.shape[0],
+                                           sampler='bcv',
+                                           nfolds=(1,5),
+                                           )
+    folds = list(folds)
+
+    import time
+    from hyperopt import hp
+
+    start_time = time.time()
+    cvresults = models.hyperopt_estimate_stem_wmvnp(features_train,
+                                                    responses_train,#[:,[0]],
+                                                    temporal_prior=temporal_prior,
+                                                    feature_priors=feature_priors,
+                                                    feature_limits=[(0,1)],
+                                                    ridge_limits=(0,7),
+                                                    spatial_sampler=hp.uniform,
+                                                    ridge_sampler=hp.loguniform,
+                                                    ntrials=100,
+                                                    method='Chol',
+                                                    verbosity=1,
+                                                    folds=(2,5),
+                                                    )
+
+    print time.time() - start_time
+    internal_best = cvresults.trial_attachments(cvresults.trials[cvresults.best_trial['tid']])['internals']
+    import pickle
+    oo = pickle.loads(internal_best)
