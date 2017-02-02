@@ -64,9 +64,9 @@ def test_fullfit(n=100, p=50):
     features_sizes = [fs.shape[1] for fs in features_train]
 
     hyparams = np.logspace(0,3,5)
-    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyperparameters=[1.]),
-                      sps.SphericalPrior(features_sizes[1], hyperparameters=hyparams),
-                      sps.SphericalPrior(features_sizes[2], hyperparameters=hyparams),
+    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyparams=[1.]),
+                      sps.SphericalPrior(features_sizes[1], hyparams=hyparams),
+                      sps.SphericalPrior(features_sizes[2], hyparams=hyparams),
                       ]
 
 
@@ -89,7 +89,7 @@ def test_fullfit(n=100, p=50):
                                       weights=True,
                                       performance=True,
                                       predictions=True,
-                                      mean_cv_only=False,
+                                      population_mean=False,
                                       folds=(1,5),
                                       method='SVD',
                                       verbosity=1,
@@ -182,9 +182,9 @@ def test_ols():
                                         predictions=True)
 
     # create feature priors
-    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyperparameters=[1]),
-                      sps.SphericalPrior(features_sizes[1], hyperparameters=[1]),
-                      sps.SphericalPrior(features_sizes[2], hyperparameters=[1]),
+    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyparams=[1]),
+                      sps.SphericalPrior(features_sizes[1], hyparams=[1]),
+                      sps.SphericalPrior(features_sizes[2], hyparams=[1]),
                       ]
 
 
@@ -202,10 +202,10 @@ def test_ols():
     for temporal_prior in tpriors:
         print(temporal_prior)
 
-        all_temporal_hypers = [temporal_prior.get_hyperparameters()]
+        all_temporal_hypers = [temporal_prior.get_hyparams()]
         all_spatial_hypers = [[1.]]*len(spatial_priors)
 
-        # get all combinations of hyperparameters
+        # get all combinations of hyparams
         all_hyperparams = itertools.product(*(all_temporal_hypers + all_spatial_hypers))
 
         Ktrain = 0.
@@ -269,9 +269,9 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
     features_train, features_test, responses_train, responses_test = get_abc_data()
     features_sizes = [fs.shape[1] for fs in features_train]
 
-    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyperparameters=[1]),
-                      sps.SphericalPrior(features_sizes[1], hyperparameters=[0.1, 1]),
-                      sps.SphericalPrior(features_sizes[2], hyperparameters=[0.1, 1]),
+    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyparams=[1]),
+                      sps.SphericalPrior(features_sizes[1], hyparams=[0.1, 1]),
+                      sps.SphericalPrior(features_sizes[2], hyparams=[0.1, 1]),
                       ]
 
 
@@ -348,6 +348,7 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
                                     ridges=[ridge_scale],
                                     weights=True)
 
+
     # check projection from kernel to standard form solution is correct
     W = np.dot(X.T, res['weights'])
     assert np.allclose(W, primal['weights'])
@@ -386,7 +387,7 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
 
 def test_ridge_solution_raw():
     # make sure we recover the ridge solution
-    # when we don't normalize hyperparameters
+    # when we don't normalize hyparams
     test_ridge_solution(normalize_kernel=False)
 
 
@@ -403,7 +404,7 @@ def test_ridge_solution_raw_chol():
 
 def test_cv_api(show_figures=False, ntest=50):
     # if show_figures=True, this function will create
-    # images of the temporal priors, and the feature prior hyperparameters in 3D
+    # images of the temporal priors, and the feature prior hyparams in 3D
 
     ridges = [0., 1e-03, 1., 10.0, 100.]
     nridges = len(ridges)
@@ -414,12 +415,12 @@ def test_cv_api(show_figures=False, ntest=50):
     features_sizes = [fs.shape[1] for fs in features_train]
 
     spatial_priors = [sps.SphericalPrior(features_sizes[0]),
-                      sps.SphericalPrior(features_sizes[1], hyperparameters=np.logspace(-3,3,7)),
-                      sps.SphericalPrior(features_sizes[2], hyperparameters=np.logspace(-3,3,7)),
+                      sps.SphericalPrior(features_sizes[1], hyparams=np.logspace(-3,3,7)),
+                      sps.SphericalPrior(features_sizes[2], hyparams=np.logspace(-3,3,7)),
                       ]
 
     # do not scale first. this removes duplicates
-    spatial_priors[0].set_hyperparameters(1.0)
+    spatial_priors[0].set_hyparams(1.0)
 
     # non-diagonal hyper-prior
     W = np.random.randn(ndelays, ndelays)
@@ -442,19 +443,19 @@ def test_cv_api(show_figures=False, ntest=50):
         print(temporal_prior)
 
         all_temporal_hypers = [temporal_prior.get_hhparams()]
-        all_spatial_hypers = [t.get_hyperparameters() for t in spatial_priors]
+        all_spatial_hypers = [t.get_hyparams() for t in spatial_priors]
 
-        # get all combinations of hyperparameters
+        # get all combinations of hyparams
         all_hyperparams = list(itertools.product(*(all_temporal_hypers + all_spatial_hypers)))
         nspatial_hyperparams = np.prod([len(t) for t in all_spatial_hypers])
         ntemporal_hyperparams = np.prod([len(t) for t in all_temporal_hypers])
 
-        mean_cv_only = False
+        population_mean = False
         results = np.zeros((nfolds,
                             ntemporal_hyperparams,
                             nspatial_hyperparams,
                             nridges,
-                            1 if mean_cv_only else responses_train.shape[-1]),
+                            1 if population_mean else responses_train.shape[-1]),
                            dtype=[('fold', np.float32),
                                   ('tp', np.float32),
                                   ('sp', np.float32),
@@ -524,7 +525,7 @@ def test_cv_api(show_figures=False, ntest=50):
                                            ridges=ridges,
                                            verbose=False,
                                            performance=True)
-                if mean_cv_only:
+                if population_mean:
                     cvfold = np.nan_to_num(fit['performance']).mean(-1)[...,None]
                 else:
                     cvfold = fit['performance']
@@ -541,12 +542,12 @@ def test_stmvn_prior(method='SVD'):
     features_sizes = [fs.shape[1] for fs in features_train]
 
     spatial_priors = [sps.SphericalPrior(features_sizes[0]),
-                      sps.SphericalPrior(features_sizes[1], hyperparameters=np.logspace(-3,3,7)),
-                      sps.SphericalPrior(features_sizes[2], hyperparameters=np.logspace(-3,3,7)),
+                      sps.SphericalPrior(features_sizes[1], hyparams=np.logspace(-3,3,7)),
+                      sps.SphericalPrior(features_sizes[2], hyparams=np.logspace(-3,3,7)),
                       ]
 
     # do not scale first. this removes duplicates
-    spatial_priors[0].set_hyperparameters(1.0)
+    spatial_priors[0].set_hyparams(1.0)
 
     # non-diagonal hyper-prior
     W = np.random.randn(ndelays, ndelays)
@@ -565,7 +566,6 @@ def test_stmvn_prior(method='SVD'):
 
     res = models.crossval_stem_wmvnp(features_train,
                                      responses_train,
-                                     # delays=delays,
                                      temporal_prior=tpriors[2],
                                      feature_priors=spatial_priors,
                                      folds=(1,5),
@@ -672,17 +672,16 @@ def test_hyperopt_functionality():
         temporal_prior.set_hhparameters(1.)
 
         for fi, feature_prior in enumerate(feature_priors[1:]):
-            feature_prior.set_hyperparameters(feature_hyparams[fi])
+            feature_prior.set_hyparams(feature_hyparams[fi])
 
         # does not affect
-        feature_priors[0].set_hyperparameters(1.)
+        feature_priors[0].set_hyparams(1.)
         res = models.crossval_stem_wmvnp(features_train,
                                          responses_train,
                                          ridges=np.asarray([scale_hyparams]),
                                          normalize_kernel=False,
                                          temporal_prior=temporal_prior,
                                          feature_priors=feature_priors,
-                                         performance=True,
                                          folds=(2,5),
                                          method='SVD',
                                          verbosity=2,
@@ -716,30 +715,16 @@ def test_hyperopt_functionality():
 
 
 
-def test_hyperopt_cossval():
-
+def test_hyperopt_crossval():
     from tikypy import models
-
-
-    delays = np.arange(10)#np.unique(np.random.randint(0,10,10))
+    delays = np.arange(10)
     ndelays = len(delays)
-
 
     features_train, features_test, responses_train, responses_test = get_abc_data()
     features_sizes = [fs.shape[1] for fs in features_train]
 
-    # features_train, features_test, responses_train, responses_test = get_abc_data()
-    features_sizes = [fs.shape[1] for fs in features_train]
-
-    feature_priors = [sps.SphericalPrior(features_sizes[0]),
-                      sps.SphericalPrior(features_sizes[1]),
-                      sps.SphericalPrior(features_sizes[2]),
-                      ]
-
-
-    tpriors = [tps.HRFPrior(delays)]
-    # tpriors = [tps.SmoothnessPrior(delays, hhparams=np.linspace(0,10,5))]
-    temporal_prior = tpriors[0]
+    feature_priors = [sps.SphericalPrior(fs) for fs in features_train]
+    temporal_prior = tps.SmoothnessPrior(delays, hhparams=np.linspace(0,10,5))
 
     folds = tikutils.generate_trnval_folds(responses_train.shape[0],
                                            sampler='bcv',
@@ -752,17 +737,19 @@ def test_hyperopt_cossval():
 
     start_time = time.time()
     cvresults = models.hyperopt_estimate_stem_wmvnp(features_train,
-                                                    responses_train,#[:,[0]],
+                                                    responses_train,
                                                     temporal_prior=temporal_prior,
                                                     feature_priors=feature_priors,
-                                                    feature_limits=[(0,1)],
-                                                    ridge_limits=(0,7),
-                                                    spatial_sampler=hp.uniform,
-                                                    ridge_sampler=hp.loguniform,
+                                                    spatial_sampler=[hp.loguniform('A',0,7),
+                                                                     hp.loguniform('B',0,7),
+                                                                     hp.loguniform('C',0,7),
+                                                                     ],
+                                                    ridge_sampler=False,
+                                                    temporal_sampler=hp.uniform('temporal',0,10),
                                                     ntrials=100,
                                                     method='Chol',
-                                                    verbosity=1,
-                                                    folds=(2,5),
+                                                    verbosity=2,
+                                                    folds=folds,
                                                     )
 
     print(time.time() - start_time)
