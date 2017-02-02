@@ -269,9 +269,9 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
     features_train, features_test, responses_train, responses_test = get_abc_data()
     features_sizes = [fs.shape[1] for fs in features_train]
 
-    spatial_priors = [sps.SphericalPrior(features_sizes[0]),
-                      sps.SphericalPrior(features_sizes[1]),
-                      sps.SphericalPrior(features_sizes[2]),
+    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyperparameters=[1]),
+                      sps.SphericalPrior(features_sizes[1], hyperparameters=[0.1, 1]),
+                      sps.SphericalPrior(features_sizes[2], hyperparameters=[0.1, 1]),
                       ]
 
     reload(models)
@@ -282,7 +282,6 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
                                            nfolds=(1,5),
                                            )
     folds = list(folds)
-
     res = models.crossval_stem_wmvnp(features_train,
                                      responses_train,
                                      temporal_prior=temporal_prior,
@@ -294,8 +293,11 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
                                      normalize_kernel=normalize_kernel,
                                      )
 
-    sprior_ridge = res['spatial'][0]
+    # select a non-spherical prior
+    spidx = 0
+    sprior_ridge = res['spatial'][spidx]
     newridges = res['ridges']
+    ridge_scale = newridges[-1]
 
     # direct fit
     X = np.hstack([tikutils.delay_signal(t.astype(np.float64), delays)*(sprior_ridge[i]**-1)\
@@ -305,12 +307,81 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
                          responses_train,
                          folds=folds,
                          ridges=newridges,
-                         verbose=True
+                         verbose=True,
                          )
+
     print(newridges)
     print(res['spatial'].squeeze())
     print(res['ridges'].squeeze())
-    assert np.allclose(fit['cvresults'].squeeze(), res['cvresults'].squeeze())
+    assert np.allclose(fit['cvresults'].squeeze(), res['cvresults'].squeeze()[:,spidx])
+
+
+    fit = models.cvridge(X,
+                         responses_train,
+                         folds=folds,
+                         ridges=[ridge_scale],
+                         verbose=True,
+                         weights=True,
+                         kernel_weights=True,
+                         )
+
+    res = models.estimate_simple_stem_wmvnp(features_train,
+                                            responses_train,
+                                            features_test=None,
+                                            responses_test=None,
+                                            temporal_prior=temporal_prior,
+                                            temporal_hhparam=1.0,
+                                            feature_priors=spatial_priors,
+                                            feature_hyparams=sprior_ridge,
+                                            weights=True,
+                                            performance=False,
+                                            predictions=False,
+                                            ridge_scale=ridge_scale,
+                                            verbosity=2,
+                                            method='SVD',
+                                            )
+
+    # check kernel weights are the same
+    assert np.allclose(res['weights'].squeeze(), fit['weights'].squeeze())
+
+    primal = models.solve_l2_primal(X, responses_train,
+                                    ridges=[ridge_scale],
+                                    weights=True)
+
+    # check projection from kernel to standard form solution is correct
+    W = np.dot(X.T, res['weights'])
+    assert np.allclose(W, primal['weights'])
+
+    # check projection from standard solution to tikhonov solution is correct
+    weights = models.dual2primal_weights(res['weights'],
+                                         features_train,
+                                         spatial_priors,
+                                         sprior_ridge,
+                                         temporal_prior,
+                                         temporal_prior.delays)
+    weights = np.vstack(weights)
+
+    ### solve problem directly
+    Xx = np.hstack([tikutils.delay_signal(t.astype(np.float64), delays)\
+                    for i,t in enumerate(features_train)])
+
+    # get scaled priors
+    spriors = [sp.get_prior(param) for sp, param in zip(spatial_priors, sprior_ridge)]
+    # combine
+    from scipy import linalg as LA
+    sprior = LA.block_diag(*spriors)
+    # get temporal prior
+    tprior = temporal_prior.get_prior(1.0)
+    # get full prior
+    prior = np.kron(sprior, tprior)
+    # get penalty
+    penalty = np.linalg.inv(prior)
+    # solve problem directly
+    XTXSigma = np.dot(Xx.T, Xx) + ridge_scale**2*penalty
+    XTY = np.dot(Xx.T, responses_train)
+    betas = np.dot(np.linalg.inv(XTXSigma), XTY)
+    # check solutions
+    assert np.allclose(betas, weights)
 
 
 def test_ridge_solution_raw():
