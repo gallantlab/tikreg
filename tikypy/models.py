@@ -179,7 +179,8 @@ def solve_l2_primal(Xtrain, Ytrain,
                 XVD = tikutils.mult_diag(D, XtestV, left=False)
                 Ypred = np.dot(XVD, UTY)
             elif method == 'Chol':
-                Ypred = np.dot(Xtest, cho_solve((L, lower), XtY))
+                cho_weights = cho_solve((L, lower), XtY)
+                Ypred = np.dot(Xtest, cho_weights)
             cc = tikutils.columnwise_correlation(Ypred, Ytest, axis=0)
             results['performance'].append(cc)
 
@@ -200,14 +201,19 @@ def solve_l2_primal(Xtrain, Ytrain,
                 XVD = tikutils.mult_diag(D, XtestV, left=False)
                 Ypred = np.dot(XVD, UTY)
             elif method == 'Chol':
-                Ypred = np.dot(Xtest, cho_solve((L, lower), XtY))
+                cho_weights = cho_solve((L, lower), XtY)
+                Ypred = np.dot(Xtest, cho_weights)
             results['predictions'].append(Ypred)
+
         if weights:
             # weights
             if method == 'SVD':
                 betas = np.dot(tikutils.mult_diag(D, V, left=False), UTY)
             elif method == 'Chol':
-                betas = cho_solve((L, lower), XtY)
+                if performance or predictions:
+                    betas = cho_weights
+                else:
+                    betas = cho_solve((L, lower), XtY)
             results['weights'].append(betas)
 
     return clean_results_dict(dict(results))
@@ -300,7 +306,8 @@ def solve_l2_dual(Ktrain, Ytrain,
                 KtestQD = tikutils.mult_diag(D, KtestQ, left=False)
                 Ypred = np.dot(KtestQD, QTY)
             elif method == 'Chol':
-                Ypred = np.dot(Ktest, cho_solve((L, lower), Ytrain))
+                cho_weights = cho_solve((L, lower), Ytrain)
+                Ypred = np.dot(Ktest, cho_weights)
 
             cc = tikutils.columnwise_correlation(Ypred, Ytest)
             results['performance'].append(cc)
@@ -321,7 +328,8 @@ def solve_l2_dual(Ktrain, Ytrain,
                 KtestQD = tikutils.mult_diag(D, KtestQ, left=False)
                 Ypred = np.dot(KtestQD, QTY)
             elif method == 'Chol':
-                Ypred = np.dot(Ktest, cho_solve((L, lower), Ytrain))
+                cho_weights = cho_solve((L, lower), Ytrain)
+                Ypred = np.dot(Ktest, cho_weights)
             results['predictions'].append(Ypred)
 
         if weights:
@@ -329,7 +337,10 @@ def solve_l2_dual(Ktrain, Ytrain,
                 QD = tikutils.mult_diag(D, Q, left=False)
                 kernel_weights = np.dot(QD, QTY)
             elif method == 'Chol':
-                kernel_weights = cho_solve((L, lower), Ytrain)
+                if performance or predictions:
+                    kernel_weights = cho_weights
+                else:
+                    kernel_weights = cho_solve((L, lower), Ytrain)
             results['weights'].append(kernel_weights)
 
     return clean_results_dict(dict(results))
