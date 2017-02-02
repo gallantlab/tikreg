@@ -780,6 +780,7 @@ def crossval_stem_wmvnp(features_train,
                         folds=(1,5),
                         method='SVD',
                         verbosity=1,
+                        chunklen=True,
                         ):
     '''Cross-validation procedure for
     spatio-temporal encoding models with MVN priors.
@@ -795,6 +796,8 @@ def crossval_stem_wmvnp(features_train,
     nridges = len(ridges)
     delays = temporal_prior.delays
     ndelays = len(delays)
+    chunklen  = ndelays if (chunklen is True) else (chunklen if chunklen else 1)
+
     nfeatures = [fs.shape[1] for fs in features_train]
     nresponses = responses_train.shape[-1]
     ntrain = responses_train.shape[0]
@@ -816,7 +819,8 @@ def crossval_stem_wmvnp(features_train,
         nfolds = folds
         folds = tikutils.generate_trnval_folds(ntrain,
                                                sampler='bcv',
-                                               nfolds=nfolds)
+                                               nfolds=nfolds,
+                                               nchunks=chunklen)
         nfolds = np.prod(nfolds)
 
     folds = list(folds)
@@ -838,7 +842,7 @@ def crossval_stem_wmvnp(features_train,
                         ntemporal_hhparams,
                         nspatial_hyparams,
                         nridges,
-                        1 if population_mean else responses_train.shape[-1]),
+                        1 if population_mean else nresponses),
                        )
 
     sp_hyparams = []
@@ -933,7 +937,7 @@ def crossval_stem_wmvnp(features_train,
                         np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
                         np.sum(perf < 0.25), np.sum(perf > 0.75))
             txt = "pop.cv.best: %6.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
-            txt += "(0.2<r>0.8): (%03i,%03i)\n"
+            txt += "(0.2<r>0.8): (%03i,%03i)"
             print(txt % contents)
 
     #### dimensions explored
@@ -949,7 +953,7 @@ def crossval_stem_wmvnp(features_train,
                           ntemporal_hhparams,
                           nspatial_hyparams,
                           nridges,
-                          results.shape[-1],
+                          nresponses,
                           len(features_train)])
 
     # spatial hyperparameters. all the same across temporal
@@ -971,20 +975,20 @@ def estimate_stem_wmvnp(features_train,
                         features_test=None,
                         responses_test=None,
                         ridges=np.logspace(0,3,10),
-                        normalize_hyparams=True,
-                        normalize_kernel=True,
+                        normalize_hyparams=False,
+                        normalize_kernel=False,
                         temporal_prior=None,
                         feature_priors=None,
                         weights=False,
                         predictions=False,
-                        performance=True,
-                        # noise_ceiling_correction=False,
+                        performance=False,
                         population_mean=False,
                         folds=(1,5),
                         method='SVD',
                         verbosity=1,
                         cvresults=None,
-                        population_optimal=False
+                        population_optimal=False,
+                        chunklen=True,
                         ):
     '''
     '''
@@ -1007,6 +1011,7 @@ def estimate_stem_wmvnp(features_train,
                                         folds=folds,
                                         method=method,
                                         verbosity=verbosity,
+                                        chunklen=chunklen,
                                         )
 
     if (weights is False) and (performance is False) and (prediction is False):
@@ -1109,14 +1114,14 @@ def estimate_simple_stem_wmvnp(features_train,
                                responses_train,
                                features_test=None,
                                responses_test=None,
-                               temporal_prior=None,
-                               temporal_hhparam=1.0,
                                feature_priors=None,
                                feature_hyparams=None,
+                               temporal_prior=None,
+                               temporal_hhparam=1.0,
+                               ridge_scale=1.0,
                                weights=False,
                                performance=False,
                                predictions=False,
-                               ridge_scale=1.0,
                                verbosity=2,
                                method='SVD',
                                ):
@@ -1177,9 +1182,10 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  normalize_kernel=False,
                                  temporal_prior=None,
                                  feature_priors=None,
-                                 weights=False,
-                                 predictions=False,
-                                 performance=True,
+                                 spatial_sampler=True,
+                                 temporal_sampler=True,
+                                 ridge_sampler=False,
+
                                  population_mean=False,
                                  folds=(1,5),
                                  method='SVD',
@@ -1187,9 +1193,10 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  cvresults=None,
                                  population_optimal=False,
                                  ntrials=100,
-                                 spatial_sampler=True,
-                                 temporal_sampler=True,
-                                 ridge_sampler=False,
+
+                                 weights=False,
+                                 predictions=False,
+                                 performance=True,
                                  ):
     '''Use hyperopt to find the opt9imal hyperparameters
 
