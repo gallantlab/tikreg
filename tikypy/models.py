@@ -761,11 +761,11 @@ def find_optimum_mvn(response_cvmean,
 def crossval_stem_wmvnp(features_train,
                         responses_train,
                         ridges=np.logspace(0,3,10),
-                        normalize_kernel=True,
+                        normalize_kernel=False,
+                        normalize_hyparams=False,
                         temporal_prior=None,
                         feature_priors=None,
-                        performance=True,
-                        mean_cv_only=False,
+                        population_mean=False,
                         folds=(1,5),
                         method='SVD',
                         verbosity=1,
@@ -827,7 +827,7 @@ def crossval_stem_wmvnp(features_train,
                         ntemporal_hhparams,
                         nspatial_hyparams,
                         nridges,
-                        1 if mean_cv_only else responses_train.shape[-1]),
+                        1 if population_mean else responses_train.shape[-1]),
                        )
 
     sp_hyparams = []
@@ -839,7 +839,9 @@ def crossval_stem_wmvnp(features_train,
         spatial_hyparams = spatiotemporal_hyperparams[1:]
 
         # map hyperparameters to surface of sphere
-        spatial_hyparams /= np.linalg.norm(spatial_hyparams)
+        if normalize_hyparams:
+            spatial_hyparams /= np.linalg.norm(spatial_hyparams)
+
         sp_hyparams.append(spatial_hyparams)
 
         # apply the hyperparameter to the hyper-prior on the temporal prior
@@ -882,7 +884,8 @@ def crossval_stem_wmvnp(features_train,
                 kernel_normalizer = 1.0
             scaled_ridges *= np.sqrt(kernel_normalizer)
 
-        Ktrain /= kernel_normalizer
+        if kernel_normalizer != 1:
+            Ktrain /= kernel_normalizer
 
         # perform cross-validation procedure
         for ifold, (trnidx, validx) in enumerate(folds):
@@ -903,7 +906,7 @@ def crossval_stem_wmvnp(features_train,
                                 method=method,
                                 )
 
-            if mean_cv_only:
+            if population_mean:
                 # only keep mean population performance on the validation set
                 cvfold = np.nan_to_num(fit['performance']).mean(-1)[...,None]
             else:
@@ -957,6 +960,7 @@ def estimate_stem_wmvnp(features_train,
                         features_test=None,
                         responses_test=None,
                         ridges=np.logspace(0,3,10),
+                        normalize_hyparams=True,
                         normalize_kernel=True,
                         temporal_prior=None,
                         feature_priors=None,
@@ -964,7 +968,7 @@ def estimate_stem_wmvnp(features_train,
                         predictions=False,
                         performance=True,
                         # noise_ceiling_correction=False,
-                        mean_cv_only=False,
+                        population_mean=False,
                         folds=(1,5),
                         method='SVD',
                         verbosity=1,
@@ -984,10 +988,11 @@ def estimate_stem_wmvnp(features_train,
         cvresults = crossval_stem_wmvnp(features_train,
                                         responses_train,
                                         ridges=ridges,
+                                        normalize_hyparams=normalize_hyparams,
                                         normalize_kernel=normalize_kernel,
                                         temporal_prior=temporal_prior,
                                         feature_priors=feature_priors,
-                                        mean_cv_only=mean_cv_only,
+                                        population_mean=population_mean,
                                         folds=folds,
                                         method=method,
                                         verbosity=verbosity,
@@ -1157,61 +1162,115 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  responses_train,
                                  features_test=None,
                                  responses_test=None,
-                                 normalize_kernel=True,
+                                 normalize_hyparams=False,
+                                 normalize_kernel=False,
                                  temporal_prior=None,
                                  feature_priors=None,
                                  weights=False,
                                  predictions=False,
                                  performance=True,
-                                 # noise_ceiling_correction=False,
-                                 mean_cv_only=False,
+                                 population_mean=False,
                                  folds=(1,5),
                                  method='SVD',
                                  verbosity=1,
                                  cvresults=None,
                                  population_optimal=False,
                                  ntrials=100,
-                                 ridge_limits=(-7, 7),
-                                 feature_limits=[(0,7)],
-                                 spatial_sampler=None,
-                                 temporal_sampler=None,
-                                 ridge_sampler=None,
+                                 spatial_sampler=True,
+                                 temporal_sampler=True,
+                                 ridge_sampler=False,
                                  ):
+    '''Use hyperopt to find the opt9imal hyperparameters
+
+    * raw:
+       - spatial_sampler: one for each feature space
+       - ridge_sampler: None, just 1.0 always
+       - temporal_sampler: depends
+    * spherical
+       - spatial_sampler: one for each feature space
+       - ridge_sampler: one for all feature spaces
+       - temporal_sampler: depends
+
+    * spatial_sampler defaults to np.loguniform(-7, 7)
+    * if ridge_sampler is True:
+       - np.loguniform(0, 7)
+      if False: no ridge_sampler, ridge always [1]
+
+
+
+    '''
     import pickle
     from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
 
-    if spatial_sampler is None:
-        spatial_sampler = hp.loguniform
-
-    if ridge_sampler is None:
-        ridge_sampler = hp.loguniform
-
     delays = temporal_prior.delays
     ndelays = len(delays)
+    spaces = []
+
+    has_spatial = True
+    if (spatial_sampler is True) or (spatial_sampler is None):
+        for i in range(len(features_train)):
+            sampler = hp.loguniform('X%0i_hyparam'%(i+1), -7, 7)
+            spaces.append(sampler)
+    else:
+        for ss in spatial_sampler:
+            spaces.append(ss)
+
+    if ridge_sampler is True:
+        has_ridge = True
+        spaces.append(ridge_sampler('ridge_scale', 0, 7))
+    elif ridge_sampler is False:
+        has_ridge = False
+    else:
+        has_ridge = True
+        spaces.append(ridge_sampler)
+
+    if (len(temporal_prior.get_hhparams()) > 1) and (temporal_sampler is True):
+        has_temporal = True
+        spaces.append(hp.uniform('temporal_hhparam', 0, 10))
+    elif temporal_sampler is False:
+        has_temporal = False
+    else:
+        # append given temporal sampler
+        has_temporal = True
+        spaces.append(temporal_sampler)
 
     if features_test is None:
         features_test = [features_test]*len(features_train)
 
-    if len(feature_limits) == 1:
-        feature_limits = feature_limits*len(features_train)
-
     def objective(params):
-        # temporal_hhparam = params[0]
-        feature_hyparams = params[:-1]
-        scale_hyparam = params[-1]
+        if has_spatial and has_ridge and has_temporal:
+            parameters = {'temporal' : params[-1],
+                          'ridge' : params[-2],
+                          'spatial' : params[:-2]}
+        elif has_spatial and has_ridge and not has_temporal:
+            parameters = {'temporal' : 1.0,
+                          'ridge' : params[-1],
+                          'spatial' : params[:-1]}
+        elif has_spatial and has_temporal and not has_ridge:
+            parameters = {'temporal' : params[-1],
+                          'ridge' : 1.0,
+                          'spatial' : params[:-1]}
 
-        temporal_prior.set_hhparameters(1.)#temporal_hhparam)
+        elif has_spatial and (not has_temporal) and (not has_ridge):
+            parameters = {'temporal' : 1.0,
+                          'ridge' : 1.0,
+                          'spatial' : params}
+        else:
+            print(params)
+            raise ValueError('invalid hyperparams')
+
+        temporal_prior.set_hhparameters(parameters['temporal'])
 
         for fi, feature_prior in enumerate(feature_priors):
-            feature_prior.set_hyperparameters(feature_hyparams[fi])
+            feature_prior.set_hyperparameters(parameters['spatial'][fi])
 
         res = crossval_stem_wmvnp(features_train,
                                   responses_train,
-                                  ridges=np.asarray([scale_hyparam]),
-                                  normalize_kernel=False,
+                                  ridges=[parameters['ridge']],
+                                  normalize_hyparams=normalize_hyparams,
+                                  normalize_kernel=normalize_kernel,
                                   temporal_prior=temporal_prior,
                                   feature_priors=feature_priors,
-                                  performance=True,
                                   folds=folds,
                                   method=method,
                                   verbosity=verbosity,
@@ -1219,10 +1278,11 @@ def hyperopt_estimate_stem_wmvnp(features_train,
 
         print(params)
         cvres = res['cvresults'].mean(0).mean(-1).mean()
-        print('features:',feature_hyparams)
-        print('ridges:', scale_hyparam)
+        print('features:', parameters['spatial'])
+        print('ridges:', parameters['ridge'])
+        print('temporal', parameters['temporal'])
         print((res['spatial'], res['temporal'], res['ridges']))
-        print(cvres)
+        print(cvres, (1 - cvres)**2)
         return {'loss' : (1 - cvres)**2,
                 'attachments' : {'internals' : pickle.dumps({'temporal' : res['temporal'],
                                                              'spatial' : res['spatial'],
@@ -1232,13 +1292,6 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                 }
 
 
-
-    spaces = []
-    for i in range(len(features_train)):
-        sampler = spatial_sampler('x%0i'%i, feature_limits[i][0], feature_limits[i][1])
-        spaces.append(sampler)
-
-    spaces.append(ridge_sampler('ridge_scale', ridge_limits[0], ridge_limits[1]))
 
 
     trials = Trials()
