@@ -1068,15 +1068,20 @@ def dual2primal_weights(kernel_weights,
                         feature_matrices,
                         feature_priors,
                         feature_hyparams,
+                        temporal_prior,
                         delays,
+                        temporal_hhparam=1.0,
                         ):
     '''
     '''
     # WIP: need to fix for kron kernel
     weights = []
+    tp = temporal_prior.get_prior(temporal_hhparam)
     for fi, features in enumerate(feature_matrices):
         Xi = tikutils.delay_signal(features, delays)
-        Wi = np.dot(Xi.T, kernel_weights)
+        sp = feature_priors[fi].get_prior(feature_hyparams[fi])
+        Sigma = np.kron(tp, sp)
+        Wi = np.linalg.multi_dot([Sigma, Xi.T, kernel_weights])
         weights.append(Wi)
     return weights
 
