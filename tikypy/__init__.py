@@ -9,7 +9,7 @@ import tikypy.utils as tikutils
 class BasePrior(object):
     '''Base class for priors
     '''
-    def __init__(self, prior, dodetnorm=False, hyperparameters=[1.0]):
+    def __init__(self, prior, dodetnorm=False, hyparams=[1.0]):
         '''
         '''
         assert prior.ndim == 2
@@ -22,7 +22,7 @@ class BasePrior(object):
 
         if self.dodetnorm:
             self.normalize_prior()
-        self.hyperparameters = np.atleast_1d(hyperparameters)
+        self.hyparams = np.atleast_1d(hyparams)
 
     @property
     def asarray(self):
@@ -51,10 +51,10 @@ class BasePrior(object):
             prior = self.asarray
         return alpha**-2 * prior
 
-    def set_hyperparameters(self, hyperparameters):
-        if np.isscalar(hyperparameters):
-            hyperparameters = np.atleast_1d(hyperparameters)
-        self.hyperparameters = hyperparameters
+    def set_hyparams(self, hyparams):
+        if np.isscalar(hyparams):
+            hyparams = np.atleast_1d(hyparams)
+        self.hyparams = hyparams
 
-    def get_hyperparameters(self):
-        return self.hyperparameters
+    def get_hyparams(self):
+        return self.hyparams

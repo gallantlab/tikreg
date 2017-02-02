@@ -828,7 +828,7 @@ def crossval_stem_wmvnp(features_train,
     # get temporal hyper-prior hyper-parameters from object
     all_temporal_hhparams = [temporal_prior.get_hhparams()]
     # get feature prior hyper parameters
-    all_spatial_hyparams= [t.get_hyperparameters() for t in feature_priors]
+    all_spatial_hyparams= [t.get_hyparams() for t in feature_priors]
     # all combinations
     all_hyperparams = list(itertools.product(*(all_temporal_hhparams + all_spatial_hyparams)))
     nall_cvparams = len(all_hyperparams)
@@ -848,12 +848,12 @@ def crossval_stem_wmvnp(features_train,
     sp_hyparams = []
     scaled_ridges = np.atleast_1d(ridges).copy()
 
-    # start iterating through spatio-temporal hyperparameters
+    # start iterating through spatio-temporal hyparams
     for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
         temporal_hhparam = spatiotemporal_hyperparams[0]
         spatial_hyparams = spatiotemporal_hyperparams[1:]
 
-        # map hyperparameters to surface of sphere
+        # map hyparams to surface of sphere
         if normalize_hyparams:
             spatial_hyparams /= np.linalg.norm(spatial_hyparams)
 
@@ -876,13 +876,13 @@ def crossval_stem_wmvnp(features_train,
             print(hypertxt % hyperdesc)
 
         Ktrain = 0.0
-        # iterate through feature  matrices, priors, and hyperparameters
+        # iterate through feature  matrices, priors, and hyparams
         # to construct spatio-temporal kernel for full training set
         for fdx, (fs_train, fs_prior, fs_hyper) in enumerate(zip(features_train,
                                                                  feature_priors,
                                                                  spatial_hyparams)):
             # compute spatio-temporal kernel for this feature space given
-            # spatial prior hyperparameters, and temporal prior hyper-prior hyperparameters
+            # spatial prior hyparams, and temporal prior hyper-prior hyparams
             kernel_train = kernel_spatiotemporal_prior(fs_train,
                                                        this_temporal_prior,
                                                        fs_prior.get_prior(fs_hyper),
@@ -956,7 +956,7 @@ def crossval_stem_wmvnp(features_train,
                           nresponses,
                           len(features_train)])
 
-    # spatial hyperparameters. all the same across temporal
+    # spatial hyparams. all the same across temporal
     sp_hyparams = np.asarray(sp_hyparams)[:nspatial_hyparams]
 
     if verbosity:
@@ -1202,7 +1202,7 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  predictions=False,
                                  performance=True,
                                  ):
-    '''Use hyperopt to find the opt9imal hyperparameters
+    '''Use hyperopt to find the opt9imal hyparams
 
     * raw:
        - spatial_sampler: one for each feature space
@@ -1284,7 +1284,7 @@ def hyperopt_estimate_stem_wmvnp(features_train,
         temporal_prior.set_hhparameters(parameters['temporal'])
 
         for fi, feature_prior in enumerate(feature_priors):
-            feature_prior.set_hyperparameters(parameters['spatial'][fi])
+            feature_prior.set_hyparams(parameters['spatial'][fi])
 
         res = crossval_stem_wmvnp(features_train,
                                   responses_train,
