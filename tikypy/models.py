@@ -346,6 +346,29 @@ def solve_l2_dual(Ktrain, Ytrain,
     return clean_results_dict(dict(results))
 
 
+def kernel_banded_temporal_prior(kernel, temporal_prior, spatial_prior,
+                                delays=[1,2,3,4]):
+    '''
+    '''
+    if not np.isscalar(spatial_prior):
+        # make sure the matrix is diagonal
+        assert tikutils.isdiag(spatial_prior)
+        assert np.allclose(np.diag(spatial_prior), spatial_prior[0,0])
+        spatial_prior = spatial_prior[0,0]
+    # get the scaling
+    assert np.isscalar(spatial_prior)
+
+    delayed_kernel = np.zeros_like(kernel)
+    for jdx, jdelay in enumerate(delays):
+        for idx, idelay in enumerate(delays):
+            if temporal_prior[idx,jdx] == 0:
+                continue
+            Ki = kernel[tikutils.delay2slice(idelay), tikutils.delay2slice(jdelay)]
+            tmp = temporal_prior[idx,jdx]*Ki*spatial_prior
+            delayed_kernel[idelay:,jdelay:] += tmp
+    return delayed_kernel
+
+
 def kernel_spatiotemporal_prior(Xtrain, temporal_prior, spatial_prior,
                                 Xtest=None, delays=[1,2,3,4]):
     '''Compute the kernel matrix of a model with a spatio-temporal prior
@@ -779,12 +802,29 @@ def crossval_stem_wmvnp(features_train,
                         method='SVD',
                         verbosity=1,
                         chunklen=True,
+                        kernel_features=False,
                         ):
     '''Cross-validation procedure for
     spatio-temporal encoding models with MVN priors.
     '''
     import time
     start_time = time.time()
+
+    ### optimize solution
+    doitfast = [False]*len(features_train)
+    for fi, fp in enumerate(feature_priors):
+        if (tikutils.isdiag(fp.asarray) and
+            np.allclose(np.diag(fp.asarray), fp.asarray[0,0])):
+            doitfast[fi] = True
+
+    kernel_estimate = kernel_spatiotemporal_prior
+    # check whether we can use faster diagonal method
+    if np.allclose(doitfast, True):
+        kernel_estimate = kernel_banded_temporal_prior
+        if kernel_features is False:
+            # cache the kernels
+            features_train = [np.dot(X, X.T) for X in features_train]
+
 
     if isinstance(verbosity, bool):
         verbosity = 1 if verbosity else 0
@@ -881,10 +921,10 @@ def crossval_stem_wmvnp(features_train,
                                                                  spatial_hyparams)):
             # compute spatio-temporal kernel for this feature space given
             # spatial prior hyparams, and temporal prior hyper-prior hyparams
-            kernel_train = kernel_spatiotemporal_prior(fs_train,
-                                                       this_temporal_prior,
-                                                       fs_prior.get_prior(fs_hyper),
-                                                       delays=delays)
+            kernel_train = kernel_estimate(fs_train,
+                                           this_temporal_prior,
+                                           fs_prior.get_prior(fs_hyper),
+                                           delays=delays)
             # store this feature space spatio-temporal kernel
             Ktrain += kernel_train
 

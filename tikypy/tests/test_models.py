@@ -29,6 +29,24 @@ def test_kernel_kron():
     assert np.allclose(np.corrcoef(XSXtst.ravel(), K.ravel())[0,1], 1)
 
 
+def test_kernel_banded_temporal():
+    A = np.random.randn(10,10)
+    B = np.random.randn(20,10)
+    ridge_scale = 3.0**2
+    STS = np.eye(10)*ridge_scale
+    T = np.random.randn(5,5)
+    TTT = np.dot(T.T, T)
+
+    # ktrain
+    K = kernel_spatiotemporal_prior(A, TTT, STS)
+    kk = kernel_banded_temporal_prior(np.dot(A, A.T), TTT, ridge_scale)
+    assert np.allclose(K, kk)
+    # ktest
+    K = kernel_spatiotemporal_prior(A, TTT, STS, Xtest=B)
+    kk = kernel_banded_temporal_prior(np.dot(B, A.T), TTT, ridge_scale)
+    assert np.allclose(K, kk)
+
+
 def test_ols():
     B, X, Y = tikutils.generate_data(noise=0, dozscore=False)
     Bh = ols(X, Y)
