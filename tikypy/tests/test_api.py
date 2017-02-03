@@ -53,7 +53,7 @@ def get_abc_data(banded=True, p=50, n=100):
             responses_train, responses_test)
 
 
-def test_fullfit(n=100, p=50):
+def test_fullfit(n=100, p=50, population_mean=False):
     ridges = np.logspace(-3,3,10)
     nridges = len(ridges)
     ndelays = 5
@@ -77,7 +77,6 @@ def test_fullfit(n=100, p=50):
                                            )
     folds = list(folds)
 
-
     res  = models.estimate_stem_wmvnp(features_train,
                                       responses_train,
                                       features_test,
@@ -89,7 +88,7 @@ def test_fullfit(n=100, p=50):
                                       weights=True,
                                       performance=True,
                                       predictions=True,
-                                      population_mean=False,
+                                      population_mean=population_mean,
                                       folds=(1,5),
                                       method='SVD',
                                       verbosity=1,
@@ -97,7 +96,12 @@ def test_fullfit(n=100, p=50):
                                       )
 
     for rdx in range(responses_train.shape[-1]):
-        optima = res['optima'][rdx]
+        if population_mean:
+            assert res['optima'].shape[0] == 1
+            optima = res['optima'][0]
+        else:
+            optima = res['optima'][rdx]
+
         temporal_opt, spatial_opt, ridge_scale = optima[0], optima[1:-1], optima[-1]
 
         Ktrain = 0.
@@ -139,8 +143,8 @@ def test_fullfit(n=100, p=50):
             assert np.allclose(res[k][:, rdx].squeeze(), response_solution[k].squeeze())
 
 
-
-
+def test_fullfit_population():
+    test_fullfit(population_mean=True)
 
 
 def test_ols():
