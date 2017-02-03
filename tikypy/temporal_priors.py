@@ -135,6 +135,9 @@ class HRFPrior(TemporalPrior):
                 raise ValueError('Using delay zero by itself is not allowed')
         H = tikutils.hrf_default_basis(dt=dt, duration=duration)
         raw_prior = np.dot(H, H.T).astype(np.float64)
+        if 'hhparams' in kwargs:
+            raise ValueError('HRFPrior does not accept hyper-prior')
+
         super(HRFPrior, self).__init__(raw_prior, delays=delays, **kwargs)
 
 
