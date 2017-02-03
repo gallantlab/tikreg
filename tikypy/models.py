@@ -1025,8 +1025,10 @@ def estimate_stem_wmvnp(features_train,
     nresponses = int(dims.nresponses)
     nfspaces = int(dims.nfspaces)
     ntspaces = 1
-    optima = np.zeros((nresponses, nfspaces + ntspaces + 1))
-    for idx in range(nresponses):
+
+    ncvresponses = 1 if population_mean else nresponses
+    optima = np.zeros((ncvresponses, nfspaces + ntspaces + 1))
+    for idx in range(ncvresponses):
         # find response optima
         temporal_opt, spatial_opt, ridge_opt = find_optimum_mvn(cvmean[...,idx],
                                                                 cvresults['temporal'],
@@ -1045,10 +1047,15 @@ def estimate_stem_wmvnp(features_train,
         temporal_opt, spatial_opt, ridge_opt = uopt
 
         # fit responses that have this optimum
-        responses_mask = np.asarray([np.allclose(row, unique_optima[idx]) for row in optima])
-        test_responses = None if responses_test is None else responses_test[:, responses_mask]
+        if population_mean:
+            train_responses = responses_train
+            test_responses = responses_test
+        else:
+            responses_mask = np.asarray([np.allclose(row, unique_optima[idx]) for row in optima])
+            train_responses = responses_train[:, responses_mask]
+            test_responses = None if responses_test is None else responses_test[:, responses_mask]
         response_solution = estimate_simple_stem_wmvnp(features_train,
-                                                       responses_train[:, responses_mask],
+                                                       train_responses,
                                                        features_test=features_test,
                                                        responses_test=test_responses,
                                                        temporal_prior=temporal_prior,
@@ -1063,11 +1070,18 @@ def estimate_stem_wmvnp(features_train,
                                                        method=method,
                                                        )
         # store the solutions
-        for rdx, response_index in enumerate(responses_mask.nonzero()[0]):
-            solutions[response_index] = {k:v[...,rdx] for k,v in response_solution.items()}
+        if population_mean:
+            solutions = response_solution
+        else:
+            for rdx, response_index in enumerate(responses_mask.nonzero()[0]):
+                solutions[response_index] = {k:v[...,rdx] for k,v in response_solution.items()}
+
 
         if verbosity:
-            itxt = '%i responses:'%(responses_mask.sum())
+            if population_mean:
+                itxt = '%i responses:'%(nresponses)
+            else:
+                itxt = '%i responses:'%(responses_mask.sum())
             ttxt = "ridge=%9.03f, temporal=%0.03f," % (ridge_opt, temporal_opt)
             stxt = "spatial=("
             stxt += ', '.join(["%0.03f"]*(len(spatial_opt)))
@@ -1075,14 +1089,18 @@ def estimate_stem_wmvnp(features_train,
             perf = 'perf=%0.04f'%response_solution['performance'].mean()
             print(' '.join([itxt, ttxt, stxt, perf]))
 
-    fits = ddict(list)
-    for solution in solutions:
-        for k,v in solution.items():
-            fits[k].append(v)
-    for k,v in fits.items():
-        v = np.asarray(v).T
-        cvresults[k] = v
-    del fits, solutions
+    if population_mean:
+        for k,v in solutions.items():
+            cvresults[k] = v
+    else:
+        fits = ddict(list)
+        for solution in solutions:
+            for k,v in solution.items():
+                fits[k].append(v)
+        for k,v in fits.items():
+            v = np.asarray(v).T
+            cvresults[k] = v
+        del fits, solutions
     return cvresults
 
 
@@ -1309,17 +1327,12 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                 'status': STATUS_OK,
                 }
 
-
-
-
     trials = Trials()
     best_params = fmin(objective,
                        space=spaces,
                        algo=tpe.suggest,
                        max_evals=ntrials,
                        trials=trials)
-
-
 
     print(best_params)
     return trials
