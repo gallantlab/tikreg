@@ -1255,7 +1255,7 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  weights=False,
                                  predictions=False,
                                  performance=True,
-                                 ):
+                                 **kwargs):
     '''Use hyperopt to find the opt9imal hyparams
 
     * raw:
@@ -1350,7 +1350,7 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                   folds=folds,
                                   method=method,
                                   verbosity=verbosity,
-                                  )
+                                  **kwargs)
 
         print(params)
         cvres = res['cvresults'].mean(0).mean(-1).mean()
