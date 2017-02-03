@@ -353,17 +353,15 @@ def kernel_spatiotemporal_prior(Xtrain, temporal_prior, spatial_prior,
     temporal_prior (d, d): d = len(delays)
     '''
     matrix_mult = np.dot
-    # if tikutils.isdiag(spatial_prior):
-    #     # TODO: this is slower for some reason.... must debug
-    #     def matrix_mult(xx,yy):
-    #         di = np.diag(yy)
-    #         if np.allclose(di, di[0]):
-    #             # constant diagonal
-    #             res = xx*di[0]
-    #         else:
-    #             res = tikutils.mult_diag(di, xx, left=False)
-    #         return res
-
+    if tikutils.isdiag(spatial_prior):
+        def matrix_mult(xx,yy):
+            di = np.diag(yy)
+            if np.allclose(di, di[0]):
+                # constant diagonal
+                res = xx*di[0]
+            else:
+                res = tikutils.mult_diag(di, xx, left=False)
+            return res
 
     if Xtest is None:
         Xtest = Xtrain
@@ -1189,7 +1187,6 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  spatial_sampler=True,
                                  temporal_sampler=True,
                                  ridge_sampler=False,
-
                                  population_mean=False,
                                  folds=(1,5),
                                  method='SVD',
@@ -1197,7 +1194,6 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  cvresults=None,
                                  population_optimal=False,
                                  ntrials=100,
-
                                  weights=False,
                                  predictions=False,
                                  performance=True,
