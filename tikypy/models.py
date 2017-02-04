@@ -1184,17 +1184,31 @@ def estimate_simple_stem_wmvnp(features_train,
                                predictions=False,
                                verbosity=2,
                                method='SVD',
+                               kernel_features=False,
                                ):
     '''
     '''
     if feature_hyparams is None:
         feature_hyparams = [1.0]*len(features_train)
 
-    if features_test is None:
-        features_test = [features_test]*len(features_train)
-
     # we're only using one set in this function
     assert len(feature_hyparams) == len(features_train)
+
+
+    kernel_estimate = kernel_spatiotemporal_prior
+    ### optimize solution
+    if kernel_features is True:
+        doitfast = [False]*len(features_train)
+        for fi, fp in enumerate(feature_priors):
+            if (tikutils.isdiag(fp.asarray) and
+                np.allclose(np.diag(fp.asarray), fp.asarray[0,0])):
+                doitfast[fi] = True
+        # kernels only allowed with banded feature priors
+        assert np.allclose(doitfast, True)
+        kernel_estimate = kernel_banded_temporal_prior
+
+    if features_test is None:
+        features_test = [features_test]*len(features_train)
 
     Ktrain = 0.
     Ktest = 0.
@@ -1203,17 +1217,26 @@ def estimate_simple_stem_wmvnp(features_train,
                                                                       features_test,
                                                                       feature_priors,
                                                                       feature_hyparams)):
-        Ktrain += kernel_spatiotemporal_prior(fs_train,
-                                              this_temporal_prior,
-                                              fs_prior.get_prior(fs_hyper),
-                                              delays=temporal_prior.delays)
+        Ktrain += kernel_estimate(fs_train,
+                                  this_temporal_prior,
+                                  fs_prior.get_prior(fs_hyper),
+                                  delays=temporal_prior.delays)
 
         if fs_test is not None:
-            Ktest += kernel_spatiotemporal_prior(fs_train,
-                                                 this_temporal_prior,
-                                                 fs_prior.get_prior(fs_hyper),
-                                                 delays=temporal_prior.delays,
-                                                 Xtest=fs_test)
+            if kernel_features:
+                # fs_test is already test kernel
+                Ktest += kernel_estimate(fs_test,
+                                         this_temporal_prior,
+                                         fs_prior.get_prior(fs_hyper),
+                                         delays=temporal_prior.delays,
+                                         )
+
+            else:
+                Ktest += kernel_estimate(fs_train,
+                                         this_temporal_prior,
+                                         fs_prior.get_prior(fs_hyper),
+                                         delays=temporal_prior.delays,
+                                         Xtest=fs_test)
 
     if np.allclose(Ktest, 0.0):
         Ktest = None
@@ -1255,6 +1278,7 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  weights=False,
                                  predictions=False,
                                  performance=True,
+                                 dumpcrossval=False,
                                  **kwargs):
     '''Use hyperopt to find the opt9imal hyparams
 
@@ -1277,6 +1301,7 @@ def hyperopt_estimate_stem_wmvnp(features_train,
     '''
     import pickle
     from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
+
 
     delays = temporal_prior.delays
     ndelays = len(delays)
@@ -1313,7 +1338,16 @@ def hyperopt_estimate_stem_wmvnp(features_train,
     if features_test is None:
         features_test = [features_test]*len(features_train)
 
+    class counter(object):
+        def __init__(self):
+            self.count = 0
+        def update(self):
+            self.count +=1
+    mcounter = counter()
+
     def objective(params):
+        mcounter.update()
+
         if has_spatial and has_ridge and has_temporal:
             parameters = {'temporal' : params[-1],
                           'ridge' : params[-2],
@@ -1354,6 +1388,14 @@ def hyperopt_estimate_stem_wmvnp(features_train,
 
         print(params)
         cvres = res['cvresults'].mean(0).mean(-1).mean()
+        res['cvresults'] = res['cvresults'].astype(np.float32)
+
+        if dumpcrossval:
+            # if given, takes the iteration number
+            # and the crossvalidation data
+            dumpcrossval(mcounter.count, res)
+
+        print('iteration #%i'%mcounter.count)
         print('features:', parameters['spatial'])
         print('ridges:', parameters['ridge'])
         print('temporal', parameters['temporal'])
