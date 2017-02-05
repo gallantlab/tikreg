@@ -170,7 +170,7 @@ def solve_l2_primal(Xtrain, Ytrain,
             D = S / (S**2 + rlambda**2)
         elif method == 'Chol':
             XtXI = XtX + rlambda**2 * np.eye(Xtrain.shape[-1])
-            L, lower = cho_factor(XtXI, lower=True)
+            L, lower = cho_factor(XtXI, lower=True, check_finite=False)
             del XtXI
 
         if performance:
@@ -1020,12 +1020,12 @@ def estimate_stem_wmvnp(features_train,
                         weights=False,
                         predictions=False,
                         performance=False,
-                        population_mean=False,
                         folds=(1,5),
                         method='SVD',
                         verbosity=1,
                         cvresults=None,
                         population_optimal=False,
+                        population_mean=False,
                         chunklen=True,
                         ):
     '''
@@ -1261,43 +1261,80 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  responses_train,
                                  features_test=None,
                                  responses_test=None,
-                                 normalize_hyparams=False,
-                                 normalize_kernel=False,
                                  temporal_prior=None,
                                  feature_priors=None,
                                  spatial_sampler=True,
-                                 temporal_sampler=True,
+                                 temporal_sampler=False,
                                  ridge_sampler=False,
-                                 population_mean=False,
+                                 # population_mean=False,
+                                 population_optimal=False,
                                  folds=(1,5),
                                  method='SVD',
-                                 verbosity=1,
-                                 cvresults=None,
-                                 population_optimal=False,
                                  ntrials=100,
+                                 verbosity=1,
+                                 dumpcrossval=False,
+                                 normalize_hyparams=False,
+                                 normalize_kernel=False,
                                  weights=False,
                                  predictions=False,
                                  performance=True,
-                                 dumpcrossval=False,
                                  **kwargs):
-    '''Use hyperopt to find the opt9imal hyparams
+    '''Use ``hyperopt`` to cross-validate all hyper-parameters parameters.
 
-    * raw:
-       - spatial_sampler: one for each feature space
-       - ridge_sampler: None, just 1.0 always
-       - temporal_sampler: depends
-    * spherical
-       - spatial_sampler: one for each feature space
-       - ridge_sampler: one for all feature spaces
-       - temporal_sampler: depends
+    Search the hyper-parameter space to find the population optimum using
+    a cross-validation procedure.
 
-    * spatial_sampler defaults to np.loguniform(-7, 7)
-    * if ridge_sampler is True:
-       - np.loguniform(0, 7)
-      if False: no ridge_sampler, ridge always [1]
+    Parameters
+    ----------
+    features_train : list of np.ndarrays
+        The feature spaces of shape (n, p_i).
+    responses_train : 2D np.ndarray
+        The population responses to fit (n, v).
+    temporal_prior : ``TemporalPrior`` object
+        A temporal prior object to use. The temporal
+        prior may contain a hyper-prior.
+    feature_priors  : list of ``SpatialPrior``bjects
+        One feature prior per feature space.
+    spatial_sampler : ``hyperopt.hp``, or bool
+        Specifies how to sample the hyperparameter space.
+        Defaults to hp.loguniform(0,7).
+    temporal_sampler : ``hyperopt.hp``, or bool
+        Used iff ``temporal_prior`` has a hyper-prior set.
+    ridge_sampler : ``hyperopt.hp``, or bool
+        Defaults to False.
+        Use this with caution. Specifies how to sample
+        the scaling on the spatial hyperparameters.  However,
+        Specifying a ``spatial_sampler`` for all feature
+        spaces and a ``ridge_sampler`` is redundant.
+    population_optimal : bool
+        If True, individual response cross-validation values
+        are not kept. Only the mean across responses is stored.
+    folds : tuple (N,K), or list of tuples [(trn1, val1),..., (trnK, valK)]
+        If tuple, the second element corresponds to the number
+        of cross-validation folds. The first element determines
+        how many times to repeat the cross validation.
+        (1,5) is standard 5-folds cross-validation.
+        (10,5) performs 5-fold cross-validation 10 times.
+    method : str ("SVD", "Chol")
+        Solver to use
+    ntrials : int
+        Number of ``hyperopt`` iterations
+    verbosity : int (1, 2)
+        Level of print statements
+    dumpcrossval : function(iteration_num, crossval_dict)
+        Save the cross-validation results for every iteration.
+        The function takes the iteration number (int) and a
+        dictionary containing the cross-validation results.
+        This is useful for finding the optimum hyper-parameters
+        for each response. The stored data contains all the info.
+        Defaults to False.
+    kwargs : dict
+        Additional arguments passed to ``crossval_stem_wmvnp``.
 
-
-
+    Returns
+    -------
+    crossval_results : hyperopt.Trials object
+        Contains the cross-validation results from hyperopt.
     '''
     import pickle
     from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
@@ -1381,13 +1418,14 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                   normalize_kernel=normalize_kernel,
                                   temporal_prior=temporal_prior,
                                   feature_priors=feature_priors,
+                                  population_mean=population_optimal,
                                   folds=folds,
                                   method=method,
                                   verbosity=verbosity,
                                   **kwargs)
 
         print(params)
-        cvres = res['cvresults'].mean(0).mean(-1).mean()
+        cvres = np.nan_to_num(res['cvresults'].mean(0)).mean(-1).mean()
         res['cvresults'] = res['cvresults'].astype(np.float32)
 
         if dumpcrossval:
@@ -1396,9 +1434,9 @@ def hyperopt_estimate_stem_wmvnp(features_train,
             dumpcrossval(mcounter.count, res)
 
         print('iteration #%i'%mcounter.count)
-        print('features:', parameters['spatial'])
-        print('ridges:', parameters['ridge'])
-        print('temporal', parameters['temporal'])
+        print('features:', parameters['spatial'], res['spatial'])
+        print('ridges:', parameters['ridge'], res['ridges'])
+        print('temporal', parameters['temporal'], res['temporal'])
         print((res['spatial'], res['temporal'], res['ridges']))
         print(cvres, (1 - cvres)**2)
         return {'loss' : (1 - cvres)**2,
