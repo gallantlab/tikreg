@@ -1114,6 +1114,7 @@ def estimate_stem_wmvnp(features_train,
             solutions = response_solution
         else:
             for rdx, response_index in enumerate(responses_mask.nonzero()[0]):
+                # TODO: project weights to primal space if requested
                 solutions[response_index] = {k:v[...,rdx] for k,v in response_solution.items()}
 
 
@@ -1145,18 +1146,41 @@ def estimate_stem_wmvnp(features_train,
 
 
 def dual2primal_weights(kernel_weights,
-                        feature_matrices,
+                        features_train,
                         feature_priors,
                         feature_hyparams,
                         temporal_prior,
-                        delays,
                         temporal_hhparam=1.0,
                         ):
-    '''
+    '''Recover the feature weights from the kernel weights
+
+    Parameters
+    ----------
+    kernel_weights : 2D np.ndarray
+    features_train : list of np.ndarrays
+        Training set feature spaces each of shape (n, p_i).
+    feature_priors  : list of ``SpatialPrior`` objects
+        One feature prior per feature space.
+    feature_hyparams : list of scalars
+        Scalar for each feature space prior
+    temporal_prior : ``TemporalPrior`` object
+        A temporal prior object to use. The temporal
+        prior may contain a hyper-prior.
+    temporal_hhparam : scalar
+        Hyper-prior hyperparameter if required.
+        Defaults to 1.0, no effect.
+
+    Returns
+    -------
+    weigths : list
+        Feature space weights
+        [(p_1, v), ..., (p_l, v)]
     '''
     weights = []
-    tp = temporal_prior.get_prior(temporal_hhparam)
-    for fi, features in enumerate(feature_matrices):
+    tp = temporal_prior.get_prior(hhparam=temporal_hhparam)
+    delays = temporal_prior.delays
+
+    for fi, features in enumerate(features_train):
         Xi = tikutils.delay_signal(features, delays)
         sp = feature_priors[fi].get_prior(feature_hyparams[fi])
         if tikutils.isdiag(sp) and tikutils.isdiag(tp):
@@ -1182,11 +1206,56 @@ def estimate_simple_stem_wmvnp(features_train,
                                weights=False,
                                performance=False,
                                predictions=False,
-                               verbosity=2,
-                               method='SVD',
                                kernel_features=False,
+                               method='SVD',
+                               verbosity=2,
                                ):
-    '''
+    '''Estimate model with given hyper-parameters
+
+
+    Parameters
+    ----------
+    features_train : list of np.ndarrays
+        Training set feature spaces each of shape (n, p_i).
+    responses_train : 2D np.ndarray
+        Population responses to the training set (n, v).
+    features_test : list of np.ndarrays
+        Test set feature spaces each of shape (m, p_i)
+    responses_test : 2D np.ndarray
+        Population responses to the test set (m, v)
+    temporal_prior : ``TemporalPrior`` object
+        A temporal prior object to use. The temporal
+        prior may contain a hyper-prior.
+    temporal_hhparam : scalar
+        Hyper-prior hyperparameter if required.
+        Defaults to 1.0, no effect.
+    feature_priors  : list of ``SpatialPrior`` objects
+        One feature prior per feature space.
+    feature_hyparams : list of scalars
+        Scalar for each feature space prior
+    ridge_scale : scalar
+        Scalar on the feature prior hyper-parameters.
+        Defaults to 1.0, no effect
+    weights : bool
+        Compute weights
+    performance : bool
+        Compute accuracy of predictions against test set responses
+    predictions: boot
+        Test set prediction time courses
+    kernel_features : boot
+        If True, ``features_train`` and ``features_test``
+        is a list of kernels, one per feature space.
+        This is only allowed if ``feature_priors`` are spherical.
+    method : str {"SVD", "Chol"}
+        Solver to use
+
+    Returns
+    -------
+    fit : dictionary
+        Estimated model dictionary with keys:
+        * weights : [(p_1, v), ..., (p_l, v)]
+        * performance : (1, v)
+        * predictions : (m, v)
     '''
     if feature_hyparams is None:
         feature_hyparams = [1.0]*len(features_train)
@@ -1252,6 +1321,7 @@ def estimate_simple_stem_wmvnp(features_train,
                                       verbose=verbosity > 1,
                                       method=method)
 
+    # TODO: map weights from dual to primal space
     return response_solution
 
 
