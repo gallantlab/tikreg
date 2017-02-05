@@ -363,7 +363,7 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
                                          spatial_priors,
                                          sprior_ridge,
                                          temporal_prior,
-                                         temporal_prior.delays)
+                                         )
     weights = np.vstack(weights)
 
     ### solve problem directly
