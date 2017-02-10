@@ -347,7 +347,7 @@ def solve_l2_dual(Ktrain, Ytrain,
 
 
 def kernel_banded_temporal_prior(kernel, temporal_prior, spatial_prior,
-                                delays=[1,2,3,4]):
+                                 delays):
     '''
     '''
     if not np.isscalar(spatial_prior):
@@ -793,8 +793,6 @@ def find_optimum_mvn(response_cvmean,
 def crossval_stem_wmvnp(features_train,
                         responses_train,
                         ridges=np.logspace(0,3,10),
-                        normalize_kernel=False,
-                        normalize_hyparams=False,
                         temporal_prior=None,
                         feature_priors=None,
                         population_mean=False,
@@ -803,6 +801,8 @@ def crossval_stem_wmvnp(features_train,
                         verbosity=1,
                         chunklen=True,
                         kernel_features=False,
+                        normalize_kernel=False,
+                        normalize_hyparams=False,
                         ):
     '''Cross-validation procedure for
     spatio-temporal encoding models with MVN priors.
@@ -1325,9 +1325,7 @@ def estimate_simple_stem_wmvnp(features_train,
     return response_solution
 
 
-
-
-def hyperopt_estimate_stem_wmvnp(features_train,
+def hyperopt_crossval_stem_wmvnp(features_train,
                                  responses_train,
                                  features_test=None,
                                  responses_test=None,
@@ -1408,7 +1406,6 @@ def hyperopt_estimate_stem_wmvnp(features_train,
     '''
     import pickle
     from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
-
 
     delays = temporal_prior.delays
     ndelays = len(delays)
@@ -1526,6 +1523,150 @@ def hyperopt_estimate_stem_wmvnp(features_train,
 
     print(best_params)
     return trials
+
+
+def hyperopt_trials2cvperf(Trials):
+    '''
+    '''
+    import pickle
+    ntrials = len(Trials)
+
+    hyparams = []
+    for trial in range(ntrials):
+        hyp = Trials.trial_attachments(Trials.trials[trial])['internals']
+        hyp = pickle.loads(hyp)
+        hyp = np.c_[hyp['spatial'], hyp['ridges'], hyp['temporal']]
+        hyparams.append(hyp.squeeze())
+
+    hyparams = np.asarray(hyparams)
+    corrs = -1*np.asarray(Trials.losses())
+    return hyparams, corrs[...,None]
+
+
+def hyperopt_estimate_stem_wmvnp(features_train,
+                                 responses_train,
+                                 cvmean,
+                                 hyparams,
+                                 features_test=None,
+                                 responses_test=None,
+                                 temporal_prior=None,
+                                 feature_priors=None,
+                                 spatial_sampler=True,
+                                 temporal_sampler=False,
+                                 ridge_sampler=False,
+                                 population_optimal=False,
+                                 method='SVD',
+                                 verbosity=1,
+                                 normalize_hyparams=False,
+                                 normalize_kernel=False,
+                                 weights=False,
+                                 predictions=False,
+                                 performance=True,
+                                 kernel_features=False,
+                                 **kwargs):
+    '''
+    '''
+    ## find optima across cross-validation folds
+    nresponses = cvmean.shape[-1]
+    results = {}
+    if population_optimal is True and (nresponses > 1):
+        cvmean = np.nan_to_num(cvmean).mean(-1)[...,None]
+
+    nfspaces = len(hyparams[0][:-2])
+    ntspaces = 1
+    nrspaces = 1
+
+    ncvresponses = 1 if population_optimal else nresponses
+    optima = np.zeros((ncvresponses, nfspaces + ntspaces + nrspaces))
+    optima_cvmean = ddict(list)
+    for idx in range(ncvresponses):
+        # find response optima
+        odx = np.argmax(cvmean[...,idx])
+        ohyparams = hyparams[odx]
+        temporal_opt = ohyparams[-1]
+        ridge_opt = ohyparams[-2]
+        spatial_opt = ohyparams[:-2]
+        toptima = tuple([temporal_opt])+tuple(spatial_opt)+tuple([ridge_opt])
+        optima[idx] = toptima
+        optima_cvmean[toptima].append(cvmean[odx,idx])
+
+
+    results['optima'] = optima          # store optima
+    optima_cvmean = {k:np.mean(v) for k,v in optima_cvmean.items()}
+
+    unique_optima = np.vstack(set(tuple(row) for row in optima))
+    unique_cvmean = [optima_cvmean[tuple(urow)] for urow in unique_optima]
+    unique_sorted = np.argsort(unique_cvmean)[::-1]
+
+    # estimate solutions
+    solutions = [[]]*nresponses
+    for idx in unique_sorted:#range(unique_optima.shape[0]):
+        # get hyper parameters
+        uopt = unique_optima[idx][0], unique_optima[idx][1:-1], unique_optima[idx][-1]
+        temporal_opt, spatial_opt, ridge_opt = uopt
+
+        # fit responses that have this optimum
+        if population_optimal:
+            train_responses = responses_train
+            test_responses = responses_test
+        else:
+            responses_mask = np.asarray([np.allclose(row, unique_optima[idx]) for row in optima])
+            train_responses = responses_train[:, responses_mask]
+            test_responses = None if responses_test is None else responses_test[:, responses_mask]
+
+        response_solution = estimate_simple_stem_wmvnp(features_train,
+                                                       train_responses,
+                                                       features_test=features_test,
+                                                       responses_test=test_responses,
+                                                       temporal_prior=temporal_prior,
+                                                       temporal_hhparam=temporal_opt,
+                                                       feature_priors=feature_priors,
+                                                       feature_hyparams=spatial_opt,
+                                                       weights=weights,
+                                                       performance=performance,
+                                                       predictions=predictions,
+                                                       ridge_scale=ridge_opt,
+                                                       verbosity=verbosity,
+                                                       method=method,
+                                                       kernel_features=kernel_features,
+                                                       )
+
+        # store the solutions
+        if population_optimal:
+            solutions = response_solution
+        else:
+            for rdx, response_index in enumerate(responses_mask.nonzero()[0]):
+                # TODO: project weights to primal space if requested
+                solutions[response_index] = {k:v[...,rdx] for k,v in response_solution.items()}
+
+
+        if verbosity:
+            print(idx)
+            if population_optimal:
+                itxt = '%i responses:'%(nresponses)
+            else:
+                itxt = '%i responses:'%(responses_mask.sum())
+            ttxt = "ridge=%9.03f, temporal=%0.03f," % (ridge_opt, temporal_opt)
+            stxt = "spatial=("
+            stxt += ', '.join(["%0.03f"]*(len(spatial_opt)))
+            stxt = stxt%tuple(spatial_opt) + ')'
+            perf = 'perf=%0.04f'%response_solution['performance'].mean()
+            print(' '.join([itxt, ttxt, stxt, perf]))
+
+    if population_optimal:
+        for k,v in solutions.items():
+            results[k] = v
+    else:
+        fits = ddict(list)
+        for solution in solutions:
+            for k,v in solution.items():
+                fits[k].append(v)
+        for k,v in fits.items():
+            v = np.asarray(v).T
+            results[k] = v
+        del fits, solutions
+    return results
+
 
 if __name__ == '__main__':
     pass
