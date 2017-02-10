@@ -740,7 +740,7 @@ def test_hyperopt_crossval():
     from hyperopt import hp
 
     start_time = time.time()
-    cvresults = models.hyperopt_estimate_stem_wmvnp(features_train,
+    cvresults = models.hyperopt_crossval_stem_wmvnp(features_train,
                                                     responses_train,
                                                     temporal_prior=temporal_prior,
                                                     feature_priors=feature_priors,
