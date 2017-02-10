@@ -38,12 +38,16 @@ def test_kernel_banded_temporal():
     TTT = np.dot(T.T, T)
 
     # ktrain
-    K = kernel_spatiotemporal_prior(A, TTT, STS)
-    kk = kernel_banded_temporal_prior(np.dot(A, A.T), TTT, ridge_scale)
+    K = kernel_spatiotemporal_prior(A, TTT, STS,
+                                    delays=range(5))
+    kk = kernel_banded_temporal_prior(np.dot(A, A.T), TTT, ridge_scale,
+                                      delays=range(5))
     assert np.allclose(K, kk)
     # ktest
-    K = kernel_spatiotemporal_prior(A, TTT, STS, Xtest=B)
-    kk = kernel_banded_temporal_prior(np.dot(B, A.T), TTT, ridge_scale)
+    K = kernel_spatiotemporal_prior(A, TTT, STS, Xtest=B,
+                                    delays=range(5))
+    kk = kernel_banded_temporal_prior(np.dot(B, A.T), TTT, ridge_scale,
+                                      delays=range(5))
     assert np.allclose(K, kk)
 
 
