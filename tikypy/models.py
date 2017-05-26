@@ -188,9 +188,9 @@ def solve_l2_primal(Xtrain, Ytrain,
                 perf = nan_to_num(cc)
                 contents = (lidx +1, rlambda, np.mean(perf),
                             np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                            np.sum(perf < 0.25), np.sum(perf > 0.75))
+                            np.sum(perf < 0.2), np.sum(perf > 0.5))
                 txt = "lambda %02i: %8.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
-                txt += "(0.2<r>0.8): (%03i,%03i)"
+                txt += "(0.2<r>0.5): (%03i,%03i)"
                 print(txt % contents)
 
         if predictions and performance:
@@ -316,9 +316,9 @@ def solve_l2_dual(Ktrain, Ytrain,
                 perf = nan_to_num(cc)
                 contents = (rdx +1, rlambda, np.mean(perf),
                             np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                            np.sum(perf < 0.25), np.sum(perf > 0.75))
+                            np.sum(perf < 0.2), np.sum(perf > 0.5))
                 txt = "lambda %02i: %8.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
-                txt += "(0.2<r>0.8): (%03i,%03i)"
+                txt += "(0.2<r>0.5): (%03i,%03i)"
                 print(txt % contents)
 
         if predictions and performance:
@@ -973,9 +973,9 @@ def crossval_stem_wmvnp(features_train,
             group_ridge = ridges[np.argmax(perf.mean(-1))]
             contents = (group_ridge, np.mean(perf),
                         np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                        np.sum(perf < 0.25), np.sum(perf > 0.75))
+                        np.sum(perf < 0.2), np.sum(perf > 0.5))
             txt = "pop.cv.best: %6.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
-            txt += "(0.2<r>0.8): (%03i,%03i)"
+            txt += "(0.2<r>0.5): (%03i,%03i)"
             print(txt % contents)
 
     #### dimensions explored
@@ -1525,6 +1525,78 @@ def hyperopt_crossval_stem_wmvnp(features_train,
     return trials
 
 
+
+def featurespace_dual2primal(kernel_weights,
+                             feature_space,
+                             feature_prior,
+                             feature_hyparam,
+                             temporal_prior,
+                             temporal_hhparam=1.0,
+                             ):
+    '''
+    '''
+    delays = temporal_prior.delays
+    weights = []
+    for jdx, jdelay in enumerate(delays):
+        Xf = 0
+        for idx, idelay in enumerate(delays):
+            if temporal_prior[idx,jdx] == 0:
+                continue
+            Xd = feature_space[tikutils.delay2slice(idelay)]
+            Xf += temporal_prior[jdx,idx]*matrix_mult(Xd, spatial_prior)
+        weights.append(xf)
+    return weights
+
+
+def voxelwise_weights2preds(kernel_weights,
+                            kernel_test,
+                            responses_test,
+                            feature_prior,
+                            feature_hyparam,
+                            temporal_prior,
+                            temporal_hyparam=1.0,
+                            verbose=True):
+    '''
+    '''
+    nresponses = kernel_weights.shape[-1]
+    unique_optima = np.unique(feature_hyparam)
+
+    # estimate solutions
+    solutions = [[]]*nresponses
+    for idx in range(unique_optima.shape[0]):
+
+        # get hyper parameters
+        # uopt = unique_optima[idx][0], unique_optima[idx][1:-1], unique_optima[idx][-1]
+        # temporal_opt, spatial_opt, ridge_opt = uopt
+        spatial_opt = unique_optima[idx]
+
+        responses_mask = np.where(feature_hyparam == spatial_opt, True, False)
+        test_responses = responses_test[:, responses_mask]
+        test_weights = kernel_weights[:, responses_mask]
+
+        ktst = kernel_banded_temporal_prior(kernel_test,
+                                            temporal_prior.get_prior(temporal_hyparam),
+                                            feature_prior.get_prior(spatial_opt),
+                                            delays=temporal_prior.delays)
+
+        fs_pred = np.dot(ktst, test_weights)
+        fs_cc = tikutils.columnwise_correlation(fs_pred, test_responses, zscoreb=False)
+
+        if idx % 10 == 0:
+            print(idx, unique_optima.shape[0], np.nan_to_num(fs_cc).mean(), fs_cc.shape)
+
+        for rdx, response_index in enumerate(responses_mask.nonzero()[0]):
+            # TODO: project weights to primal space if requested
+            solutions[response_index] = fs_cc[...,rdx].squeeze()
+
+    return np.asarray(solutions)
+
+
+
+
+
+
+
 def hyperopt_trials2cvperf(Trials):
     '''
     '''
@@ -1597,6 +1669,8 @@ def hyperopt_estimate_stem_wmvnp(features_train,
     unique_optima = np.vstack(set(tuple(row) for row in optima))
     unique_cvmean = [optima_cvmean[tuple(urow)] for urow in unique_optima]
     unique_sorted = np.argsort(unique_cvmean)[::-1]
+
+    print('%i unique solutions'%len(unique_sorted))
 
     # estimate solutions
     solutions = [[]]*nresponses

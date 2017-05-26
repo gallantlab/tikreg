@@ -596,6 +596,27 @@ def test_stmvn_prior(method='SVD'):
     return res
 
 
+def test_primal2dual_weights():
+    delays = np.arange(5)
+    ndelays = len(delays)
+
+    oo = get_abc_data()
+    oo = [[dataset.astype(np.float64) for dataset in fakedat] for fakedat in oo]
+    features_train, features_test, responses_train, responses_test = oo
+    features_sizes = [fs.shape[1] for fs in features_train]
+
+    spatial_priors = [sps.SphericalPrior(features_sizes[0]),
+                      sps.SphericalPrior(features_sizes[1]),
+                      sps.SphericalPrior(features_sizes[2]),
+                      ]
+
+    temporal_prior = tps.SphericalPrior(delays)
+
+
+
+
+
+
 def test_mkl_scaling():
     delays = np.arange(5)
     ndelays = len(delays)
