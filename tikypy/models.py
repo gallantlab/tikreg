@@ -188,7 +188,7 @@ def solve_l2_primal(Xtrain, Ytrain,
                 perf = nan_to_num(cc)
                 contents = (lidx +1, rlambda, np.mean(perf),
                             np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                            np.sum(perf < 0.2), np.sum(perf > 0.5))
+                            np.sum(perf > 0.2), np.sum(perf > 0.5))
                 txt = "lambda %02i: %8.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
                 txt += "(0.2<r>0.5): (%03i,%03i)"
                 print(txt % contents)
@@ -316,7 +316,7 @@ def solve_l2_dual(Ktrain, Ytrain,
                 perf = nan_to_num(cc)
                 contents = (rdx +1, rlambda, np.mean(perf),
                             np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                            np.sum(perf < 0.2), np.sum(perf > 0.5))
+                            np.sum(perf > 0.2), np.sum(perf > 0.5))
                 txt = "lambda %02i: %8.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
                 txt += "(0.2<r>0.5): (%03i,%03i)"
                 print(txt % contents)
@@ -973,7 +973,7 @@ def crossval_stem_wmvnp(features_train,
             group_ridge = ridges[np.argmax(perf.mean(-1))]
             contents = (group_ridge, np.mean(perf),
                         np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                        np.sum(perf < 0.2), np.sum(perf > 0.5))
+                        np.sum(perf > 0.2), np.sum(perf > 0.5))
             txt = "pop.cv.best: %6.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
             txt += "(0.2<r>0.5): (%03i,%03i)"
             print(txt % contents)
