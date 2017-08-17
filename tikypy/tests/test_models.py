@@ -8,7 +8,7 @@ def test_kernel_kron():
     n,p,d = 20, 10, 5
     delays = range(d)
     Xtrain = np.random.randn(n,p)
-    Xtest = np.random.randn(n/2,p)
+    Xtest = np.random.randn(int(n/2),p)
     # construct prior
     a, b = np.random.randn(p,p), np.random.randn(d,d)
     sigma_x = np.dot(a.T, a)

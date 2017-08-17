@@ -442,7 +442,7 @@ def generate_trnval_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
                 yield train, val
 
     elif sampler == 'nbb' or sampler == 'mbb':
-        fun = lambda x: [x[t] for t in np.random.randint(0, N, ntrain/nchunks)]
+        fun = lambda x: [x[t] for t in np.random.randint(0, N, int(ntrain/nchunks))]
         for bdx in range(nfolds):
             train = np.asarray(append(fun(samples)))
             val = allidx[~np.in1d(allidx, train)]
