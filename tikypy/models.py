@@ -11,6 +11,7 @@ from tikypy.kernels import lazy_kernel
 import tikypy.utils as tikutils
 
 METHOD = 'SVD'
+METRIC = 'correlation'
 
 def nan_to_num(*args, **kwargs):
     return np.nan_to_num(*args, **kwargs)
@@ -129,9 +130,18 @@ def solve_l2_primal(Xtrain, Ytrain,
                     ridges=[0], method=METHOD,
                     zscore_ytrain=False, zscore_ytest=False,
                     EPS=1e-10, verbose=False,
-                    performance=False, predictions=False, weights=False):
+                    performance=False, predictions=False, weights=False,
+                    metric=METRIC):
     '''Solve the (primal) L2 regression problem for each L2 parameter.
     '''
+    if metric == 'correlation':
+        performance_metric = tikutils.columnwise_correlation
+    elif metric == 'rsquared':
+        performance_metric = tikutils.columnwise_rsquared
+    else:
+        ValueError('Unknown metric: %s'%metric)
+
+
     results = ddict(list)
     Ytrain = atleast_2d(Ytrain)
 
@@ -181,7 +191,8 @@ def solve_l2_primal(Xtrain, Ytrain,
             elif method == 'Chol':
                 cho_weights = cho_solve((L, lower), XtY)
                 Ypred = np.dot(Xtest, cho_weights)
-            cc = tikutils.columnwise_correlation(Ypred, Ytest, axis=0)
+
+            cc = performance_metric(Ypred, Ytest, axis=0)
             results['performance'].append(cc)
 
             if verbose:
@@ -268,9 +279,18 @@ def solve_l2(Xtrain, Ytrain,
 def solve_l2_dual(Ktrain, Ytrain,
                   Ktest=None, Ytest=None,
                   ridges=[0.0], method=METHOD, EPS=1e-10, verbose=False,
-                  performance=False, predictions=False, weights=False):
+                  performance=False, predictions=False, weights=False,
+                  metric=METRIC):
     '''Solve the dual (kernel) L2 regression problem for each L2 parameter.
     '''
+    if metric == 'correlation':
+        performance_metric = tikutils.columnwise_correlation
+    elif metric == 'rsquared':
+        performance_metric = tikutils.columnwise_rsquared
+    else:
+        ValueError('Unknown metric: %s'%metric)
+
+
     results = ddict(list)
 
     if predictions:
@@ -309,7 +329,7 @@ def solve_l2_dual(Ktrain, Ytrain,
                 cho_weights = cho_solve((L, lower), Ytrain)
                 Ypred = np.dot(Ktest, cho_weights)
 
-            cc = tikutils.columnwise_correlation(Ypred, Ytest)
+            cc = performance_metric(Ypred, Ytest)
             results['performance'].append(cc)
 
             if verbose:
@@ -405,6 +425,7 @@ def kernel_cvridge(Ktrain, Ytrain,
                    ridges=[0.0],
                    folds='cv', nfolds=5, blocklen=5, trainpct=0.8,
                    performance=False, predictions=False, weights=False,
+                   metric=METRIC,
                    verbose=True, EPS=1e-10,
                    ):
     import time
@@ -442,6 +463,7 @@ def kernel_cvridge(Ktrain, Ytrain,
                             weights=False,
                             predictions=False,
                             performance=True,
+                            metric=metric,
                             verbose=verbose)
 
         results[fdx,:,:] = res['performance']
@@ -473,6 +495,7 @@ def kernel_cvridge(Ktrain, Ytrain,
                         predictions=predictions,
                         weights=weights,
                         EPS=EPS,
+                        metric=metric,
                         verbose=verbose,
                         )
 
@@ -491,7 +514,8 @@ def cvridge(Xtrain, Ytrain,
             verbose=True, EPS=1e-10,
             withinset_test=False,
             performance=False, predictions=False, weights=False,
-            kernel_weights=False):
+            kernel_weights=False,
+            metric=METRIC):
     """Cross-validation procedure for tikhonov regularized regression.
 
     Parameters
@@ -622,7 +646,9 @@ def cvridge(Xtrain, Ytrain,
                                       weights=False,
                                       predictions=False,
                                       performance=True,
-                                      verbose=verbose)
+                                      metric=metric,
+                                      verbose=verbose,
+                                      )
             else:
                 Ktrain = tikutils.fast_indexing(kernel,trn, trn)
                 Ktest = tikutils.fast_indexing(kernel,test, trn)
@@ -632,7 +658,9 @@ def cvridge(Xtrain, Ytrain,
                                     weights=False,
                                     predictions=False,
                                     performance=True,
-                                    verbose=verbose)
+                                    metric=metric,
+                                    verbose=verbose,
+                                    )
             # Store results
             results[fdx,kdx,:,:] = res['performance']
             del(res)
@@ -685,6 +713,7 @@ def cvridge(Xtrain, Ytrain,
                             predictions=predictions,
                             weights=weights,
                             EPS=EPS,
+                            metric=metric,
                             verbose=verbose,
                             )
         # Project to linear space if we can
@@ -705,6 +734,7 @@ def cvridge(Xtrain, Ytrain,
                               performance=performance,
                               predictions=predictions,
                               weights=weights,
+                              metric=metric,
                               verbose=verbose,
                               EPS=EPS,
                               )
@@ -803,6 +833,7 @@ def crossval_stem_wmvnp(features_train,
                         kernel_features=False,
                         normalize_kernel=False,
                         normalize_hyparams=False,
+                        metric=METRIC,
                         ):
     '''Cross-validation procedure for
     spatio-temporal encoding models with MVN priors.
@@ -957,6 +988,7 @@ def crossval_stem_wmvnp(features_train,
                                 performance=True,
                                 verbose=verbosity > 1,
                                 method=method,
+                                metric=metric,
                                 )
 
             if population_mean:
@@ -1027,6 +1059,7 @@ def estimate_stem_wmvnp(features_train,
                         population_optimal=False,
                         population_mean=False,
                         chunklen=True,
+                        metric=METRIC,
                         ):
     '''
     '''
@@ -1050,6 +1083,7 @@ def estimate_stem_wmvnp(features_train,
                                         method=method,
                                         verbosity=verbosity,
                                         chunklen=chunklen,
+                                        metric=metric,
                                         )
 
     if (weights is False) and (performance is False) and (prediction is False):
@@ -1108,6 +1142,7 @@ def estimate_stem_wmvnp(features_train,
                                                        ridge_scale=ridge_opt,
                                                        verbosity=verbosity,
                                                        method=method,
+                                                       metric=metric,
                                                        )
         # store the solutions
         if population_mean:
@@ -1209,6 +1244,7 @@ def estimate_simple_stem_wmvnp(features_train,
                                kernel_features=False,
                                method='SVD',
                                verbosity=2,
+                               metric=METRIC,
                                ):
     '''Estimate model with given hyper-parameters
 
@@ -1319,6 +1355,7 @@ def estimate_simple_stem_wmvnp(features_train,
                                       predictions=predictions,
                                       weights=weights,
                                       verbose=verbosity > 1,
+                                      metric=metric,
                                       method=method)
 
     # TODO: map weights from dual to primal space
@@ -1346,6 +1383,7 @@ def hyperopt_crossval_stem_wmvnp(features_train,
                                  weights=False,
                                  predictions=False,
                                  performance=True,
+                                 metric=METRIC,
                                  **kwargs):
     '''Use ``hyperopt`` to cross-validate all hyper-parameters parameters.
 
@@ -1489,6 +1527,7 @@ def hyperopt_crossval_stem_wmvnp(features_train,
                                   folds=folds,
                                   method=method,
                                   verbosity=verbosity,
+                                  metric=metric,
                                   **kwargs)
 
         print(params)
@@ -1555,9 +1594,17 @@ def voxelwise_weights2preds(kernel_weights,
                             feature_hyparam,
                             temporal_prior,
                             temporal_hyparam=1.0,
-                            verbose=True):
+                            verbose=True,
+                            metric=METRIC):
     '''
     '''
+    if metric == 'correlation':
+        performance_metric = tikutils.columnwise_correlation
+    elif metric == 'rsquared':
+        performance_metric = tikutils.columnwise_rsquared
+    else:
+        ValueError('Unknown metric: %s'%metric)
+
     nresponses = kernel_weights.shape[-1]
     unique_optima = np.unique(feature_hyparam)
 
@@ -1580,7 +1627,7 @@ def voxelwise_weights2preds(kernel_weights,
                                             delays=temporal_prior.delays)
 
         fs_pred = np.dot(ktst, test_weights)
-        fs_cc = tikutils.columnwise_correlation(fs_pred, test_responses, zscoreb=False)
+        fs_cc = performance_metric(fs_pred, test_responses, zscoreb=False)
 
         if idx % 10 == 0:
             print(idx, unique_optima.shape[0], np.nan_to_num(fs_cc).mean(), fs_cc.shape)

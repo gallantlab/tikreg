@@ -365,6 +365,16 @@ def whiten_penalty(X, penalty=0.0):
     return np.dot(covnegsqrt, X.T).T
 
 
+def columnwise_rsquared(y, ypred, **kwargs):
+    '''
+
+    Notes
+    -----
+    https://en.wikipedia.org/wiki/Coefficient_of_determination#Extensions
+    '''
+    return 1 - np.var(y - ypred, axis=0)/np.var(y, axis=0)
+
+
 def columnwise_correlation(y, ypred, zscorea=True, zscoreb=True, axis=0):
     r'''Compute correlations efficiently
 
