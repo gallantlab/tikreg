@@ -365,7 +365,7 @@ def whiten_penalty(X, penalty=0.0):
     return np.dot(covnegsqrt, X.T).T
 
 
-def columnwise_rsquared(y, ypred, **kwargs):
+def columnwise_rsquared(ypred, y, **kwargs):
     '''
 
     Notes
@@ -375,7 +375,7 @@ def columnwise_rsquared(y, ypred, **kwargs):
     return 1 - np.var(y - ypred, axis=0)/np.var(y, axis=0)
 
 
-def columnwise_correlation(y, ypred, zscorea=True, zscoreb=True, axis=0):
+def columnwise_correlation(ypred, y, zscorea=True, zscoreb=True, axis=0):
     r'''Compute correlations efficiently
 
     Examples
