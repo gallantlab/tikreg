@@ -281,8 +281,8 @@ def solve_l2_dual(Ktrain, Ytrain,
                   ridges=[0.0], method=METHOD, EPS=1e-10, verbose=False,
                   performance=False, predictions=False, weights=False,
                   metric=METRIC,
-                  zscore_ytest=True, zscore_yhat=False,
-                  zscore_ytrain=True,
+                  zscore_ytest=False, zscore_yhat=False,
+                  zscore_ytrain=False,
                   ):
     '''Solve the dual (kernel) L2 regression problem for each L2 parameter.
     '''
@@ -848,6 +848,8 @@ def crossval_stem_wmvnp(features_train,
                         normalize_kernel=False,
                         normalize_hyparams=False,
                         metric=METRIC,
+                        zscore_ytrain=False,
+                        zscore_yval=False,
                         ):
     '''Cross-validation procedure for
     spatio-temporal encoding models with MVN priors.
@@ -996,8 +998,10 @@ def crossval_stem_wmvnp(features_train,
                 print('train fold  %i/%i: ntrain=%i, ntest=%i'%txt)
 
             # solve the regression problem
-            fit = solve_l2_dual(ktrn, responses_train[trnidx],
-                                kval, responses_train[validx],
+            norm_train = zscore if zscore_ytrain else lambda x: x
+            norm_val = zscore if zscore_yval else lambda x: x
+            fit = solve_l2_dual(ktrn, norm_train(responses_train[trnidx]),
+                                kval, norm_val(responses_train[validx]),
                                 ridges=ridges,
                                 performance=True,
                                 verbose=verbosity > 1,
