@@ -199,9 +199,9 @@ def solve_l2_primal(Xtrain, Ytrain,
                 perf = nan_to_num(cc)
                 contents = (lidx +1, rlambda, np.mean(perf),
                             np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                            np.sum(perf > 0.2), np.sum(perf > 0.5))
+                            np.sum(perf > 0.0), np.sum(perf > 0.5))
                 txt = "lambda %02i: %8.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
-                txt += "(0.2<r>0.5): (%03i,%03i)"
+                txt += "(0.0<r>0.5): (%03i,%03i)"
                 print(txt % contents)
 
         if predictions and performance:
@@ -280,7 +280,10 @@ def solve_l2_dual(Ktrain, Ytrain,
                   Ktest=None, Ytest=None,
                   ridges=[0.0], method=METHOD, EPS=1e-10, verbose=False,
                   performance=False, predictions=False, weights=False,
-                  metric=METRIC):
+                  metric=METRIC,
+                  zscore_ytest=True, zscore_yhat=False,
+                  zscore_ytrain=True,
+                  ):
     '''Solve the dual (kernel) L2 regression problem for each L2 parameter.
     '''
     if metric == 'correlation':
@@ -290,6 +293,9 @@ def solve_l2_dual(Ktrain, Ytrain,
     else:
         ValueError('Unknown metric: %s'%metric)
 
+
+    if zscore_ytrain:
+        Ytrain = zscore(Ytrain)
 
     results = ddict(list)
 
@@ -329,16 +335,24 @@ def solve_l2_dual(Ktrain, Ytrain,
                 cho_weights = cho_solve((L, lower), Ytrain)
                 Ypred = np.dot(Ktest, cho_weights)
 
-            cc = performance_metric(Ypred, Ytest)
+            if (zscore_yhat is False) and (zscore_ytest is False):
+                cc = performance_metric(Ypred, Ytest)
+            elif (zscore_yhat is True) and (zscore_ytest is False):
+                cc = performance_metric(zscore(Ypred), Ytest)
+            elif (zscore_yhat is False) and (zscore_ytest is True):
+                cc = performance_metric(Ypred, zscore(Ytest))
+            elif (zscore_yhat is True) and (zscore_ytest is True):
+                cc = performance_metric(zscore(Ypred), zscore(Ytest))
+
             results['performance'].append(cc)
 
             if verbose:
                 perf = nan_to_num(cc)
                 contents = (rdx +1, rlambda, np.mean(perf),
                             np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                            np.sum(perf > 0.2), np.sum(perf > 0.5))
+                            np.sum(perf > 0.0), np.sum(perf > 0.5))
                 txt = "lambda %02i: %8.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
-                txt += "(0.2<r>0.5): (%03i,%03i)"
+                txt += "(0.0<r>0.5): (%03i,%03i)"
                 print(txt % contents)
 
         if predictions and performance:
@@ -1005,9 +1019,9 @@ def crossval_stem_wmvnp(features_train,
             group_ridge = ridges[np.argmax(perf.mean(-1))]
             contents = (group_ridge, np.mean(perf),
                         np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                        np.sum(perf > 0.2), np.sum(perf > 0.5))
+                        np.sum(perf > 0.0), np.sum(perf > 0.5))
             txt = "pop.cv.best: %6.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
-            txt += "(0.2<r>0.5): (%03i,%03i)"
+            txt += "(0.0<r>0.5): (%03i,%03i)"
             print(txt % contents)
 
     #### dimensions explored
@@ -1532,6 +1546,7 @@ def hyperopt_crossval_stem_wmvnp(features_train,
 
         print(params)
         cvres = np.nan_to_num(res['cvresults'].mean(0)).mean(-1).mean()
+        loss = -1*cvres
         res['cvresults'] = res['cvresults'].astype(np.float32)
 
         if dumpcrossval:
@@ -1544,11 +1559,12 @@ def hyperopt_crossval_stem_wmvnp(features_train,
         print('ridges:', parameters['ridge'], res['ridges'])
         print('temporal', parameters['temporal'], res['temporal'])
         print((res['spatial'], res['temporal'], res['ridges']))
-        print(cvres, (1 - cvres)**2)
-        return {'loss' : (1 - cvres)**2,
+        print('perf: %0.05f / loss: %0.05f'%(cvres, loss))
+        return {'loss' : loss,
                 'attachments' : {'internals' : pickle.dumps({'temporal' : res['temporal'],
                                                              'spatial' : res['spatial'],
-                                                             'ridges' : res['ridges']}),
+                                                             'ridges' : res['ridges'],
+                                                             }),
                                  },
                 'status': STATUS_OK,
                 }
@@ -1597,6 +1613,8 @@ def voxelwise_weights2preds(kernel_weights,
                             verbose=True,
                             metric=METRIC):
     '''
+    feature_prior : one per voxel!
+    temporal_prior : one for all voxels
     '''
     if metric == 'correlation':
         performance_metric = tikutils.columnwise_correlation
