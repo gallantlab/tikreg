@@ -281,8 +281,6 @@ def solve_l2_dual(Ktrain, Ytrain,
                   ridges=[0.0], method=METHOD, EPS=1e-10, verbose=False,
                   performance=False, predictions=False, weights=False,
                   metric=METRIC,
-                  zscore_ytest=False, zscore_yhat=False,
-                  zscore_ytrain=False,
                   ):
     '''Solve the dual (kernel) L2 regression problem for each L2 parameter.
     '''
@@ -293,9 +291,6 @@ def solve_l2_dual(Ktrain, Ytrain,
     else:
         ValueError('Unknown metric: %s'%metric)
 
-
-    if zscore_ytrain:
-        Ytrain = zscore(Ytrain)
 
     results = ddict(list)
 
@@ -335,14 +330,7 @@ def solve_l2_dual(Ktrain, Ytrain,
                 cho_weights = cho_solve((L, lower), Ytrain)
                 Ypred = np.dot(Ktest, cho_weights)
 
-            if (zscore_yhat is False) and (zscore_ytest is False):
-                cc = performance_metric(Ypred, Ytest)
-            elif (zscore_yhat is True) and (zscore_ytest is False):
-                cc = performance_metric(zscore(Ypred), Ytest)
-            elif (zscore_yhat is False) and (zscore_ytest is True):
-                cc = performance_metric(Ypred, zscore(Ytest))
-            elif (zscore_yhat is True) and (zscore_ytest is True):
-                cc = performance_metric(zscore(Ypred), zscore(Ytest))
+            cc = performance_metric(Ypred, Ytest)
 
             results['performance'].append(cc)
 
