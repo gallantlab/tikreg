@@ -1377,7 +1377,6 @@ def hyperopt_crossval_stem_wmvnp(features_train,
                                  spatial_sampler=True,
                                  temporal_sampler=False,
                                  ridge_sampler=False,
-                                 # population_mean=False,
                                  population_optimal=False,
                                  folds=(1,5),
                                  method='SVD',
@@ -1390,6 +1389,8 @@ def hyperopt_crossval_stem_wmvnp(features_train,
                                  predictions=False,
                                  performance=True,
                                  metric=METRIC,
+                                 zscore_ytrain=True,
+                                 zscore_yval=True,
                                  **kwargs):
     '''Use ``hyperopt`` to cross-validate all hyper-parameters parameters.
 
@@ -1534,6 +1535,8 @@ def hyperopt_crossval_stem_wmvnp(features_train,
                                   method=method,
                                   verbosity=verbosity,
                                   metric=metric,
+                                  zscore_ytrain=zscore_ytrain,
+                                  zscore_yval=zscore_yval,
                                   **kwargs)
 
         print(params)
