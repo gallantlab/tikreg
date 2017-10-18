@@ -389,6 +389,131 @@ def test_ridge_solution(normalize_kernel=True, method='SVD'):
     assert np.allclose(betas, weights)
 
 
+
+
+def test_general_solution(temporal_prior_name='spherical'):
+    tprior_names = ['spherical', 'smooth', 'hrf', 'gaussian']
+    normalize_kernel=False
+    method='SVD'
+
+    # make sure we can recover the ridge solution
+    ridges = np.round(np.logspace(1,3,5), 4)
+    nridges = len(ridges)
+
+    delays = range(10) #np.unique(np.random.randint(0,10,10))
+    ndelays = len(delays)
+
+    features_train, features_test, responses_train, responses_test = get_abc_data()
+    features_sizes = [fs.shape[1] for fs in features_train]
+
+    # custom effective low-rank prior
+    a = np.random.randn(features_train[-1].shape[-1], 3)
+    sigma_x = np.dot(a, a.T) + np.identity(a.shape[0])
+    spatial_priors = [sps.SphericalPrior(features_sizes[0], hyparams=[1]),
+                      sps.SphericalPrior(features_sizes[1], hyparams=[0.1, 1]),
+                      sps.CustomPrior(sigma_x, hyparams=[0.1, 1])
+                      ]
+
+
+    tpriors = [tps.SphericalPrior(delays),
+               tps.SmoothnessPrior(delays, wishart=False),
+               tps.HRFPrior(delays),
+               tps.GaussianKernelPrior(delays),
+               ]
+    tpidx = tprior_names.index(temporal_prior_name)
+    temporal_prior = tpriors[tpidx]
+
+    folds = tikutils.generate_trnval_folds(responses_train.shape[0],
+                                           sampler='bcv',
+                                           nfolds=(1,5),
+                                           )
+    folds = list(folds)
+    res = models.crossval_stem_wmvnp(features_train,
+                                     responses_train,
+                                     temporal_prior=temporal_prior,
+                                     feature_priors=spatial_priors,
+                                     folds=folds,
+                                     ridges=ridges,
+                                     verbosity=2,
+                                     method=method,
+                                     normalize_kernel=normalize_kernel,
+                                     )
+
+    # select a non-spherical prior
+    spidx = 0
+    sprior_ridge = res['spatial'][spidx]
+    newridges = res['ridges']
+    ridge_scale = newridges[0]
+
+    res = models.estimate_simple_stem_wmvnp(features_train,
+                                            responses_train,
+                                            features_test=None,
+                                            responses_test=None,
+                                            temporal_prior=temporal_prior,
+                                            temporal_hhparam=1.0,
+                                            feature_priors=spatial_priors,
+                                            feature_hyparams=sprior_ridge,
+                                            weights=True,
+                                            performance=False,
+                                            predictions=False,
+                                            ridge_scale=ridge_scale,
+                                            verbosity=2,
+                                            method='SVD',
+                                            )
+
+    weights = models.dual2primal_weights(res['weights'],
+                                         features_train,
+                                         spatial_priors,
+                                         sprior_ridge,
+                                         temporal_prior,
+                                         )
+    weights = np.vstack(weights)
+
+    ### solve problem directly
+    Xx = np.hstack([tikutils.delay_signal(t.astype(np.float64), delays)\
+                    for i,t in enumerate(features_train)])
+
+    # get scaled priors
+    spriors = [sp.get_prior(param) for sp, param in zip(spatial_priors, sprior_ridge)]
+    # get temporal prior
+    tprior = temporal_prior.get_prior(1.0)
+    tprior += np.identity(tprior.shape[0])*1e-10
+    # combine
+    from scipy import linalg as LA
+    prior = LA.block_diag(*[np.kron(tprior, spr) for spr in spriors])
+
+
+    # solve problem indirectly # dual
+    XSigmaXT = np.linalg.multi_dot([Xx, prior, Xx.T]) + (ridge_scale**2.0)*np.identity(Xx.shape[0])
+    alphas = np.dot(np.linalg.inv(XSigmaXT), responses_train)
+    assert np.allclose(alphas, res['weights'])
+    betas_dual = np.linalg.multi_dot([prior, Xx.T, alphas])
+    assert np.allclose(betas_dual, weights)
+
+    # solve problem directly # primal
+    penalty = np.linalg.inv(prior)
+    XTXSigma = np.dot(Xx.T, Xx) + (ridge_scale**2.0)*penalty
+    XTY = np.dot(Xx.T, responses_train)
+    betas = np.dot(np.linalg.inv(XTXSigma), XTY)
+    # check solutions
+    try:
+        assert np.allclose(betas, weights)
+    except AssertionError:
+        # numerical error with HRF because of rank
+        print('asserting correlation')
+        assert np.allclose(np.corrcoef(betas.ravel(), weights.ravel())[0,1], 1.0)
+
+
+def test_nonspherical_smoothnessprior_solution():
+    test_general_solution(temporal_prior_name='smooth')
+
+def test_nonspherical_hrfprior_solution():
+    test_general_solution(temporal_prior_name='hrf')
+
+def test_nonspherical_gaussiankernel_solution():
+    test_general_solution(temporal_prior_name='gaussian')
+
+
 def test_ridge_solution_raw():
     # make sure we recover the ridge solution
     # when we don't normalize hyparams
