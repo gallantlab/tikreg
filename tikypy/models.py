@@ -1194,6 +1194,7 @@ def dual2primal_weights(kernel_weights,
                         temporal_hhparam=1.0,
                         ):
     '''Recover the feature weights from the kernel weights
+    for any one or all feature spaces.
 
     Parameters
     ----------
@@ -1213,13 +1214,21 @@ def dual2primal_weights(kernel_weights,
 
     Returns
     -------
-    weigths : list
+    weights : list
         Feature space weights
         [(p_1, v), ..., (p_l, v)]
     '''
     weights = []
     tp = temporal_prior.get_prior(hhparam=temporal_hhparam)
     delays = temporal_prior.delays
+
+    if isinstance(features_train, np.ndarray):
+        print('Only one feature space given...')
+        features_train = [features_train]
+        assert not isinstance(feature_priors, list)
+        assert not isinstance(feature_hyparams, list)
+        feature_priors = [feature_priors]
+        features_hyparams = [feature_hyparams]
 
     for fidx, features in enumerate(features_train):
         Xi = tikutils.delay_signal(features, delays)
@@ -1232,6 +1241,10 @@ def dual2primal_weights(kernel_weights,
             Sigma = np.kron(tp, sp)
             Wi = np.linalg.multi_dot([Sigma, Xi.T, kernel_weights])
         weights.append(Wi)
+
+    if len(weights) == 1:
+        # only one feature space given
+        weights = weights[0]
     return weights
 
 
