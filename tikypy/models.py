@@ -1037,7 +1037,6 @@ def crossval_stem_wmvnp(features_train,
             if predictions:
                 fold_iteration = sample_counter[validx] - 1
                 preds = fit['predictions'].swapaxes(0,1) # time, ridges, voxels
-                print preds.mean()
 
                 for count in np.unique(fold_iteration):
                     time_mask = fold_iteration == count
