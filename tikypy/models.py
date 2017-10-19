@@ -838,6 +838,8 @@ def crossval_stem_wmvnp(features_train,
                         metric=METRIC,
                         zscore_ytrain=False,
                         zscore_yval=False,
+                        weights=False,
+                        predictions=False,
                         ):
     '''Cross-validation procedure for
     spatio-temporal encoding models with MVN priors.
@@ -918,11 +920,33 @@ def crossval_stem_wmvnp(features_train,
                         1 if population_mean else nresponses),
                        )
 
+    if predictions or weights:
+        sample_counter = np.zeros(responses_train.shape[0]).astype(np.int)
+        for ifold, (trnidx, validx) in enumerate(folds):
+            sample_counter[validx] += 1
+        sample_max = sample_counter.max()
+
+    if predictions:
+        results_predictions = np.zeros((sample_max,
+                                        ntemporal_hhparams,
+                                        nspatial_hyparams,
+                                        responses_train.shape[0], # ntimepoints
+                                        nridges,
+                                        nresponses,
+                                        ),
+                                       dtype=np.float32,
+                                       )
+    if weights:
+        results_weights = []
+
     sp_hyparams = []
     scaled_ridges = np.atleast_1d(ridges).copy()
 
     # start iterating through spatio-temporal hyparams
     for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
+        sample_counter = np.zeros(responses_train.shape[0]).astype(np.int)
+
+        # hyhperparameters
         temporal_hhparam = spatiotemporal_hyperparams[0]
         spatial_hyparams = spatiotemporal_hyperparams[1:]
 
@@ -977,9 +1001,12 @@ def crossval_stem_wmvnp(features_train,
 
         # perform cross-validation procedure
         for ifold, (trnidx, validx) in enumerate(folds):
+
+
             # extract training and validation sets from full kernel
             ktrn = tikutils.fast_indexing(Ktrain, trnidx, trnidx)
             kval = tikutils.fast_indexing(Ktrain, validx, trnidx)
+            sample_counter[validx] += 1
 
             if verbosity > 1:
                 txt = (ifold+1,nfolds,len(trnidx),len(validx))
@@ -995,6 +1022,8 @@ def crossval_stem_wmvnp(features_train,
                                 verbose=verbosity > 1,
                                 method=method,
                                 metric=metric,
+                                predictions=predictions,
+                                weights=weights,
                                 )
 
             if population_mean:
@@ -1005,6 +1034,14 @@ def crossval_stem_wmvnp(features_train,
                 cvfold = fit['performance']
             results[ifold, thyperidx, shyperidx] = cvfold
 
+            if predictions:
+                fold_iteration = sample_counter[validx] - 1
+                preds = fit['predictions'].swapaxes(0,1) # time, ridges, voxels
+                print preds.mean()
+
+                for count in np.unique(fold_iteration):
+                    time_mask = fold_iteration == count
+                    results_predictions[count, thyperidx, shyperidx, validx] = preds[time_mask]
         if verbosity:
             # print performance for this spatio-temporal hyperparameter set
             perf = nan_to_num(results[:,thyperidx,shyperidx].mean(0))
@@ -1038,13 +1075,17 @@ def crossval_stem_wmvnp(features_train,
     if verbosity:
         print('Duration %0.04f[mins]' % ((time.time()-start_time)/60.))
 
-    return {'cvresults' : results,
-            'dims' : dims,
-            'spatial' : sp_hyparams,
-            'ridges' : scaled_ridges,
-            'temporal' : temporal_prior.get_hhparams(),
-            }
+    out = {'cvresults' : results,
+           'dims' : dims,
+           'spatial' : sp_hyparams,
+           'ridges' : scaled_ridges,
+           'temporal' : temporal_prior.get_hhparams(),
+           }
 
+    if predictions:
+        out['cvpreds'] = results_predictions
+
+    return out
 
 def estimate_stem_wmvnp(features_train,
                         responses_train,
