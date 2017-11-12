@@ -1444,6 +1444,7 @@ def hyperopt_crossval_stem_wmvnp(features_train,
                                  metric=METRIC,
                                  zscore_ytrain=True,
                                  zscore_yval=True,
+                                 search_algorithm='tpe',
                                  **kwargs):
     '''Use ``hyperopt`` to cross-validate all hyper-parameters parameters.
 
@@ -1504,6 +1505,16 @@ def hyperopt_crossval_stem_wmvnp(features_train,
     '''
     import pickle
     from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
+    if search_algorithm == 'tpe':
+        search_algorithm = tpe
+    elif search_algorithm in ['random', 'rand']:
+        try:
+            from hyperopt import rand as random
+        except ImportError:
+            from hyperopt import random
+        search_algorithm = random
+    else:
+        raise ValueError('Unknown hyperopt search algortihm: %s'%search_algorithm)
 
     delays = temporal_prior.delays
     ndelays = len(delays)
@@ -1620,7 +1631,7 @@ def hyperopt_crossval_stem_wmvnp(features_train,
     trials = Trials()
     best_params = fmin(objective,
                        space=spaces,
-                       algo=tpe.suggest,
+                       algo=search_algorithm.suggest,
                        max_evals=ntrials,
                        trials=trials)
 
