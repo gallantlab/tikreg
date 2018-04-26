@@ -1759,6 +1759,7 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  predictions=False,
                                  performance=True,
                                  kernel_features=False,
+                                 metric=METRIC,
                                  **kwargs):
     '''
     '''
@@ -1827,6 +1828,7 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                                        verbosity=verbosity,
                                                        method=method,
                                                        kernel_features=kernel_features,
+                                                       metric=metric
                                                        )
 
         # store the solutions
