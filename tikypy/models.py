@@ -392,11 +392,13 @@ def kernel_banded_temporal_prior(kernel, temporal_prior, spatial_prior,
 
 
 def kernel_spatiotemporal_prior(Xtrain, temporal_prior, spatial_prior,
-                                Xtest=None, delays=[1,2,3,4]):
+                                Xtest=None, delays=None):
     '''Compute the kernel matrix of a model with a spatio-temporal prior
 
     temporal_prior (d, d): d = len(delays)
     '''
+    assert delays is not None
+
     matrix_mult = np.dot
     if tikutils.isdiag(spatial_prior):
         def matrix_mult(xx,yy):
@@ -1061,12 +1063,13 @@ def crossval_stem_wmvnp(features_train,
                       ('nfspaces', np.int)])
 
     dims = np.recarray(shape=(1), dtype=dtype)
-    dims[0] = np.asarray([nfolds,
-                          ntemporal_hhparams,
-                          nspatial_hyparams,
-                          nridges,
-                          nresponses,
-                          len(features_train)])
+    dims[0] = np.asarray([(nfolds,
+                           ntemporal_hhparams,
+                           nspatial_hyparams,
+                           nridges,
+                           nresponses,
+                           len(features_train))],
+                         dtype=dtype)
 
     # spatial hyparams. all the same across temporal
     sp_hyparams = np.asarray(sp_hyparams)[:nspatial_hyparams]
@@ -1286,6 +1289,41 @@ def dual2primal_weights(kernel_weights,
         # only one feature space given
         weights = weights[0]
     return weights
+
+
+def dual2primal_weights_banded(kernel_weights,
+                               feature_space_train,
+                               population_feature_prior,
+                               temporal_prior,
+                               delays_mean=False,
+                               verbose=True):
+    '''WIP. WILL CHANGE. USE AT OWN RISK.
+    '''
+    # normalize population alphas by voxel-wise lambda scale
+    alpha = tikutils.mult_diag(kernel_weights, population_feature_prior, left=False)
+
+    primal_weights = 0.0 if delays_mean else []
+    ndelays = float(len(temporal_prior.delays))
+
+    for idx, idelay in enumerate(temporal_prior.delays):
+        print('Working on delay %i (%i/%i)'%(idelay, idx+1, ndelays))
+        delay_weights = np.zeros_like(feature_space_train).T
+        for jdx, jdelay in enumerate(temporal_prior.delays):
+            if temporal_prior.asarray[idx, jdx] == 0:
+                continue
+            Xdj = tikutils.delay_signal(feature_space_train, [jdelay])
+            delay_weights += temporal_prior.asarray[idx, jdx]*Xdj.T
+
+        # project to primal space
+        weights = np.dot(delay_weights, alpha)
+        if delays_mean:
+            primal_weights += weights/ndelays
+        else:
+            primal_weights.append(weights)
+
+    return np.asarray(primal_weights)
+
+
 
 
 def estimate_simple_stem_wmvnp(features_train,
@@ -1759,7 +1797,6 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                  predictions=False,
                                  performance=True,
                                  kernel_features=False,
-                                 metric=METRIC,
                                  **kwargs):
     '''
     '''
@@ -1828,7 +1865,6 @@ def hyperopt_estimate_stem_wmvnp(features_train,
                                                        verbosity=verbosity,
                                                        method=method,
                                                        kernel_features=kernel_features,
-                                                       metric=metric
                                                        )
 
         # store the solutions
