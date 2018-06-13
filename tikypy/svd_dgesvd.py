@@ -13,7 +13,10 @@ from numpy.linalg import LinAlgError
 try:
     lib = CDLL('/usr/lib/liblapack.so')
 except OSError:
-    lib = CDLL('/usr/lib64/liblapack.so')
+    try:
+        lib = CDLL('/usr/lib64/liblapack.so')
+    except OSError:
+        lib = CDLL('/usr/lib/x86_64-linux-gnu/liblapack.so')
 
 def _makearray(a):
     new = asarray(a)
