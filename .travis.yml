@@ -16,4 +16,4 @@ install:
   - python setup.py install
 
 # command to run tests
-script: pytest --doctest-modules -v
+script: pytest -v
