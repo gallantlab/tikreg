@@ -642,7 +642,7 @@ def test_cv_api(show_figures=False, ntest=50):
                 Ktrain += kernel_train
 
             kernel_normalizer = tikutils.determinant_normalizer(Ktrain)
-            Ktrain /= kernel_normalizer
+            Ktrain /= float(kernel_normalizer)
 
             # cross-validation
             for ifold, (trnidx, validx) in enumerate(folds):
