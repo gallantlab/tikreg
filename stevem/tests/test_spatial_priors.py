@@ -1,6 +1,6 @@
 import numpy as np
 
-from tikypy import spatial_priors as sp
+from stevem import spatial_priors as sp
 
 
 def test_prior_from_penalty():

@@ -1,7 +1,7 @@
 import numpy as np
 
-import tikypy.temporal_priors as tp
-import tikypy.utils as tikutils
+import stevem.temporal_priors as tp
+import stevem.utils as tikutils
 
 ##############################
 #

@@ -1,7 +1,7 @@
-from tikypy.models import *             # TODO:
-from tikypy.models import _ols, _generalized_tikhonov_dual
+from stevem.models import *             # TODO:
+from stevem.models import _ols, _generalized_tikhonov_dual
 
-import tikypy.utils as tikutils
+import stevem.utils as tikutils
 
 def test_kernel_kron():
     # generate data

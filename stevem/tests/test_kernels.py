@@ -1,4 +1,4 @@
-from tikypy.kernels import *
+from stevem.kernels import *
 
 
 ##############################
