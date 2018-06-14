@@ -38,16 +38,16 @@ long_description = """
 """
 
 def main(**kwargs):
-    setup(name="""tikypy""",
+    setup(name="""stevem""",
           version='0.01',
           description="""""",
           # author='Anwar O. Nunez-Elizalde',
           # author_email='anwarnunez@gmail.com',
           # url='gallantlab.github.io/cottoncandy/',
-          packages=['tikypy',
+          packages=['stevem',
                     ],
           package_data={
-              'tikypy':[
+              'stevem':[
                 'defaults.cfg',
                   ],
               },
