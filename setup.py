@@ -38,16 +38,16 @@ long_description = """
 """
 
 def main(**kwargs):
-    setup(name="""stevem""",
+    setup(name="""tikreg""",
           version='0.01',
           description="""""",
           # author='Anwar O. Nunez-Elizalde',
           # author_email='anwarnunez@gmail.com',
           # url='gallantlab.github.io/cottoncandy/',
-          packages=['stevem',
+          packages=['tikreg',
                     ],
           package_data={
-              'stevem':[
+              'tikreg':[
                 'defaults.cfg',
                   ],
               },

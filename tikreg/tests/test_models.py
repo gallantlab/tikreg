@@ -1,7 +1,7 @@
-from stevem.models import *             # TODO:
-from stevem.models import _ols, _generalized_tikhonov_dual
+from tikreg.models import *             # TODO:
+from tikreg.models import _ols, _generalized_tikhonov_dual
 
-import stevem.utils as tikutils
+import tikreg.utils as tikutils
 
 def test_kernel_kron():
     # generate data

@@ -4,8 +4,8 @@ np.random.seed(1337)
 
 import itertools
 
-import stevem as tk
-from stevem import (models,
+import tikreg as tk
+from tikreg import (models,
                     spatial_priors as sps,
                     temporal_priors as tps,
                     utils as tikutils,
@@ -609,7 +609,7 @@ def test_cv_api(show_figures=False, ntest=50):
 
                 if (hyperidx == 0) and (ntp == 0):
                     # show points in 3D
-                    from stevem import priors
+                    from tikreg import priors
                     cartesian_points = [t[1:]/np.linalg.norm(t[1:]) for t in all_hyperparams]
                     angles = priors.cartesian2polar(np.asarray(cartesian_points))
                     priors.show_spherical_angles(angles[:,0], angles[:,1])
@@ -691,7 +691,7 @@ def test_stmvn_prior(method='SVD'):
                tps.HRFPrior([1] if delays == [0] else delays),
                ]
 
-    from stevem import models
+    from tikreg import models
 
     res = models.crossval_stem_wmvnp(features_train,
                                      responses_train,
@@ -866,7 +866,7 @@ def test_hyperopt_functionality():
 
 
 def test_hyperopt_crossval():
-    from stevem import models
+    from tikreg import models
     delays = np.arange(10)
     ndelays = len(delays)
 

@@ -1,7 +1,7 @@
 import numpy as np
 
-from stevem import BasePrior
-import stevem.utils as tikutils
+from tikreg import BasePrior
+import tikreg.utils as tikutils
 
 
 class CustomPrior(BasePrior):
