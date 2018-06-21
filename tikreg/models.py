@@ -6,9 +6,9 @@ from scipy import linalg as LA
 from scipy.linalg import cho_factor, cho_solve
 
 
-from stevem.utils import SVD
-from stevem.kernels import lazy_kernel
-import stevem.utils as tikutils
+from tikreg.utils import SVD
+from tikreg.kernels import lazy_kernel
+import tikreg.utils as tikutils
 
 METHOD = 'SVD'
 METRIC = 'correlation'

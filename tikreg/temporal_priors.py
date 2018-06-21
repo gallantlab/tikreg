@@ -1,9 +1,9 @@
 import numpy as np
 import itertools
 
-from stevem import BasePrior
-import stevem.utils as tikutils
-from stevem import kernels as tkernel
+from tikreg import BasePrior
+import tikreg.utils as tikutils
+from tikreg import kernels as tkernel
 
 ##############################
 # functions

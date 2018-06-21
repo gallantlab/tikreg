@@ -1,4 +1,4 @@
-from stevem.kernels import *
+from tikreg.kernels import *
 
 
 ##############################

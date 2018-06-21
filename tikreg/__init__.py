@@ -1,5 +1,5 @@
 import numpy as np
-import stevem.utils as tikutils
+import tikreg.utils as tikutils
 
 
 ##############################

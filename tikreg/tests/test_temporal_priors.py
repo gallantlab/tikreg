@@ -1,7 +1,7 @@
 import numpy as np
 
-import stevem.temporal_priors as tp
-import stevem.utils as tikutils
+import tikreg.temporal_priors as tp
+import tikreg.utils as tikutils
 
 ##############################
 #
