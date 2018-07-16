@@ -452,17 +452,17 @@ def kernel_cvridge(Ktrain, Ytrain,
 
     results = np.empty((nfolds, nridges, Ytrain.shape[-1]))
     for fdx, fold in enumerate(folds):
-        trn, test = fold
-        ntrn, ntest = len(trn), len(test)
+        trn, val = fold
+        ntrn, nval = len(trn), len(val)
         if verbose:
-            txt = (fdx+1,nfolds,ntrn,ntest)
-            print('train ridge fold  %i/%i: ntrain=%i, ntest=%i'%txt)
+            txt = (fdx+1,nfolds,ntrn,nval)
+            print('train ridge fold  %i/%i: ntrain=%i, nval=%i'%txt)
 
         Ktrn = tikutils.fast_indexing(Ktrain, trn, trn)
-        Ktest = tikutils.fast_indexing(Ktrain, test, trn)
+        Kval = tikutils.fast_indexing(Ktrain, val, trn)
 
         res = solve_l2_dual(Ktrn, Ytrain[trn],
-                            Ktest, zscore(Ytrain[test]),
+                            Kval, zscore(Ytrain[val]),
                             ridges, EPS=EPS,
                             weights=False,
                             predictions=False,
@@ -637,15 +637,15 @@ def cvridge(Xtrain, Ytrain,
                 print('Updating *%s* kernel %i/%i:%s'%txt)
 
         for fdx, fold in enumerate(folds):
-            trn, test = fold
-            ntrn, ntest = len(trn), len(test)
+            trn, val = fold
+            ntrn, nval = len(trn), len(val)
             if verbose:
-                txt = (fdx+1,nfolds,ntrn,ntest)
-                print('train ridge fold  %i/%i: ntrain=%i, ntest=%i'%txt)
+                txt = (fdx+1,nfolds,ntrn,nval)
+                print('train ridge fold  %i/%i: ntrain=%i, nval=%i'%txt)
 
             if solve_dual is False:
                 res = solve_l2_primal(Xtrain[trn], Ytrain[trn],
-                                      Xtrain[test], zscore(Ytrain[test]),
+                                      Xtrain[val], zscore(Ytrain[val]),
                                       ridges, EPS=EPS,
                                       weights=False,
                                       predictions=False,
@@ -655,9 +655,9 @@ def cvridge(Xtrain, Ytrain,
                                       )
             else:
                 Ktrain = tikutils.fast_indexing(kernel,trn, trn)
-                Ktest = tikutils.fast_indexing(kernel,test, trn)
+                Kval = tikutils.fast_indexing(kernel,val, trn)
                 res = solve_l2_dual(Ktrain, Ytrain[trn],
-                                    Ktest, zscore(Ytrain[test]),
+                                    Kval, zscore(Ytrain[val]),
                                     ridges, EPS=EPS,
                                     weights=False,
                                     predictions=False,
