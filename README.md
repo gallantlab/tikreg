@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/gallantlab/tikreg.svg?token=DG1xpt4Upohy9kdU6zzg&branch=master)](https://travis-ci.com/gallantlab/tikreg)
 
-**tikreg** is a Python package that efficiently implements Tikhnov regression.
+**tikreg** is a Python package that efficiently implements Tikhonov regression.
 
 Tikhonov regression gives us a framework to estimate spatiotemporal encoding models with non-spherical multivariate normal priors. This framework is useful to model biological signals. This package was developed to analyze brain data collected using functional magnetic resonance imaging (fMRI). `tikreg`  can also be used to model other neuroimaging signals (e.g. 2P, ECoG, etc) and LTI signals more generally.
 
