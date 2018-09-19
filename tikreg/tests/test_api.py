@@ -886,23 +886,26 @@ def test_hyperopt_crossval():
     import time
     from hyperopt import hp
 
-    start_time = time.time()
-    cvresults = models.hyperopt_crossval_stem_wmvnp(features_train,
-                                                    responses_train,
-                                                    temporal_prior=temporal_prior,
-                                                    feature_priors=feature_priors,
-                                                    spatial_sampler=[hp.loguniform('A',0,7),
-                                                                     hp.loguniform('B',0,7),
-                                                                     hp.loguniform('C',0,7),
-                                                                     ],
-                                                    ridge_sampler=False,
-                                                    temporal_sampler=hp.uniform('temporal',0,10),
-                                                    ntrials=100,
-                                                    method='Chol',
-                                                    verbosity=2,
-                                                    folds=folds,
-                                                    )
+    def run_model(tp, fp):
+        cvresults = models.hyperopt_crossval_stem_wmvnp(features_train,
+                                                        responses_train,
+                                                        temporal_prior=tp,
+                                                        feature_priors=fp,
+                                                        spatial_sampler=[hp.loguniform('A',0,7),
+                                                                         hp.loguniform('B',0,7),
+                                                                         hp.loguniform('C',0,7),
+                                                                         ],
+                                                        ridge_sampler=False,
+                                                        temporal_sampler=hp.uniform('temporal',0,10),
+                                                        ntrials=100,
+                                                        method='Chol',
+                                                        verbosity=2,
+                                                        folds=folds,
+                                                        )
+        return cvresults
 
+    start_time = time.time()
+    cvresults = run_model(temporal_prior, feature_priors)
     print(time.time() - start_time)
     internal_best = cvresults.trial_attachments(cvresults.trials[cvresults.best_trial['tid']])['internals']
     import pickle
@@ -910,18 +913,4 @@ def test_hyperopt_crossval():
 
     # check it pukes without temporal prior
     with pytest.raises(ValueError):
-        _ = models.hyperopt_crossval_stem_wmvnp(features_train,
-                                                responses_train,
-                                                temporal_prior=None,
-                                                feature_priors=feature_priors,
-                                                spatial_sampler=[hp.loguniform('A',0,7),
-                                                                 hp.loguniform('B',0,7),
-                                                                 hp.loguniform('C',0,7),
-                                                                 ],
-                                                ridge_sampler=False,
-                                                temporal_sampler=hp.uniform('temporal',0,10),
-                                                ntrials=100,
-                                                method='Chol',
-                                                verbosity=2,
-                                                folds=folds,
-                                                )
+        run_model(None, feature_priors)
