@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 np.set_printoptions(precision=4, suppress=True)
 np.random.seed(1337)
 
@@ -906,3 +907,21 @@ def test_hyperopt_crossval():
     internal_best = cvresults.trial_attachments(cvresults.trials[cvresults.best_trial['tid']])['internals']
     import pickle
     oo = pickle.loads(internal_best)
+
+    # check it pukes without temporal prior
+    with pytest.raises(ValueError):
+        _ = models.hyperopt_crossval_stem_wmvnp(features_train,
+                                                responses_train,
+                                                temporal_prior=None,
+                                                feature_priors=feature_priors,
+                                                spatial_sampler=[hp.loguniform('A',0,7),
+                                                                 hp.loguniform('B',0,7),
+                                                                 hp.loguniform('C',0,7),
+                                                                 ],
+                                                ridge_sampler=False,
+                                                temporal_sampler=hp.uniform('temporal',0,10),
+                                                ntrials=100,
+                                                method='Chol',
+                                                verbosity=2,
+                                                folds=folds,
+                                                )

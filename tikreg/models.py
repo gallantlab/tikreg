@@ -1554,6 +1554,9 @@ def hyperopt_crossval_stem_wmvnp(features_train,
     else:
         raise ValueError('Unknown hyperopt search algortihm: %s'%search_algorithm)
 
+    if temporal_prior is None:
+        raise ValueError("Please provide a temporal prior from `tikreg.temporal_priors`")
+
     delays = temporal_prior.delays
     ndelays = len(delays)
     spaces = []
