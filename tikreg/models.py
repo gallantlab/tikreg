@@ -9,6 +9,7 @@ from scipy.linalg import cho_factor, cho_solve
 from tikreg.utils import SVD
 from tikreg.kernels import lazy_kernel
 import tikreg.utils as tikutils
+from tikreg.temporal_priors import SphericalPrior
 
 METHOD = 'SVD'
 METRIC = 'correlation'
@@ -871,6 +872,9 @@ def crossval_stem_wmvnp(features_train,
         features_train = [features_train]
 
     nridges = len(ridges)
+    if temporal_prior is None:
+        # make temporal prior with only one delay
+        temporal_prior = SphericalPrior(delays=[1])
     delays = temporal_prior.delays
     ndelays = len(delays)
     chunklen  = ndelays if (chunklen is True) else (chunklen if chunklen else 1)
@@ -1498,7 +1502,7 @@ def hyperopt_crossval_stem_wmvnp(features_train,
     temporal_prior : ``TemporalPrior`` object
         A temporal prior object to use. The temporal
         prior may contain a hyper-prior.
-    feature_priors  : list of ``SpatialPrior``bjects
+    feature_priors  : list of ``SpatialPrior`` objects
         One feature prior per feature space.
     spatial_sampler : ``hyperopt.hp``, or bool
         Specifies how to sample the hyperparameter space.
@@ -1543,6 +1547,8 @@ def hyperopt_crossval_stem_wmvnp(features_train,
     '''
     import pickle
     from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
+    if feature_priors is None:
+        raise ValueError("You must pass spatial priors")
     if search_algorithm == 'tpe':
         search_algorithm = tpe
     elif search_algorithm in ['random', 'rand']:
@@ -1554,8 +1560,7 @@ def hyperopt_crossval_stem_wmvnp(features_train,
     else:
         raise ValueError('Unknown hyperopt search algortihm: %s'%search_algorithm)
 
-    delays = temporal_prior.delays
-    ndelays = len(delays)
+    has_temporal = False if temporal_prior is None else True
     spaces = []
 
     has_spatial = True
@@ -1576,15 +1581,14 @@ def hyperopt_crossval_stem_wmvnp(features_train,
         has_ridge = True
         spaces.append(ridge_sampler)
 
-    if (len(temporal_prior.get_hhparams()) > 1) and (temporal_sampler is True):
-        has_temporal = True
-        spaces.append(hp.uniform('temporal_hhparam', 0, 10))
-    elif temporal_sampler is False:
-        has_temporal = False
-    else:
-        # append given temporal sampler
-        has_temporal = True
-        spaces.append(temporal_sampler)
+    if has_temporal:
+        if len(temporal_prior.get_hhparams()) > 1 and (temporal_sampler is True):
+            delays = temporal_prior.delays
+            # set default sampler
+            spaces.append(hp.uniform('temporal_hhparam', 0, delays[-1]))
+        else:
+            # append given temporal sampler
+            spaces.append(temporal_sampler)
 
     if features_test is None:
         features_test = [features_test]*len(features_train)
@@ -1620,10 +1624,12 @@ def hyperopt_crossval_stem_wmvnp(features_train,
             print(params)
             raise ValueError('invalid hyperparams')
 
-        temporal_prior.set_hhparameters(parameters['temporal'])
+        if has_temporal:
+            temporal_prior.set_hhparameters(parameters['temporal'])
 
-        for fi, feature_prior in enumerate(feature_priors):
-            feature_prior.set_hyparams(parameters['spatial'][fi])
+        if has_spatial:
+            for fi, feature_prior in enumerate(feature_priors):
+                feature_prior.set_hyparams(parameters['spatial'][fi])
 
         res = crossval_stem_wmvnp(features_train,
                                   responses_train,

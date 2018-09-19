@@ -1,4 +1,6 @@
 import numpy as np
+import pytest
+from hyperopt import hp
 np.set_printoptions(precision=4, suppress=True)
 np.random.seed(1337)
 
@@ -906,3 +908,47 @@ def test_hyperopt_crossval():
     internal_best = cvresults.trial_attachments(cvresults.trials[cvresults.best_trial['tid']])['internals']
     import pickle
     oo = pickle.loads(internal_best)
+
+
+def test_hyperopt_priors_combinations():
+    # test that we can use combinations of spatial, temporal, or ridge without erroring
+    # mostly a smoke test
+    delays = np.arange(3)
+    ndelays = len(delays)
+
+    features_train, features_test, responses_train, responses_test = get_abc_data()
+
+    feature_priors = [sps.SphericalPrior(fs) for fs in features_train]
+    temporal_prior = tps.SmoothnessPrior(delays, hhparams=np.linspace(0, ndelays, 1))
+
+    folds = tikutils.generate_trnval_folds(responses_train.shape[0],
+                                           sampler='bcv',
+                                           nfolds=(1, 2))
+    folds = list(folds)
+
+    # temporal, feature
+    combination_priors = [
+        (None, feature_priors),
+        (temporal_prior, feature_priors)
+
+    ]
+
+    def run_model(tp, sp):
+        cvresults = models.hyperopt_crossval_stem_wmvnp(features_train,
+                                                        responses_train,
+                                                        temporal_prior=tp,
+                                                        feature_priors=sp,
+                                                        ridge_sampler=False,
+                                                        temporal_sampler=hp.uniform('temporal', 0, ndelays),
+                                                        ntrials=10,
+                                                        method='Chol',
+                                                        verbosity=2,
+                                                        folds=folds,
+                                                        )
+
+    for tp, sp in combination_priors:
+        run_model(tp, sp)
+
+    # check it pukes if no spatial priors are passed
+    with pytest.raises(ValueError):
+        run_model(temporal_prior, None)
