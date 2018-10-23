@@ -1135,7 +1135,7 @@ def estimate_stem_wmvnp(features_train,
                                         metric=metric,
                                         )
 
-    if (weights is False) and (performance is False) and (prediction is False):
+    if (weights is False) and (performance is False) and (predictions is False):
         return cvresults
 
     dims = cvresults['dims']
