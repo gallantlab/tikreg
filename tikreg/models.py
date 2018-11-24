@@ -1135,7 +1135,7 @@ def estimate_stem_wmvnp(features_train,
                                         metric=metric,
                                         )
 
-    if (weights is False) and (performance is False) and (prediction is False):
+    if (weights is False) and (performance is False) and (predictions is False):
         return cvresults
 
     dims = cvresults['dims']
@@ -1440,7 +1440,7 @@ def estimate_simple_stem_wmvnp(features_train,
                                          delays=temporal_prior.delays,
                                          Xtest=fs_test)
 
-    if np.allclose(Ktest, 0.0):
+    if features_test is None:
         Ktest = None
 
     # solve for this response
