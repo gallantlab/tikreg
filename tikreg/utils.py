@@ -520,3 +520,95 @@ def hrf_convolution(input_responses, HRF=None, do_convolution=True, dt=None):
             conv = 0.0
         bold[:, sidx] = conv
     return bold
+
+
+
+def hyperopt_make_trial_data(tid, vals, loss):
+    """
+    Generate a valid dictionary as a trial for hyperopt.Trials.
+
+    Parameters
+    ----------
+    tid : int
+        trial id
+    vals : dict
+        mapping between parameter name and list of values, e.g.
+        `{'speechsem': [1.0], 'visualsem': [100.0]}`
+    loss : float
+        loss for the current trial
+
+    Returns
+    -------
+    trial : dict
+        valid dict object for hyperopt.Trials
+    """
+
+    misc = {
+        'tid': tid,
+        'vals': vals,
+        'cmd': ('domain_attachment', 'FMinIter_Domain'),
+        'idxs': {k: [tid] for k in vals.keys()}
+    }
+    d = {
+        'misc': misc,
+        'tid': tid,
+        'result': {'loss': loss, 'status': 'ok'},
+        'state': 2,
+        'spec': None,
+        'owner': None,
+        'book_time': None,
+        'refresh_time': None,
+        'exp_key': None
+    }
+    return d
+
+
+def hyperopt_make_trials(values, losses, parameter_names=None):
+    """
+
+    Parameters
+    ----------
+    values : list of lists or 2D np.ndarray (n_trials, n_params)
+        each element (or row) corresponds to a set of parameters previously
+        tested
+    losses : list of floats (n_params,)
+        losses for previous trials
+    parameter_names : list of str or None
+        associated parameter names (must correspond to `spaces` passed to
+        hyperopt). If None, defaults to ['X0', 'X1', ..., 'X`n_params`']
+
+    Returns
+    -------
+    trials : hyperopt.Trials
+        hyperopt Trials object containing reconstructed trials
+    """
+    import hyperopt as hpo
+    # uniform the inputs
+    nparams = len(values[0])
+    if parameter_names is None:
+        parameter_names = ['X{}'.format(i) for i in range(nparams)]
+    vals = [{pn: [v] for pn, v in zip(parameter_names, val)} for val in values]
+    trials = []
+    for i, (v, l) in enumerate(zip(vals, losses)):
+        trials.append(hyperopt_make_trial_data(i, v, l))
+    hpo_trials = hpo.Trials()
+    hpo_trials.insert_trial_docs(trials)
+    hpo_trials.refresh()
+    return hpo_trials
+
+
+def test_make_trials():
+    """smoke test"""
+    values = [[1.0, 3.0, 4.0],
+              [44.0, 33.0, 2.0]]
+    losses = [0.3, -0.2]
+
+    hpo_trials = hyperopt_make_trials(values, losses)
+    parameter_names = ['X{}'.format(i) for i in range(3)]
+    vals = [{pn: [v] for pn, v in zip(parameter_names, val)} for val in values]
+
+    assert len(hpo_trials.trials) == len(values)
+    for trl, val, loss in zip(hpo_trials.trials, vals, losses):
+        assert trl['result']['loss'] == loss
+        assert trl['misc']['vals'] == val
+    return hpo_trials

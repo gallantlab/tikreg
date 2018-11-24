@@ -1458,6 +1458,12 @@ def estimate_simple_stem_wmvnp(features_train,
     # TODO: map weights from dual to primal space
     return response_solution
 
+class counter(object):
+    def __init__(self):
+        self.count = 0
+    def update(self):
+        self.count +=1
+
 
 def hyperopt_crossval_stem_wmvnp(features_train,
                                  responses_train,
@@ -1483,6 +1489,7 @@ def hyperopt_crossval_stem_wmvnp(features_train,
                                  zscore_ytrain=True,
                                  zscore_yval=True,
                                  search_algorithm='tpe',
+                                 trials=None,
                                  **kwargs):
     '''Use ``hyperopt`` to cross-validate all hyper-parameters parameters.
 
@@ -1589,12 +1596,8 @@ def hyperopt_crossval_stem_wmvnp(features_train,
     if features_test is None:
         features_test = [features_test]*len(features_train)
 
-    class counter(object):
-        def __init__(self):
-            self.count = 0
-        def update(self):
-            self.count +=1
-    mcounter = counter()
+
+
 
     def objective(params):
         mcounter.update()
@@ -1666,7 +1669,15 @@ def hyperopt_crossval_stem_wmvnp(features_train,
                 'status': STATUS_OK,
                 }
 
-    trials = Trials()
+    mcounter = counter()
+    if trials is None:
+        trials = Trials()
+
+    if len(trials.trials):
+        current = np.max([t['tid'] for t in trials.trials])
+        print('Restarting hyperopt search from trial #%i'%current)
+        mcounter.count = current
+
     best_params = fmin(objective,
                        space=spaces,
                        algo=search_algorithm.suggest,
