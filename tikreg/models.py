@@ -1597,10 +1597,8 @@ def hyperopt_crossval_stem_wmvnp(features_train,
         features_test = [features_test]*len(features_train)
 
 
-
-
     def objective(params):
-        mcounter.update()
+        mcounter.update()               # 1-indexed
 
         if has_spatial and has_ridge and has_temporal:
             parameters = {'temporal' : params[-1],
@@ -1674,7 +1672,7 @@ def hyperopt_crossval_stem_wmvnp(features_train,
         trials = Trials()
 
     if len(trials.trials):
-        current = np.max([t['tid'] for t in trials.trials])
+        current = np.max([t['tid'] for t in trials.trials]) + 1
         print('Restarting hyperopt search from trial #%i'%current)
         mcounter.count = current
 
