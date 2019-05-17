@@ -5,10 +5,14 @@ import tikreg.utils as tikutils
 def test_determinant_normalizer():
     mat = np.random.randn(100,100)
     mat = np.dot(mat.T, mat)
-    evals = np.linalg.eigvalsh(mat)
-    det = np.prod(evals)
-    det = det**(1./len(evals))
-    assert np.allclose(tikutils.determinant_normalizer(mat), det)
+    det = np.linalg.det(mat)
+    det_norm = det**(1.0/100.0)
+    ndet = np.linalg.det(mat / det_norm)
+    pdet = np.linalg.det(mat/tikutils.determinant_normalizer(mat))
+    assert np.allclose(tikutils.determinant_normalizer(mat), det_norm)
+    assert np.allclose(ndet, 1.0)
+    assert np.allclose(pdet, 1.0)
+
 
 def test_fast_indexing():
     D = np.random.randn(1000, 1000)
