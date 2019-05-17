@@ -62,6 +62,10 @@ class PriorFromPenalty(TemporalPrior):
         if delays is None:
             delays = np.arange(penalty.shape[0])
 
+        dodetnorm = False
+        if 'dodetnorm' in kwargs:
+            dodetnorm = kwargs.pop('dodetnorm')
+
         super(PriorFromPenalty, self).__init__(prior, delays=delays, **kwargs)
 
         # overwrite penalty after init
@@ -78,8 +82,15 @@ class PriorFromPenalty(TemporalPrior):
         else:
             raise ValueError('invalid prior for prior')
 
+
+
+        self.dodetnorm = dodetnorm
         # compute prior
-        self.prior = self.get_prior(alpha=1.0)
+        prior = self.get_prior(alpha=1.0)
+        if self.dodetnorm:
+            prior /= tikutils.determinant_normalizer(prior)
+        self.prior = prior
+
 
     def set_wishart(self, wishart):
         if isinstance(wishart, BasePrior):
