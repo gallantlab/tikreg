@@ -53,7 +53,7 @@ def get_abc_data(banded=True, p=50, n=100):
             responses_train, responses_test)
 
 
-def test_fullfit(n=100, p=50, population_mean=False):
+def test_fullfit(n=100, p=50, population_optimal=False):
     ridges = np.logspace(-3,3,10)
     nridges = len(ridges)
     ndelays = 5
@@ -88,7 +88,7 @@ def test_fullfit(n=100, p=50, population_mean=False):
                                       weights=True,
                                       performance=True,
                                       predictions=True,
-                                      population_mean=population_mean,
+                                      population_optimal=population_optimal,
                                       folds=(1,5),
                                       method='SVD',
                                       verbosity=1,
@@ -96,7 +96,7 @@ def test_fullfit(n=100, p=50, population_mean=False):
                                       )
 
     for rdx in range(responses_train.shape[-1]):
-        if population_mean:
+        if population_optimal:
             assert res['optima'].shape[0] == 1
             optima = res['optima'][0]
         else:
@@ -144,7 +144,7 @@ def test_fullfit(n=100, p=50, population_mean=False):
 
 
 def test_fullfit_population():
-    test_fullfit(population_mean=True)
+    test_fullfit(population_optimal=True)
 
 
 def test_ols():

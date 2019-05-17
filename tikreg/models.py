@@ -1,5 +1,7 @@
-from collections import defaultdict as ddict
+import time
 import itertools
+from collections import defaultdict as ddict
+
 
 import numpy as np
 from scipy import linalg as LA
@@ -1046,10 +1048,11 @@ def crossval_stem_wmvnp(features_train,
         if verbosity:
             # print performance for this spatio-temporal hyperparameter set
             perf = nan_to_num(results[:,thyperidx,shyperidx].mean(0))
-            group_ridge = ridges[np.argmax(perf.mean(-1))]
+            bestperf = np.nanmax(perf, 0) # across ridges explored
+            group_ridge = ridges[np.argmax(np.nanmean(perf, -1))] # across population
             contents = (group_ridge, np.mean(perf),
-                        np.percentile(perf, 25), np.median(perf), np.percentile(perf, 75),
-                        np.sum(perf > 0.0), np.sum(perf > 0.5))
+                        np.percentile(bestperf, 25), np.median(bestperf), np.percentile(bestperf, 75),
+                        np.sum(bestperf > 0.0), np.sum(bestperf > 0.5))
             txt = "pop.cv.best: %6.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
             txt += "(0.0<r>0.5): (%03i,%03i)"
             print(txt % contents)
@@ -1106,12 +1109,15 @@ def estimate_stem_wmvnp(features_train,
                         verbosity=1,
                         cvresults=None,
                         population_optimal=False,
-                        population_mean=False,
+                        keep_cvfolds=True,
                         chunklen=True,
                         metric=METRIC,
                         ):
     '''
     '''
+    start_time = time.time()
+    population_mean = not keep_cvfolds
+
     delays = temporal_prior.delays
     ndelays = len(delays)
 
@@ -1138,18 +1144,25 @@ def estimate_stem_wmvnp(features_train,
     if (weights is False) and (performance is False) and (predictions is False):
         return cvresults
 
-    dims = cvresults['dims']
+
     # find optima across cross-validation folds
     cvmean = cvresults['cvresults'].mean(0)
 
-    if population_optimal is True and (dims.nresponses > 1):
+    if 'dims' in cvresults:
+        dims = cvresults['dims']
+        nresponses = int(dims.nresponses)
+        nfspaces = int(dims.nfspaces)
+        ntspaces = 1
+    else:
+        # infer from data
+        nresponses = cvmean.shape[-1]
+        nfspaces = len(features_train)
+        ntspaces = 1
+
+    if population_optimal is True and (nresponses > 1):
         cvmean = np.nan_to_num(cvmean).mean(-1)[...,None]
 
-    nresponses = int(dims.nresponses)
-    nfspaces = int(dims.nfspaces)
-    ntspaces = 1
-
-    ncvresponses = 1 if population_mean else nresponses
+    ncvresponses = 1 if population_optimal else nresponses
     optima = np.zeros((ncvresponses, nfspaces + ntspaces + 1))
     for idx in range(ncvresponses):
         # find response optima
@@ -1170,7 +1183,7 @@ def estimate_stem_wmvnp(features_train,
         temporal_opt, spatial_opt, ridge_opt = uopt
 
         # fit responses that have this optimum
-        if population_mean:
+        if population_optimal:
             train_responses = responses_train
             test_responses = responses_test
         else:
@@ -1194,7 +1207,7 @@ def estimate_stem_wmvnp(features_train,
                                                        metric=metric,
                                                        )
         # store the solutions
-        if population_mean:
+        if population_optimal:
             solutions = response_solution
         else:
             for rdx, response_index in enumerate(responses_mask.nonzero()[0]):
@@ -1203,7 +1216,7 @@ def estimate_stem_wmvnp(features_train,
 
 
         if verbosity:
-            if population_mean:
+            if population_optimal:
                 itxt = '%i responses:'%(nresponses)
             else:
                 itxt = '%i responses:'%(responses_mask.sum())
@@ -1214,7 +1227,7 @@ def estimate_stem_wmvnp(features_train,
             perf = 'perf=%0.04f'%response_solution['performance'].mean()
             print(' '.join([itxt, ttxt, stxt, perf]))
 
-    if population_mean:
+    if population_optimal:
         for k,v in solutions.items():
             cvresults[k] = v
     else:
@@ -1226,6 +1239,8 @@ def estimate_stem_wmvnp(features_train,
             v = np.asarray(v).T
             cvresults[k] = v
         del fits, solutions
+    if verbosity:
+        print('Total duration %0.04f[mins]' % ((time.time()-start_time)/60.))
     return cvresults
 
 
