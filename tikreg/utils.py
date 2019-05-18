@@ -4,7 +4,12 @@ import numpy as np
 from scipy.stats import zscore
 
 from scipy.linalg import toeplitz
-from scipy.misc import comb
+
+try:
+    from scipy.misc import comb
+except ImportError:
+    # scipy >= 1.2 for PY3
+    from scipy.special import comb
 
 try:
     reduce
