@@ -1,0 +1,25 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`svd_dgesvd`
+=================
+.. automodule:: tikreg.svd_dgesvd
+
+.. currentmodule:: tikreg.svd_dgesvd
+.. autosummary::
+
+   isComplexType
+   svd_dgesvd
+
+
+.. currentmodule:: tikreg.svd_dgesvd
+
+isComplexType
+~~~~~~~~~~~~~
+
+.. autofunction:: isComplexType
+
+svd_dgesvd
+~~~~~~~~~~
+
+.. autofunction:: svd_dgesvd
+

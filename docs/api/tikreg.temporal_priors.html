@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>temporal_priors &#8212; tikreg 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="utils" href="tikreg.utils.html" />
+    <link rel="prev" title="svd_dgesvd" href="tikreg.svd_dgesvd.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          tikreg</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">temporal_priors</span></code></a><ul>
+<li><a class="reference internal" href="#customprior"><code class="docutils literal notranslate"><span class="pre">CustomPrior</span></code></a></li>
+<li><a class="reference internal" href="#gaussiankernelprior"><code class="docutils literal notranslate"><span class="pre">GaussianKernelPrior</span></code></a></li>
+<li><a class="reference internal" href="#hrfprior"><code class="docutils literal notranslate"><span class="pre">HRFPrior</span></code></a></li>
+<li><a class="reference internal" href="#priorfrompenalty"><code class="docutils literal notranslate"><span class="pre">PriorFromPenalty</span></code></a></li>
+<li><a class="reference internal" href="#smoothnessprior"><code class="docutils literal notranslate"><span class="pre">SmoothnessPrior</span></code></a></li>
+<li><a class="reference internal" href="#sphericalprior"><code class="docutils literal notranslate"><span class="pre">SphericalPrior</span></code></a></li>
+<li><a class="reference internal" href="#temporalprior"><code class="docutils literal notranslate"><span class="pre">TemporalPrior</span></code></a></li>
+<li><a class="reference internal" href="#get-delays-from-prior">get_delays_from_prior</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="tikreg.svd_dgesvd.html" title="Previous Chapter: svd_dgesvd"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; svd_dgesvd</span>
+    </a>
+  </li>
+  <li>
+    <a href="tikreg.utils.html" title="Next Chapter: utils"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">utils &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/api/tikreg.temporal_priors.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+  <li>
+    <a href="tikreg.svd_dgesvd.html" title="Previous Chapter: svd_dgesvd"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; svd_dgesvd</span>
+    </a>
+  </li>
+  <li>
+    <a href="tikreg.utils.html" title="Next Chapter: utils"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">utils &raquo;</span>
+    </a>
+  </li>
+<form action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="col-md-9 content">
+      
+  <div class="section" id="module-tikreg.temporal_priors">
+<span id="temporal-priors"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">temporal_priors</span></code><a class="headerlink" href="#module-tikreg.temporal_priors" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.temporal_priors.CustomPrior" title="tikreg.temporal_priors.CustomPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomPrior</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Specify a custom prior</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.temporal_priors.GaussianKernelPrior" title="tikreg.temporal_priors.GaussianKernelPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GaussianKernelPrior</span></code></a>([delays,&nbsp;sigma])</td>
+<td>Smoothness prior</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.temporal_priors.HRFPrior" title="tikreg.temporal_priors.HRFPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HRFPrior</span></code></a>([delays,&nbsp;dt,&nbsp;duration])</td>
+<td>Haemodynamic response function prior</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.temporal_priors.PriorFromPenalty" title="tikreg.temporal_priors.PriorFromPenalty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PriorFromPenalty</span></code></a>(penalty[,&nbsp;delays,&nbsp;wishart])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.temporal_priors.SmoothnessPrior" title="tikreg.temporal_priors.SmoothnessPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SmoothnessPrior</span></code></a>([delays,&nbsp;order,&nbsp;wishart])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.temporal_priors.SphericalPrior" title="tikreg.temporal_priors.SphericalPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SphericalPrior</span></code></a>([delays])</td>
+<td>Equivalent to ridge.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemporalPrior</span></code></a>(prior[,&nbsp;delays,&nbsp;hhparams])</td>
+<td>Basic temporal prior</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.temporal_priors.get_delays_from_prior" title="tikreg.temporal_priors.get_delays_from_prior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_delays_from_prior</span></code></a>(raw_prior,&nbsp;delays)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="customprior">
+<h2><a class="reference internal" href="#tikreg.temporal_priors.CustomPrior" title="tikreg.temporal_priors.CustomPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomPrior</span></code></a><a class="headerlink" href="#customprior" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.temporal_priors.CustomPrior">
+<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">CustomPrior</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.CustomPrior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.TemporalPrior</span></code></a></p>
+<p>Specify a custom prior</p>
+<dl class="method">
+<dt id="tikreg.temporal_priors.CustomPrior.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.CustomPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="gaussiankernelprior">
+<h2><a class="reference internal" href="#tikreg.temporal_priors.GaussianKernelPrior" title="tikreg.temporal_priors.GaussianKernelPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianKernelPrior</span></code></a><a class="headerlink" href="#gaussiankernelprior" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.temporal_priors.GaussianKernelPrior">
+<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">GaussianKernelPrior</code><span class="sig-paren">(</span><em>delays=[0, 1, 2, 3, 4], sigma=1.0, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.GaussianKernelPrior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.TemporalPrior</span></code></a></p>
+<p>Smoothness prior</p>
+<dl class="method">
+<dt id="tikreg.temporal_priors.GaussianKernelPrior.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self, delays=[0, 1, 2, 3, 4], sigma=1.0, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.GaussianKernelPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tikreg.temporal_priors.GaussianKernelPrior.get_prior">
+<code class="descname">get_prior</code><span class="sig-paren">(</span><em>self</em>, <em>alpha=1.0</em>, <em>hhparam=1.0</em>, <em>dodetnorm=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.GaussianKernelPrior.get_prior" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="hrfprior">
+<h2><a class="reference internal" href="#tikreg.temporal_priors.HRFPrior" title="tikreg.temporal_priors.HRFPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">HRFPrior</span></code></a><a class="headerlink" href="#hrfprior" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.temporal_priors.HRFPrior">
+<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">HRFPrior</code><span class="sig-paren">(</span><em>delays=None</em>, <em>dt=2.0</em>, <em>duration=20</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.HRFPrior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.TemporalPrior</span></code></a></p>
+<p>Haemodynamic response function prior</p>
+<dl class="method">
+<dt id="tikreg.temporal_priors.HRFPrior.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>delays=None</em>, <em>dt=2.0</em>, <em>duration=20</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.HRFPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="priorfrompenalty">
+<h2><a class="reference internal" href="#tikreg.temporal_priors.PriorFromPenalty" title="tikreg.temporal_priors.PriorFromPenalty"><code class="xref py py-class docutils literal notranslate"><span class="pre">PriorFromPenalty</span></code></a><a class="headerlink" href="#priorfrompenalty" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.temporal_priors.PriorFromPenalty">
+<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">PriorFromPenalty</code><span class="sig-paren">(</span><em>penalty</em>, <em>delays=None</em>, <em>wishart=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.PriorFromPenalty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.TemporalPrior</span></code></a></p>
+<dl class="method">
+<dt id="tikreg.temporal_priors.PriorFromPenalty.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>penalty</em>, <em>delays=None</em>, <em>wishart=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.PriorFromPenalty.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tikreg.temporal_priors.PriorFromPenalty.get_prior">
+<code class="descname">get_prior</code><span class="sig-paren">(</span><em>self</em>, <em>alpha=1.0</em>, <em>hhparam=0.0</em>, <em>dodetnorm=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.PriorFromPenalty.get_prior" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tikreg.temporal_priors.PriorFromPenalty.set_wishart">
+<code class="descname">set_wishart</code><span class="sig-paren">(</span><em>self</em>, <em>wishart</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.PriorFromPenalty.set_wishart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="smoothnessprior">
+<h2><a class="reference internal" href="#tikreg.temporal_priors.SmoothnessPrior" title="tikreg.temporal_priors.SmoothnessPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">SmoothnessPrior</span></code></a><a class="headerlink" href="#smoothnessprior" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.temporal_priors.SmoothnessPrior">
+<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">SmoothnessPrior</code><span class="sig-paren">(</span><em>delays=[0, 1, 2, 3, 4], order=2, wishart=True, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.SmoothnessPrior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.PriorFromPenalty" title="tikreg.temporal_priors.PriorFromPenalty"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.PriorFromPenalty</span></code></a></p>
+<dl class="method">
+<dt id="tikreg.temporal_priors.SmoothnessPrior.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self, delays=[0, 1, 2, 3, 4], order=2, wishart=True, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.SmoothnessPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sphericalprior">
+<h2><a class="reference internal" href="#tikreg.temporal_priors.SphericalPrior" title="tikreg.temporal_priors.SphericalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">SphericalPrior</span></code></a><a class="headerlink" href="#sphericalprior" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.temporal_priors.SphericalPrior">
+<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">SphericalPrior</code><span class="sig-paren">(</span><em>delays=[0, 1, 2, 3, 4], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.SphericalPrior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.TemporalPrior</span></code></a></p>
+<p>Equivalent to ridge.</p>
+<dl class="method">
+<dt id="tikreg.temporal_priors.SphericalPrior.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self, delays=[0, 1, 2, 3, 4], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.SphericalPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="temporalprior">
+<h2><a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemporalPrior</span></code></a><a class="headerlink" href="#temporalprior" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.temporal_priors.TemporalPrior">
+<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">TemporalPrior</code><span class="sig-paren">(</span><em>prior, delays=None, hhparams=[1.0], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tikreg.html#tikreg.BasePrior" title="tikreg.BasePrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.BasePrior</span></code></a></p>
+<p>Basic temporal prior</p>
+<dl class="method">
+<dt id="tikreg.temporal_priors.TemporalPrior.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self, prior, delays=None, hhparams=[1.0], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tikreg.temporal_priors.TemporalPrior.get_hhparams">
+<code class="descname">get_hhparams</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior.get_hhparams" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tikreg.temporal_priors.TemporalPrior.set_hhparameters">
+<code class="descname">set_hhparameters</code><span class="sig-paren">(</span><em>self</em>, <em>hhparams</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior.set_hhparameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="get-delays-from-prior">
+<h2>get_delays_from_prior<a class="headerlink" href="#get-delays-from-prior" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.temporal_priors.get_delays_from_prior">
+<code class="descclassname">tikreg.temporal_priors.</code><code class="descname">get_delays_from_prior</code><span class="sig-paren">(</span><em>raw_prior</em>, <em>delays</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.get_delays_from_prior" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Anwar O. Nunez-Elizalde.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

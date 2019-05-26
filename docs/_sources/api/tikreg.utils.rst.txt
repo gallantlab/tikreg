@@ -1,0 +1,139 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`utils`
+============
+.. automodule:: tikreg.utils
+
+.. currentmodule:: tikreg.utils
+.. autosummary::
+
+   SVD
+   absmax
+   columnwise_correlation
+   columnwise_rsquared
+   delay2slice
+   delay_signal
+   determinant_normalizer
+   difference_operator
+   explainable_variance
+   fast_indexing
+   generate_data
+   generate_trnval_folds
+   hrf_convolution
+   hrf_default_basis
+   hyperopt_make_trial_data
+   hyperopt_make_trials
+   isdiag
+   mult_diag
+   noise_ceiling_correction
+   test_make_trials
+   whiten_penalty
+
+
+.. currentmodule:: tikreg.utils
+
+SVD
+~~~
+
+.. autofunction:: SVD
+
+absmax
+~~~~~~
+
+.. autofunction:: absmax
+
+columnwise_correlation
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: columnwise_correlation
+
+columnwise_rsquared
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: columnwise_rsquared
+
+delay2slice
+~~~~~~~~~~~
+
+.. autofunction:: delay2slice
+
+delay_signal
+~~~~~~~~~~~~
+
+.. autofunction:: delay_signal
+
+determinant_normalizer
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: determinant_normalizer
+
+difference_operator
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: difference_operator
+
+explainable_variance
+~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: explainable_variance
+
+fast_indexing
+~~~~~~~~~~~~~
+
+.. autofunction:: fast_indexing
+
+generate_data
+~~~~~~~~~~~~~
+
+.. autofunction:: generate_data
+
+generate_trnval_folds
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: generate_trnval_folds
+
+hrf_convolution
+~~~~~~~~~~~~~~~
+
+.. autofunction:: hrf_convolution
+
+hrf_default_basis
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: hrf_default_basis
+
+hyperopt_make_trial_data
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: hyperopt_make_trial_data
+
+hyperopt_make_trials
+~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: hyperopt_make_trials
+
+isdiag
+~~~~~~
+
+.. autofunction:: isdiag
+
+mult_diag
+~~~~~~~~~
+
+.. autofunction:: mult_diag
+
+noise_ceiling_correction
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: noise_ceiling_correction
+
+test_make_trials
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: test_make_trials
+
+whiten_penalty
+~~~~~~~~~~~~~~
+
+.. autofunction:: whiten_penalty
+

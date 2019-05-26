@@ -1,0 +1,103 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`priors`
+=============
+.. automodule:: tikreg.priors
+
+.. currentmodule:: tikreg.priors
+.. autosummary::
+
+   banded_angles
+   cartesian2polar
+   difference_operator
+   polar2cartesian
+   sample_spherical_polar
+   sample_uniform_hypersphere
+   sample_uniform_sphere
+   show_spherical_angles
+   simple_polar2cartesian
+   simple_sphere_angle
+   simple_sphere_coord
+   spherical_coordinates_n2
+   spherical_coordinates_n3
+   standard_sphere_coord
+   test_spherical_coords
+
+
+.. currentmodule:: tikreg.priors
+
+banded_angles
+~~~~~~~~~~~~~
+
+.. autofunction:: banded_angles
+
+cartesian2polar
+~~~~~~~~~~~~~~~
+
+.. autofunction:: cartesian2polar
+
+difference_operator
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: difference_operator
+
+polar2cartesian
+~~~~~~~~~~~~~~~
+
+.. autofunction:: polar2cartesian
+
+sample_spherical_polar
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: sample_spherical_polar
+
+sample_uniform_hypersphere
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: sample_uniform_hypersphere
+
+sample_uniform_sphere
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: sample_uniform_sphere
+
+show_spherical_angles
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: show_spherical_angles
+
+simple_polar2cartesian
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: simple_polar2cartesian
+
+simple_sphere_angle
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: simple_sphere_angle
+
+simple_sphere_coord
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: simple_sphere_coord
+
+spherical_coordinates_n2
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: spherical_coordinates_n2
+
+spherical_coordinates_n3
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: spherical_coordinates_n3
+
+standard_sphere_coord
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: standard_sphere_coord
+
+test_spherical_coords
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: test_spherical_coords
+

@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>utils &#8212; tikreg 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="temporal_priors" href="tikreg.temporal_priors.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          tikreg</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">utils</span></code></a><ul>
+<li><a class="reference internal" href="#svd">SVD</a></li>
+<li><a class="reference internal" href="#absmax">absmax</a></li>
+<li><a class="reference internal" href="#columnwise-correlation">columnwise_correlation</a></li>
+<li><a class="reference internal" href="#columnwise-rsquared">columnwise_rsquared</a></li>
+<li><a class="reference internal" href="#delay2slice">delay2slice</a></li>
+<li><a class="reference internal" href="#delay-signal">delay_signal</a></li>
+<li><a class="reference internal" href="#determinant-normalizer">determinant_normalizer</a></li>
+<li><a class="reference internal" href="#difference-operator">difference_operator</a></li>
+<li><a class="reference internal" href="#explainable-variance">explainable_variance</a></li>
+<li><a class="reference internal" href="#fast-indexing">fast_indexing</a></li>
+<li><a class="reference internal" href="#generate-data">generate_data</a></li>
+<li><a class="reference internal" href="#generate-trnval-folds">generate_trnval_folds</a></li>
+<li><a class="reference internal" href="#hrf-convolution">hrf_convolution</a></li>
+<li><a class="reference internal" href="#hrf-default-basis">hrf_default_basis</a></li>
+<li><a class="reference internal" href="#hyperopt-make-trial-data">hyperopt_make_trial_data</a></li>
+<li><a class="reference internal" href="#hyperopt-make-trials">hyperopt_make_trials</a></li>
+<li><a class="reference internal" href="#isdiag">isdiag</a></li>
+<li><a class="reference internal" href="#mult-diag">mult_diag</a></li>
+<li><a class="reference internal" href="#noise-ceiling-correction">noise_ceiling_correction</a></li>
+<li><a class="reference internal" href="#test-make-trials">test_make_trials</a></li>
+<li><a class="reference internal" href="#whiten-penalty">whiten_penalty</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="tikreg.temporal_priors.html" title="Previous Chapter: temporal_priors"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; temporal_priors</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/api/tikreg.utils.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+  <li>
+    <a href="tikreg.temporal_priors.html" title="Previous Chapter: temporal_priors"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; temporal_priors</span>
+    </a>
+  </li>
+<form action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="col-md-9 content">
+      
+  <div class="section" id="module-tikreg.utils">
+<span id="utils"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">utils</span></code><a class="headerlink" href="#module-tikreg.utils" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.SVD" title="tikreg.utils.SVD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SVD</span></code></a>(X,&nbsp;\*\*kwargs)</td>
+<td>Wrapper for SVD factorization Uses scipy.linalg.svd by default if the SVD does not converge, it will use a slower svd factorization (DGESVD)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.absmax" title="tikreg.utils.absmax"><code class="xref py py-obj docutils literal notranslate"><span class="pre">absmax</span></code></a>(arr)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.columnwise_correlation" title="tikreg.utils.columnwise_correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">columnwise_correlation</span></code></a>(ypred,&nbsp;y[,&nbsp;zscorea,&nbsp;…])</td>
+<td>Compute correlations efficiently</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.columnwise_rsquared" title="tikreg.utils.columnwise_rsquared"><code class="xref py py-obj docutils literal notranslate"><span class="pre">columnwise_rsquared</span></code></a>(ypred,&nbsp;y,&nbsp;\*\*kwargs)</td>
+<td><p class="rubric">Notes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.delay2slice" title="tikreg.utils.delay2slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delay2slice</span></code></a>(delay)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.delay_signal" title="tikreg.utils.delay_signal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delay_signal</span></code></a>(data[,&nbsp;delays,&nbsp;fill])</td>
+<td><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.determinant_normalizer" title="tikreg.utils.determinant_normalizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determinant_normalizer</span></code></a>(mat[,&nbsp;thresh])</td>
+<td>Compute the pseudo-determinant of the matrix</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.difference_operator" title="tikreg.utils.difference_operator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">difference_operator</span></code></a>(order,&nbsp;nobs)</td>
+<td>Get a finite difference operator matrix of size <cite>nobs</cite>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.explainable_variance" title="tikreg.utils.explainable_variance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">explainable_variance</span></code></a>(repeats[,&nbsp;ncorrection,&nbsp;…])</td>
+<td>Compute the explainable variance in the recorded signals.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.fast_indexing" title="tikreg.utils.fast_indexing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fast_indexing</span></code></a>(a,&nbsp;rows[,&nbsp;cols])</td>
+<td>Much faster than fancy indexing for taking selected rows and cols from matrix.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.generate_data" title="tikreg.utils.generate_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_data</span></code></a>([n,&nbsp;p,&nbsp;v,&nbsp;noise,&nbsp;testsize,&nbsp;…])</td>
+<td>Get some B,X,Y data generated from gaussian (0,1).</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.generate_trnval_folds" title="tikreg.utils.generate_trnval_folds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_trnval_folds</span></code></a>(N[,&nbsp;sampler,&nbsp;testpct,&nbsp;…])</td>
+<td>N : int</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.hrf_convolution" title="tikreg.utils.hrf_convolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hrf_convolution</span></code></a>(input_responses[,&nbsp;HRF,&nbsp;…])</td>
+<td>Convolve a series of impulses in a matrix with a given HRF</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.hrf_default_basis" title="tikreg.utils.hrf_default_basis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hrf_default_basis</span></code></a>([dt,&nbsp;duration])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.hyperopt_make_trial_data" title="tikreg.utils.hyperopt_make_trial_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hyperopt_make_trial_data</span></code></a>(tid,&nbsp;vals,&nbsp;loss)</td>
+<td>Generate a valid dictionary as a trial for hyperopt.Trials.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.hyperopt_make_trials" title="tikreg.utils.hyperopt_make_trials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hyperopt_make_trials</span></code></a>(values,&nbsp;losses[,&nbsp;…])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.isdiag" title="tikreg.utils.isdiag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isdiag</span></code></a>(mat)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.mult_diag" title="tikreg.utils.mult_diag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mult_diag</span></code></a>(d,&nbsp;mtx[,&nbsp;left])</td>
+<td>Multiply a full matrix by a diagonal matrix.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.noise_ceiling_correction" title="tikreg.utils.noise_ceiling_correction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">noise_ceiling_correction</span></code></a>(repeats,&nbsp;yhat[,&nbsp;…])</td>
+<td>Noise ceiling corrected correlation coefficient.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.utils.test_make_trials" title="tikreg.utils.test_make_trials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_make_trials</span></code></a>()</td>
+<td>smoke test</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.utils.whiten_penalty" title="tikreg.utils.whiten_penalty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">whiten_penalty</span></code></a>(X[,&nbsp;penalty])</td>
+<td>Whiten features (p) X (n, p) (e.g.</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="svd">
+<h2>SVD<a class="headerlink" href="#svd" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.SVD">
+<code class="descclassname">tikreg.utils.</code><code class="descname">SVD</code><span class="sig-paren">(</span><em>X</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.SVD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for SVD factorization
+Uses scipy.linalg.svd by default
+if the SVD does not converge, it will
+use a slower svd factorization (DGESVD)</p>
+<p>see scipy.linalg.svd for documentation</p>
+</dd></dl>
+
+</div>
+<div class="section" id="absmax">
+<h2>absmax<a class="headerlink" href="#absmax" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.absmax">
+<code class="descclassname">tikreg.utils.</code><code class="descname">absmax</code><span class="sig-paren">(</span><em>arr</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.absmax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="columnwise-correlation">
+<h2>columnwise_correlation<a class="headerlink" href="#columnwise-correlation" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.columnwise_correlation">
+<code class="descclassname">tikreg.utils.</code><code class="descname">columnwise_correlation</code><span class="sig-paren">(</span><em>ypred</em>, <em>y</em>, <em>zscorea=True</em>, <em>zscoreb=True</em>, <em>axis=0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.columnwise_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute correlations efficiently</p>
+<p class="rubric">Notes</p>
+<p>Recall that the correlation cofficient is defined as</p>
+<div class="math notranslate nohighlight">
+\[\rho_{x, y} = \frac{cov(X,Y)}{var(x)var(y)}\]</div>
+<p>Since it is scale invariant, we can zscore and get the same</p>
+<div class="math notranslate nohighlight">
+\[\rho_{x, y} = \rho_{zscore(x), zscore(y)} = \frac{cov(X,Y)}{1*1} =
+\frac{1}{N}\frac{\sum_i^n \left(x_i - 0 \right) \left(y_i - 0 \right)}{1*1} =
+\frac{1}{N}\sum_i^n \left(x_i * y_i \right)\]</div>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cc</span> <span class="o">=</span> <span class="n">columnwise_correlation</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cc</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(2,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">y</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">cc</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="columnwise-rsquared">
+<h2>columnwise_rsquared<a class="headerlink" href="#columnwise-rsquared" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.columnwise_rsquared">
+<code class="descclassname">tikreg.utils.</code><code class="descname">columnwise_rsquared</code><span class="sig-paren">(</span><em>ypred</em>, <em>y</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.columnwise_rsquared" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Notes</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Coefficient_of_determination#Extensions">https://en.wikipedia.org/wiki/Coefficient_of_determination#Extensions</a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="delay2slice">
+<h2>delay2slice<a class="headerlink" href="#delay2slice" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.delay2slice">
+<code class="descclassname">tikreg.utils.</code><code class="descname">delay2slice</code><span class="sig-paren">(</span><em>delay</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.delay2slice" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="delay-signal">
+<h2>delay_signal<a class="headerlink" href="#delay-signal" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.delay_signal">
+<code class="descclassname">tikreg.utils.</code><code class="descname">delay_signal</code><span class="sig-paren">(</span><em>data, delays=[0, 1, 2, 3], fill=0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.delay_signal" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">array([[1, 4],</span>
+<span class="go">       [2, 5],</span>
+<span class="go">       [3, 6]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">delay_signal</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">fill</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">array([[2, 5, 0, 0, 0, 0, 1, 4],</span>
+<span class="go">       [3, 6, 0, 0, 1, 4, 2, 5],</span>
+<span class="go">       [0, 0, 1, 4, 2, 5, 3, 6]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">delay_signal</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">fill</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+<span class="go">array([[  2.,   5.,  nan,  nan,  nan,  nan,   1.,   4.],</span>
+<span class="go">       [  3.,   6.,  nan,  nan,   1.,   4.,   2.,   5.],</span>
+<span class="go">       [ nan,  nan,   1.,   4.,   2.,   5.,   3.,   6.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="determinant-normalizer">
+<h2>determinant_normalizer<a class="headerlink" href="#determinant-normalizer" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.determinant_normalizer">
+<code class="descclassname">tikreg.utils.</code><code class="descname">determinant_normalizer</code><span class="sig-paren">(</span><em>mat</em>, <em>thresh=1e-08</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.determinant_normalizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the pseudo-determinant of the matrix</p>
+</dd></dl>
+
+</div>
+<div class="section" id="difference-operator">
+<h2>difference_operator<a class="headerlink" href="#difference-operator" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.difference_operator">
+<code class="descclassname">tikreg.utils.</code><code class="descname">difference_operator</code><span class="sig-paren">(</span><em>order</em>, <em>nobs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.difference_operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a finite difference operator matrix of size <cite>nobs</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The order of the derivative (e.g. 2nd derivative)</p>
+</dd>
+<dt><strong>nobs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The size of the output matrix</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>mat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">(<cite>nobs</cite>,`nobs`) np.ndarray</span></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="explainable-variance">
+<h2>explainable_variance<a class="headerlink" href="#explainable-variance" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.explainable_variance">
+<code class="descclassname">tikreg.utils.</code><code class="descname">explainable_variance</code><span class="sig-paren">(</span><em>repeats</em>, <em>ncorrection=True</em>, <em>dozscore=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.explainable_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the explainable variance in the recorded signals.</p>
+<p>This can be interpreted as the R^2 of a model that predicts
+each repetition with the mean across repetitions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>repeats: np.ndarray, (nreps, ntpts, nsignals)</strong></dt>
+<dd><p class="first last">The timecourses for each stimulus repetition.
+Each of repeat is <cite>ntpts</cite> long.</p>
+</dd>
+<dt><strong>ncorrection: bool</strong></dt>
+<dd><p class="first last">Bias correction for number of repeats.
+Equivalent to computing the adjusted R^2.</p>
+</dd>
+<dt><strong>dozscore: bool</strong></dt>
+<dd><p class="first last">This algorithm only works with z-scored repeats. If
+the each repetition is already z-scored, set to False.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>EV: np.ndarray (nsignals)</dt>
+<dd><p class="first last">The explainable variance computed across repeats.
+Equivalently, the (adjusted) R^2 value.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="fast-indexing">
+<h2>fast_indexing<a class="headerlink" href="#fast-indexing" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.fast_indexing">
+<code class="descclassname">tikreg.utils.</code><code class="descname">fast_indexing</code><span class="sig-paren">(</span><em>a</em>, <em>rows</em>, <em>cols=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.fast_indexing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Much faster than fancy indexing for taking
+selected rows and cols from matrix.
+Slightly faster for row indexing, too</p>
+</dd></dl>
+
+</div>
+<div class="section" id="generate-data">
+<h2>generate_data<a class="headerlink" href="#generate-data" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.generate_data">
+<code class="descclassname">tikreg.utils.</code><code class="descname">generate_data</code><span class="sig-paren">(</span><em>n=100</em>, <em>p=10</em>, <em>v=2</em>, <em>noise=1.0</em>, <em>testsize=0</em>, <em>dozscore=False</em>, <em>feature_sparsity=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.generate_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get some B,X,Y data generated from gaussian (0,1).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>n (int): Number of samples</strong></dt>
+<dd></dd>
+<dt><strong>p (int): Number of features</strong></dt>
+<dd></dd>
+<dt><strong>v (int): Number of responses</strong></dt>
+<dd></dd>
+<dt><strong>noise (float): Noise level</strong></dt>
+<dd></dd>
+<dt><strong>testsize (int): samples in validation set</strong></dt>
+<dd></dd>
+<dt><strong>dozscore (bool): z-score features and responses?</strong></dt>
+<dd></dd>
+<dt><strong>feature_sparsity (float in 0-1):</strong></dt>
+<dd><p class="first last">number of irrelevant features as
+percentage of total</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>B (p-by-v np.ndarray):</dt>
+<dd><p class="first last">True feature weights</p>
+</dd>
+<dt>(Xtrain, Xval):</dt>
+<dd><p class="first last">Feature matrix for training and validation
+Xval is optional and contains no noise</p>
+</dd>
+<dt>(Ytrain, Yval):</dt>
+<dd><p class="first last">Response matrix for training and validation
+Yval is optional and contains no noise</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">noise</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">testsize</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">((10, 2), (100, 10), (100, 2))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="p">,</span> <span class="p">(</span><span class="n">Xtrn</span><span class="p">,</span> <span class="n">Xval</span><span class="p">),</span> <span class="p">(</span><span class="n">Ytrn</span><span class="p">,</span> <span class="n">Yval</span><span class="p">)</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">testsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Xval</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Yval</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">((10, 2), (20, 10), (20, 2))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="generate-trnval-folds">
+<h2>generate_trnval_folds<a class="headerlink" href="#generate-trnval-folds" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.generate_trnval_folds">
+<code class="descclassname">tikreg.utils.</code><code class="descname">generate_trnval_folds</code><span class="sig-paren">(</span><em>N</em>, <em>sampler='cv'</em>, <em>testpct=0.2</em>, <em>nchunks=5</em>, <em>nfolds=5</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.generate_trnval_folds" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>N <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>The number of samples in the training set</dd>
+<dt>samplers <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><ul class="first last simple">
+<li>cv: <cite>nfolds</cite> for cross-validation</li>
+<li><dl class="first docutils">
+<dt>bcv: <cite>nfolds</cite> is a tuple of (nrepeats, nfolds)</dt>
+<dd>for repeated cross-validation.</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="hrf-convolution">
+<h2>hrf_convolution<a class="headerlink" href="#hrf-convolution" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.hrf_convolution">
+<code class="descclassname">tikreg.utils.</code><code class="descname">hrf_convolution</code><span class="sig-paren">(</span><em>input_responses</em>, <em>HRF=None</em>, <em>do_convolution=True</em>, <em>dt=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.hrf_convolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convolve a series of impulses in a matrix with a given HRF</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>input_responses (n by p)</strong></dt>
+<dd><p class="first last">A matrix containing <code class="docutils literal notranslate"><span class="pre">p</span></code> impulse time courses of length <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+</dd>
+<dt><strong>HRF (m, or None)</strong></dt>
+<dd><p class="first last">The HRF to convolve the impulses with. If <code class="docutils literal notranslate"><span class="pre">None</span></code> we will
+use the canonical given by <code class="xref py py-func docutils literal notranslate"><span class="pre">hrf()</span></code></p>
+</dd>
+<dt><strong>dt (scalar)</strong></dt>
+<dd><p class="first last">The sampling rate. This is only used to get the hemodynamic response
+function to convolve with if <code class="docutils literal notranslate"><span class="pre">HRF</span></code> is None.</p>
+</dd>
+<dt><strong>do_convolution (bool, or list of bools (p,))</strong></dt>
+<dd><p class="first last">This tells us which responses to convolve and which to leave alone
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>, which convolves all responses</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>bold (n by p)</dt>
+<dd><p class="first last">The convolved impulses</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">impulses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">impulses</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">impulses</span><span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bold</span> <span class="o">=</span> <span class="n">hrf_convolution</span><span class="p">(</span><span class="n">impulses</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="c1"># Default peak at 6s</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="hrf-default-basis">
+<h2>hrf_default_basis<a class="headerlink" href="#hrf-default-basis" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.hrf_default_basis">
+<code class="descclassname">tikreg.utils.</code><code class="descname">hrf_default_basis</code><span class="sig-paren">(</span><em>dt=2.0</em>, <em>duration=32</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.hrf_default_basis" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>hrf_basis (time-by-3)</dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="hyperopt-make-trial-data">
+<h2>hyperopt_make_trial_data<a class="headerlink" href="#hyperopt-make-trial-data" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.hyperopt_make_trial_data">
+<code class="descclassname">tikreg.utils.</code><code class="descname">hyperopt_make_trial_data</code><span class="sig-paren">(</span><em>tid</em>, <em>vals</em>, <em>loss</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.hyperopt_make_trial_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a valid dictionary as a trial for hyperopt.Trials.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>tid</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">trial id</p>
+</dd>
+<dt><strong>vals</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">mapping between parameter name and list of values, e.g.
+<cite>{‘speechsem’: [1.0], ‘visualsem’: [100.0]}</cite></p>
+</dd>
+<dt><strong>loss</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">loss for the current trial</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>trial</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">valid dict object for hyperopt.Trials</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="hyperopt-make-trials">
+<h2>hyperopt_make_trials<a class="headerlink" href="#hyperopt-make-trials" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.hyperopt_make_trials">
+<code class="descclassname">tikreg.utils.</code><code class="descname">hyperopt_make_trials</code><span class="sig-paren">(</span><em>values</em>, <em>losses</em>, <em>parameter_names=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.hyperopt_make_trials" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>values</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of lists or 2D np.ndarray (n_trials, n_params)</span></dt>
+<dd><p class="first last">each element (or row) corresponds to a set of parameters previously
+tested</p>
+</dd>
+<dt><strong>losses</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of floats (n_params,)</span></dt>
+<dd><p class="first last">losses for previous trials</p>
+</dd>
+<dt><strong>parameter_names</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of str or None</span></dt>
+<dd><p class="first last">associated parameter names (must correspond to <cite>spaces</cite> passed to
+hyperopt). If None, defaults to [‘X0’, ‘X1’, …, ‘X`n_params`’]</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>trials</strong> <span class="classifier-delimiter">:</span> <span class="classifier">hyperopt.Trials</span></dt>
+<dd><p class="first last">hyperopt Trials object containing reconstructed trials</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="isdiag">
+<h2>isdiag<a class="headerlink" href="#isdiag" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.isdiag">
+<code class="descclassname">tikreg.utils.</code><code class="descname">isdiag</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.isdiag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="mult-diag">
+<h2>mult_diag<a class="headerlink" href="#mult-diag" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.mult_diag">
+<code class="descclassname">tikreg.utils.</code><code class="descname">mult_diag</code><span class="sig-paren">(</span><em>d</em>, <em>mtx</em>, <em>left=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.mult_diag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply a full matrix by a diagonal matrix.
+This function should always be faster than dot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>d [1D (N,) array]</strong></dt>
+<dd><p class="first last">contains the diagonal elements</p>
+</dd>
+<dt><strong>mtx [2D (N,N) array]</strong></dt>
+<dd><p class="first last">contains the matrix</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>res (N, N)</dt>
+<dd><p class="first last">Result of multiplying the matrices</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>This code by:
+Pietro Berkes <a class="reference external" href="mailto:berkes&#37;&#52;&#48;gatsby&#46;ucl&#46;ac">berkes<span>&#64;</span>gatsby<span>&#46;</span>ucl<span>&#46;</span>ac</a>…
+Mon Mar 26 11:55:47 CDT 2007
+<a class="reference external" href="http://mail.scipy.org/pipermail/numpy-discussion/2007-March/026807.html">http://mail.scipy.org/pipermail/numpy-discussion/2007-March/026807.html</a></p>
+<p>mult_diag(d, mts, left=True) == dot(diag(d), mtx)
+mult_diag(d, mts, left=False) == dot(mtx, diag(d))</p>
+</dd></dl>
+
+</div>
+<div class="section" id="noise-ceiling-correction">
+<h2>noise_ceiling_correction<a class="headerlink" href="#noise-ceiling-correction" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.noise_ceiling_correction">
+<code class="descclassname">tikreg.utils.</code><code class="descname">noise_ceiling_correction</code><span class="sig-paren">(</span><em>repeats</em>, <em>yhat</em>, <em>dozscore=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.noise_ceiling_correction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Noise ceiling corrected correlation coefficient.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>repeats: np.ndarray, (nreps, ntpts, nsignals)</strong></dt>
+<dd><p class="first last">The stimulus timecourses for each repeat.
+Each repeat is <cite>ntpts</cite> long.</p>
+</dd>
+<dt><strong>yhat: np.ndarray, (ntpts, nsignals)</strong></dt>
+<dd><p class="first last">The predicted timecourse for each signal.</p>
+</dd>
+<dt><strong>dozscore: bool</strong></dt>
+<dd><p class="first last">This algorithm only works correctly if the
+<cite>repeats</cite> and <cite>yhat</cite> timecourses are z-scored.
+If these are already z-scored, set to False.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>r_ns: np.ndarray, (nsignals)</dt>
+<dd><p class="first last">The noise ceiling corrected correlation coefficient
+for each of the signals. One may square this result
+(while keeping the sign) to obtain the
+‘explainable variance explained.’</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>$r_{ns}$ is misbehaved if $R^2$ is very low.</p>
+<p class="rubric">References</p>
+<p>Schoppe, et al. (2016), Hsu, et al. (2004), David, et al. (2005).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="test-make-trials">
+<h2>test_make_trials<a class="headerlink" href="#test-make-trials" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.test_make_trials">
+<code class="descclassname">tikreg.utils.</code><code class="descname">test_make_trials</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.test_make_trials" title="Permalink to this definition">¶</a></dt>
+<dd><p>smoke test</p>
+</dd></dl>
+
+</div>
+<div class="section" id="whiten-penalty">
+<h2>whiten_penalty<a class="headerlink" href="#whiten-penalty" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.utils.whiten_penalty">
+<code class="descclassname">tikreg.utils.</code><code class="descname">whiten_penalty</code><span class="sig-paren">(</span><em>X</em>, <em>penalty=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.utils.whiten_penalty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whiten features (p)
+X (n, p) (e.g. time by features)</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Anwar O. Nunez-Elizalde.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

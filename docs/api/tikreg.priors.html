@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>priors &#8212; tikreg 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="spatial_priors" href="tikreg.spatial_priors.html" />
+    <link rel="prev" title="models" href="tikreg.models.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          tikreg</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">priors</span></code></a><ul>
+<li><a class="reference internal" href="#banded-angles">banded_angles</a></li>
+<li><a class="reference internal" href="#cartesian2polar">cartesian2polar</a></li>
+<li><a class="reference internal" href="#difference-operator">difference_operator</a></li>
+<li><a class="reference internal" href="#polar2cartesian">polar2cartesian</a></li>
+<li><a class="reference internal" href="#sample-spherical-polar">sample_spherical_polar</a></li>
+<li><a class="reference internal" href="#sample-uniform-hypersphere">sample_uniform_hypersphere</a></li>
+<li><a class="reference internal" href="#sample-uniform-sphere">sample_uniform_sphere</a></li>
+<li><a class="reference internal" href="#show-spherical-angles">show_spherical_angles</a></li>
+<li><a class="reference internal" href="#simple-polar2cartesian">simple_polar2cartesian</a></li>
+<li><a class="reference internal" href="#simple-sphere-angle">simple_sphere_angle</a></li>
+<li><a class="reference internal" href="#simple-sphere-coord">simple_sphere_coord</a></li>
+<li><a class="reference internal" href="#spherical-coordinates-n2">spherical_coordinates_n2</a></li>
+<li><a class="reference internal" href="#spherical-coordinates-n3">spherical_coordinates_n3</a></li>
+<li><a class="reference internal" href="#standard-sphere-coord">standard_sphere_coord</a></li>
+<li><a class="reference internal" href="#test-spherical-coords">test_spherical_coords</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="tikreg.models.html" title="Previous Chapter: models"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; models</span>
+    </a>
+  </li>
+  <li>
+    <a href="tikreg.spatial_priors.html" title="Next Chapter: spatial_priors"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">spatial_priors &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/api/tikreg.priors.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+  <li>
+    <a href="tikreg.models.html" title="Previous Chapter: models"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; models</span>
+    </a>
+  </li>
+  <li>
+    <a href="tikreg.spatial_priors.html" title="Next Chapter: spatial_priors"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">spatial_priors &raquo;</span>
+    </a>
+  </li>
+<form action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="col-md-9 content">
+      
+  <div class="section" id="module-tikreg.priors">
+<span id="priors"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">priors</span></code><a class="headerlink" href="#module-tikreg.priors" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.priors.banded_angles" title="tikreg.priors.banded_angles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">banded_angles</span></code></a>(\*models)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.priors.cartesian2polar" title="tikreg.priors.cartesian2polar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cartesian2polar</span></code></a>(ratios)</td>
+<td>ratios : np.ndarray (k, n):</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.priors.difference_operator" title="tikreg.priors.difference_operator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">difference_operator</span></code></a>(order,&nbsp;nobs)</td>
+<td>Get a finite difference operator matrix of size <cite>nobs</cite>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.priors.polar2cartesian" title="tikreg.priors.polar2cartesian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polar2cartesian</span></code></a>(angles[,&nbsp;radius,&nbsp;…])</td>
+<td>Convert a set of angles of a sphere defined in n-dimensional space to cartesian coordinates.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.priors.sample_spherical_polar" title="tikreg.priors.sample_spherical_polar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample_spherical_polar</span></code></a>(ndimensions[,&nbsp;…])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.priors.sample_uniform_hypersphere" title="tikreg.priors.sample_uniform_hypersphere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample_uniform_hypersphere</span></code></a>(ndimensions[,&nbsp;…])</td>
+<td>S2 has a solution: <a class="reference external" href="http://mathworld.wolfram.com/SpherePointPicking.html">http://mathworld.wolfram.com/SpherePointPicking.html</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.priors.sample_uniform_sphere" title="tikreg.priors.sample_uniform_sphere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample_uniform_sphere</span></code></a>([nsamples])</td>
+<td>S2 has a solution: <a class="reference external" href="http://mathworld.wolfram.com/SpherePointPicking.html">http://mathworld.wolfram.com/SpherePointPicking.html</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.priors.show_spherical_angles" title="tikreg.priors.show_spherical_angles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show_spherical_angles</span></code></a>([theta1,&nbsp;theta2,&nbsp;…])</td>
+<td>Draw a vector on the unit sphere defined by the angles theta1 (inclination on last axis, x_3, x_3-&gt;x1) and theta2 (asymuth x_1-&gt;x_2 plane).</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.priors.simple_polar2cartesian" title="tikreg.priors.simple_polar2cartesian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_polar2cartesian</span></code></a>(angle[,&nbsp;radius])</td>
+<td>Given some polar coordinates, return the cartesian coordinates.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.priors.simple_sphere_angle" title="tikreg.priors.simple_sphere_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_sphere_angle</span></code></a>(x,&nbsp;y,&nbsp;z)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.priors.simple_sphere_coord" title="tikreg.priors.simple_sphere_coord"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_sphere_coord</span></code></a>([radius,&nbsp;theta1,&nbsp;theta2])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.priors.spherical_coordinates_n2" title="tikreg.priors.spherical_coordinates_n2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spherical_coordinates_n2</span></code></a>([offset,&nbsp;nsamples,&nbsp;…])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.priors.spherical_coordinates_n3" title="tikreg.priors.spherical_coordinates_n3"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spherical_coordinates_n3</span></code></a>([offset,&nbsp;nsamples,&nbsp;…])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.priors.standard_sphere_coord" title="tikreg.priors.standard_sphere_coord"><code class="xref py py-obj docutils literal notranslate"><span class="pre">standard_sphere_coord</span></code></a>(angle[,&nbsp;radius])</td>
+<td>standard physics way theta1: inclination (angle between z and x/y theta2: asymuth (angle on x-y plane)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.priors.test_spherical_coords" title="tikreg.priors.test_spherical_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_spherical_coords</span></code></a>()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="banded-angles">
+<h2>banded_angles<a class="headerlink" href="#banded-angles" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.banded_angles">
+<code class="descclassname">tikreg.priors.</code><code class="descname">banded_angles</code><span class="sig-paren">(</span><em>*models</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.banded_angles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="cartesian2polar">
+<h2>cartesian2polar<a class="headerlink" href="#cartesian2polar" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.cartesian2polar">
+<code class="descclassname">tikreg.priors.</code><code class="descname">cartesian2polar</code><span class="sig-paren">(</span><em>ratios</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.cartesian2polar" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>ratios <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray (k, n):</span></dt>
+<dd><cite>k</cite> coordinates in <cite>n</cite> dimensional space</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>angles</strong> <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray (k, n-1)</span></dt>
+<dd><p class="first last">Poolar angles defining the ratios</p>
+</dd>
+<dt>[x_1, …, x_n]</dt>
+<dd></dd>
+<dt>phi_i is angle</dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="difference-operator">
+<h2>difference_operator<a class="headerlink" href="#difference-operator" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.difference_operator">
+<code class="descclassname">tikreg.priors.</code><code class="descname">difference_operator</code><span class="sig-paren">(</span><em>order</em>, <em>nobs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.difference_operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a finite difference operator matrix of size <cite>nobs</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The order of the derivative (e.g. 2nd derivative)</p>
+</dd>
+<dt><strong>nobs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The size of the output matrix</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>mat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">(<cite>nobs</cite>,`nobs`) np.ndarray</span></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="polar2cartesian">
+<h2>polar2cartesian<a class="headerlink" href="#polar2cartesian" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.polar2cartesian">
+<code class="descclassname">tikreg.priors.</code><code class="descname">polar2cartesian</code><span class="sig-paren">(</span><em>angles</em>, <em>radius=1.0</em>, <em>physics_convention=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.polar2cartesian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a set of angles of a sphere defined in n-dimensional
+space to cartesian coordinates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>angles</strong> <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray (n-1, k)</span></dt>
+<dd><p class="first last">The <cite>k</cite> angles in <cite>n</cite> dimensional space to convert
+from polar to cartesian coordinates.</p>
+</dd>
+<dt><strong>raw</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Use hypersphere standard form. This differs from the
+standard 3-dimensional sphere in axis orientation.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>coords</strong> <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray (n, k)</span></dt>
+<dd><p class="first last">All the x_i coordinates corresponding to the <cite>k</cite> angles</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>theta_1 is angle away from x_{n} (inclination towards x_{n-1}) in [0,pi]
+theta_2 is angle away from x_{n-1} (inclination towards x_{n-2}) in [0,pi]
+…etc
+theta_{n-1} is the angle between x_1 and x_2 (asymuth) in [0,2pi]</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/N-sphere#Spherical_coordinates">https://en.wikipedia.org/wiki/N-sphere#Spherical_coordinates</a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="sample-spherical-polar">
+<h2>sample_spherical_polar<a class="headerlink" href="#sample-spherical-polar" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.sample_spherical_polar">
+<code class="descclassname">tikreg.priors.</code><code class="descname">sample_spherical_polar</code><span class="sig-paren">(</span><em>ndimensions</em>, <em>offset=1</em>, <em>nsamples=10</em>, <em>max_angle=90.0</em>, <em>spacing=&lt;function linspace at 0x7fc71d2e3cf8&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.sample_spherical_polar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="sample-uniform-hypersphere">
+<h2>sample_uniform_hypersphere<a class="headerlink" href="#sample-uniform-hypersphere" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.sample_uniform_hypersphere">
+<code class="descclassname">tikreg.priors.</code><code class="descname">sample_uniform_hypersphere</code><span class="sig-paren">(</span><em>ndimensions</em>, <em>nsamples=10</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.sample_uniform_hypersphere" title="Permalink to this definition">¶</a></dt>
+<dd><p>S2 has a solution:
+<a class="reference external" href="http://mathworld.wolfram.com/SpherePointPicking.html">http://mathworld.wolfram.com/SpherePointPicking.html</a></p>
+<p>S3 has a solution:
+<a class="reference external" href="http://mathworld.wolfram.com/HyperspherePointPicking.html">http://mathworld.wolfram.com/HyperspherePointPicking.html</a></p>
+<p>No general solution for higher dimensions</p>
+</dd></dl>
+
+</div>
+<div class="section" id="sample-uniform-sphere">
+<h2>sample_uniform_sphere<a class="headerlink" href="#sample-uniform-sphere" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.sample_uniform_sphere">
+<code class="descclassname">tikreg.priors.</code><code class="descname">sample_uniform_sphere</code><span class="sig-paren">(</span><em>nsamples=10</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.sample_uniform_sphere" title="Permalink to this definition">¶</a></dt>
+<dd><p>S2 has a solution:
+<a class="reference external" href="http://mathworld.wolfram.com/SpherePointPicking.html">http://mathworld.wolfram.com/SpherePointPicking.html</a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="show-spherical-angles">
+<h2>show_spherical_angles<a class="headerlink" href="#show-spherical-angles" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.show_spherical_angles">
+<code class="descclassname">tikreg.priors.</code><code class="descname">show_spherical_angles</code><span class="sig-paren">(</span><em>theta1=30.0</em>, <em>theta2=60.0</em>, <em>physics_convention=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.show_spherical_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw a vector on the unit sphere defined by the angles
+theta1 (inclination on last axis, x_3, x_3-&gt;x1) and theta2 (asymuth x_1-&gt;x_2 plane).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="simple-polar2cartesian">
+<h2>simple_polar2cartesian<a class="headerlink" href="#simple-polar2cartesian" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.simple_polar2cartesian">
+<code class="descclassname">tikreg.priors.</code><code class="descname">simple_polar2cartesian</code><span class="sig-paren">(</span><em>angle</em>, <em>radius=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.simple_polar2cartesian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given some polar coordinates, return the cartesian coordinates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>angle</strong> <span class="classifier-delimiter">:</span> <span class="classifier">vector (p,)</span></dt>
+<dd><p class="first last">The angles should be given in radians</p>
+</dd>
+<dt><strong>radius: float-like</strong></dt>
+<dd><p class="first last">The n-sphere radius</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>coords</strong> <span class="classifier-delimiter">:</span> <span class="classifier">vector, (p+1,)</span></dt>
+<dd><p class="first last">The cartesian coordinate of the points (x_n,…,x_1)</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="simple-sphere-angle">
+<h2>simple_sphere_angle<a class="headerlink" href="#simple-sphere-angle" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.simple_sphere_angle">
+<code class="descclassname">tikreg.priors.</code><code class="descname">simple_sphere_angle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.simple_sphere_angle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="simple-sphere-coord">
+<h2>simple_sphere_coord<a class="headerlink" href="#simple-sphere-coord" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.simple_sphere_coord">
+<code class="descclassname">tikreg.priors.</code><code class="descname">simple_sphere_coord</code><span class="sig-paren">(</span><em>radius=1.0</em>, <em>theta1=45.0</em>, <em>theta2=45.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.simple_sphere_coord" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="spherical-coordinates-n2">
+<h2>spherical_coordinates_n2<a class="headerlink" href="#spherical-coordinates-n2" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.spherical_coordinates_n2">
+<code class="descclassname">tikreg.priors.</code><code class="descname">spherical_coordinates_n2</code><span class="sig-paren">(</span><em>offset=0</em>, <em>nsamples=10</em>, <em>spacing=&lt;function linspace at 0x7fc71d2e3cf8&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.spherical_coordinates_n2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="spherical-coordinates-n3">
+<h2>spherical_coordinates_n3<a class="headerlink" href="#spherical-coordinates-n3" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.spherical_coordinates_n3">
+<code class="descclassname">tikreg.priors.</code><code class="descname">spherical_coordinates_n3</code><span class="sig-paren">(</span><em>offset=0</em>, <em>nsamples=10</em>, <em>spacing=&lt;function linspace at 0x7fc71d2e3cf8&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.spherical_coordinates_n3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="standard-sphere-coord">
+<h2>standard_sphere_coord<a class="headerlink" href="#standard-sphere-coord" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.standard_sphere_coord">
+<code class="descclassname">tikreg.priors.</code><code class="descname">standard_sphere_coord</code><span class="sig-paren">(</span><em>angle</em>, <em>radius=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.standard_sphere_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>standard physics way
+theta1: inclination (angle between z and x/y
+theta2: asymuth (angle on x-y plane)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="test-spherical-coords">
+<h2>test_spherical_coords<a class="headerlink" href="#test-spherical-coords" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.priors.test_spherical_coords">
+<code class="descclassname">tikreg.priors.</code><code class="descname">test_spherical_coords</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.priors.test_spherical_coords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Anwar O. Nunez-Elizalde.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

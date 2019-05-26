@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>models &#8212; tikreg 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="priors" href="tikreg.priors.html" />
+    <link rel="prev" title="kernels" href="tikreg.kernels.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          tikreg</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">models</span></code></a><ul>
+<li><a class="reference internal" href="#counter"><code class="docutils literal notranslate"><span class="pre">counter</span></code></a></li>
+<li><a class="reference internal" href="#atleast-2d">atleast_2d</a></li>
+<li><a class="reference internal" href="#check-response-dimensionality">check_response_dimensionality</a></li>
+<li><a class="reference internal" href="#clean-results-dict">clean_results_dict</a></li>
+<li><a class="reference internal" href="#crossval-stem-wmvnp">crossval_stem_wmvnp</a></li>
+<li><a class="reference internal" href="#cvridge">cvridge</a></li>
+<li><a class="reference internal" href="#dual2primal-weights">dual2primal_weights</a></li>
+<li><a class="reference internal" href="#dual2primal-weights-banded">dual2primal_weights_banded</a></li>
+<li><a class="reference internal" href="#estimate-simple-stem-wmvnp">estimate_simple_stem_wmvnp</a></li>
+<li><a class="reference internal" href="#estimate-stem-wmvnp">estimate_stem_wmvnp</a></li>
+<li><a class="reference internal" href="#featurespace-dual2primal">featurespace_dual2primal</a></li>
+<li><a class="reference internal" href="#find-optimum-mvn">find_optimum_mvn</a></li>
+<li><a class="reference internal" href="#generalized-tikhonov">generalized_tikhonov</a></li>
+<li><a class="reference internal" href="#hyperopt-crossval-stem-wmvnp">hyperopt_crossval_stem_wmvnp</a></li>
+<li><a class="reference internal" href="#hyperopt-estimate-stem-wmvnp">hyperopt_estimate_stem_wmvnp</a></li>
+<li><a class="reference internal" href="#hyperopt-trials2cvperf">hyperopt_trials2cvperf</a></li>
+<li><a class="reference internal" href="#kernel-banded-temporal-prior">kernel_banded_temporal_prior</a></li>
+<li><a class="reference internal" href="#kernel-cvridge">kernel_cvridge</a></li>
+<li><a class="reference internal" href="#kernel-spatiotemporal-prior">kernel_spatiotemporal_prior</a></li>
+<li><a class="reference internal" href="#loo-ols">loo_ols</a></li>
+<li><a class="reference internal" href="#nan-to-num">nan_to_num</a></li>
+<li><a class="reference internal" href="#ols">ols</a></li>
+<li><a class="reference internal" href="#olspred">olspred</a></li>
+<li><a class="reference internal" href="#should-solve-dual">should_solve_dual</a></li>
+<li><a class="reference internal" href="#simple-generalized-tikhonov">simple_generalized_tikhonov</a></li>
+<li><a class="reference internal" href="#simple-ridge-dual">simple_ridge_dual</a></li>
+<li><a class="reference internal" href="#simple-ridge-primal">simple_ridge_primal</a></li>
+<li><a class="reference internal" href="#solve-l2">solve_l2</a></li>
+<li><a class="reference internal" href="#solve-l2-dual">solve_l2_dual</a></li>
+<li><a class="reference internal" href="#solve-l2-primal">solve_l2_primal</a></li>
+<li><a class="reference internal" href="#voxelwise-weights2preds">voxelwise_weights2preds</a></li>
+<li><a class="reference internal" href="#zscore">zscore</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="tikreg.kernels.html" title="Previous Chapter: kernels"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; kernels</span>
+    </a>
+  </li>
+  <li>
+    <a href="tikreg.priors.html" title="Next Chapter: priors"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">priors &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/api/tikreg.models.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+  <li>
+    <a href="tikreg.kernels.html" title="Previous Chapter: kernels"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; kernels</span>
+    </a>
+  </li>
+  <li>
+    <a href="tikreg.priors.html" title="Next Chapter: priors"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">priors &raquo;</span>
+    </a>
+  </li>
+<form action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="col-md-9 content">
+      
+  <div class="section" id="module-tikreg.models">
+<span id="models"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">models</span></code><a class="headerlink" href="#module-tikreg.models" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.counter" title="tikreg.models.counter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">counter</span></code></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.atleast_2d" title="tikreg.models.atleast_2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atleast_2d</span></code></a>(arr)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.check_response_dimensionality" title="tikreg.models.check_response_dimensionality"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_response_dimensionality</span></code></a>(train,&nbsp;test[,&nbsp;…])</td>
+<td>Make sure matrices are 2D arrays before running models</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.clean_results_dict" title="tikreg.models.clean_results_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clean_results_dict</span></code></a>(results)</td>
+<td>Make sure we return arrays, and ndim is at least 2D</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">crossval_stem_wmvnp</span></code>((features_train,&nbsp;…[,&nbsp;…])</td>
+<td>Cross-validation procedure for spatio-temporal encoding models with MVN priors.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.cvridge" title="tikreg.models.cvridge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cvridge</span></code></a>(Xtrain,&nbsp;Ytrain[,&nbsp;Xtest,&nbsp;Ytest,&nbsp;…])</td>
+<td>Cross-validation procedure for tikhonov regularized regression.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.dual2primal_weights" title="tikreg.models.dual2primal_weights"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual2primal_weights</span></code></a>(kernel_weights,&nbsp;…[,&nbsp;…])</td>
+<td>Recover the feature weights from the kernel weights for any one or all feature spaces.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.dual2primal_weights_banded" title="tikreg.models.dual2primal_weights_banded"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual2primal_weights_banded</span></code></a>(kernel_weights,&nbsp;…)</td>
+<td>WIP.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.estimate_simple_stem_wmvnp" title="tikreg.models.estimate_simple_stem_wmvnp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_simple_stem_wmvnp</span></code></a>(features_train,&nbsp;…)</td>
+<td>Estimate model with given hyper-parameters</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_stem_wmvnp</span></code>((features_train,&nbsp;…[,&nbsp;…])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.featurespace_dual2primal" title="tikreg.models.featurespace_dual2primal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">featurespace_dual2primal</span></code></a>(kernel_weights,&nbsp;…)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.find_optimum_mvn" title="tikreg.models.find_optimum_mvn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_optimum_mvn</span></code></a>(response_cvmean,&nbsp;…)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.generalized_tikhonov" title="tikreg.models.generalized_tikhonov"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generalized_tikhonov</span></code></a>(X,&nbsp;Y,&nbsp;Li[,&nbsp;ridge])</td>
+<td>Implementation fo tikhonov regression using the standard transform (cf.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.hyperopt_crossval_stem_wmvnp" title="tikreg.models.hyperopt_crossval_stem_wmvnp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hyperopt_crossval_stem_wmvnp</span></code></a>(features_train,&nbsp;…)</td>
+<td>Use <code class="docutils literal notranslate"><span class="pre">hyperopt</span></code> to cross-validate all hyper-parameters parameters.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.hyperopt_estimate_stem_wmvnp" title="tikreg.models.hyperopt_estimate_stem_wmvnp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hyperopt_estimate_stem_wmvnp</span></code></a>(features_train,&nbsp;…)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.hyperopt_trials2cvperf" title="tikreg.models.hyperopt_trials2cvperf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hyperopt_trials2cvperf</span></code></a>(Trials)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.kernel_banded_temporal_prior" title="tikreg.models.kernel_banded_temporal_prior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kernel_banded_temporal_prior</span></code></a>(kernel,&nbsp;…)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.kernel_cvridge" title="tikreg.models.kernel_cvridge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kernel_cvridge</span></code></a>(Ktrain,&nbsp;Ytrain[,&nbsp;Ktest,&nbsp;…])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.kernel_spatiotemporal_prior" title="tikreg.models.kernel_spatiotemporal_prior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kernel_spatiotemporal_prior</span></code></a>(Xtrain,&nbsp;…[,&nbsp;…])</td>
+<td>Compute the kernel matrix of a model with a spatio-temporal prior</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.loo_ols" title="tikreg.models.loo_ols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loo_ols</span></code></a>(xtrain_samples,&nbsp;ytrain_samples[,&nbsp;rcond])</td>
+<td>Leave-one out OLS Return the mean weight across head-out folds</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.nan_to_num" title="tikreg.models.nan_to_num"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nan_to_num</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.ols" title="tikreg.models.ols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ols</span></code></a>(X,&nbsp;Y[,&nbsp;rcond])</td>
+<td>Perform OLS fit, return weight estimates</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.olspred" title="tikreg.models.olspred"><code class="xref py py-obj docutils literal notranslate"><span class="pre">olspred</span></code></a>(X,&nbsp;Y[,&nbsp;Xtest])</td>
+<td>Fit OLS, return predictions <code class="docutils literal notranslate"><span class="pre">Yhat</span></code></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.should_solve_dual" title="tikreg.models.should_solve_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">should_solve_dual</span></code></a>(X,&nbsp;kernel)</td>
+<td>Answer whether we should solve the regression problem in the dual (kernel) space.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.simple_generalized_tikhonov" title="tikreg.models.simple_generalized_tikhonov"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_generalized_tikhonov</span></code></a>(X,&nbsp;Y,&nbsp;L[,&nbsp;ridge])</td>
+<td>Direct implementation of generalized tikhonov regression</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.simple_ridge_dual" title="tikreg.models.simple_ridge_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_ridge_dual</span></code></a>(X,&nbsp;Y[,&nbsp;ridge])</td>
+<td>Return weights for linear kernel ridge regression</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.simple_ridge_primal" title="tikreg.models.simple_ridge_primal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simple_ridge_primal</span></code></a>(X,&nbsp;Y[,&nbsp;ridge])</td>
+<td>Return weights for ridge regression</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.solve_l2" title="tikreg.models.solve_l2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">solve_l2</span></code></a>(Xtrain,&nbsp;Ytrain[,&nbsp;Xtest,&nbsp;Ytest,&nbsp;…])</td>
+<td>Solve L2 regularized regression problem</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.solve_l2_dual" title="tikreg.models.solve_l2_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">solve_l2_dual</span></code></a>(Ktrain,&nbsp;Ytrain[,&nbsp;Ktest,&nbsp;…])</td>
+<td>Solve the dual (kernel) L2 regression problem for each L2 parameter.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.solve_l2_primal" title="tikreg.models.solve_l2_primal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">solve_l2_primal</span></code></a>(Xtrain,&nbsp;Ytrain[,&nbsp;Xtest,&nbsp;…])</td>
+<td>Solve the (primal) L2 regression problem for each L2 parameter.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.models.voxelwise_weights2preds" title="tikreg.models.voxelwise_weights2preds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">voxelwise_weights2preds</span></code></a>(kernel_weights,&nbsp;…)</td>
+<td>feature_prior : one per voxel! temporal_prior : one for all voxels</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.models.zscore" title="tikreg.models.zscore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zscore</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="counter">
+<h2><a class="reference internal" href="#tikreg.models.counter" title="tikreg.models.counter"><code class="xref py py-class docutils literal notranslate"><span class="pre">counter</span></code></a><a class="headerlink" href="#counter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.models.counter">
+<em class="property">class </em><code class="descclassname">tikreg.models.</code><code class="descname">counter</code><a class="headerlink" href="#tikreg.models.counter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tikreg.models.counter.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.counter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>x.__init__(…) initializes x; see help(type(x)) for signature</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tikreg.models.counter.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.counter.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="atleast-2d">
+<h2>atleast_2d<a class="headerlink" href="#atleast-2d" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.atleast_2d">
+<code class="descclassname">tikreg.models.</code><code class="descname">atleast_2d</code><span class="sig-paren">(</span><em>arr</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.atleast_2d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="check-response-dimensionality">
+<h2>check_response_dimensionality<a class="headerlink" href="#check-response-dimensionality" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.check_response_dimensionality">
+<code class="descclassname">tikreg.models.</code><code class="descname">check_response_dimensionality</code><span class="sig-paren">(</span><em>train</em>, <em>test</em>, <em>allow_test_none=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.check_response_dimensionality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure matrices are 2D arrays before running models</p>
+</dd></dl>
+
+</div>
+<div class="section" id="clean-results-dict">
+<h2>clean_results_dict<a class="headerlink" href="#clean-results-dict" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.clean_results_dict">
+<code class="descclassname">tikreg.models.</code><code class="descname">clean_results_dict</code><span class="sig-paren">(</span><em>results</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.clean_results_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure we return arrays, and ndim is at least 2D</p>
+</dd></dl>
+
+</div>
+<div class="section" id="crossval-stem-wmvnp">
+<h2>crossval_stem_wmvnp<a class="headerlink" href="#crossval-stem-wmvnp" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<code class="descname">crossval_stem_wmvnp(features_train, responses_train, ridges=array([   1.        ,    2.15443469,    4.64158883,   10.        ,</code></dt>
+<dt>
+<code class="descname">21.5443469 ,   46.41588834,  100.        ,  215.443469  ,</code></dt>
+<dt>
+<code class="descname">464.15888336, 1000.        ]), temporal_prior=None, feature_priors=None, population_mean=False, folds=(1, 5), method='SVD', verbosity=1, chunklen=True, kernel_features=False, normalize_kernel=False, normalize_hyparams=False, metric='correlation', zscore_ytrain=False, zscore_yval=False, weights=False, predictions=False)</code></dt>
+<dd><p>Cross-validation procedure for
+spatio-temporal encoding models with MVN priors.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="cvridge">
+<h2>cvridge<a class="headerlink" href="#cvridge" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.cvridge">
+<code class="descclassname">tikreg.models.</code><code class="descname">cvridge</code><span class="sig-paren">(</span><em>Xtrain, Ytrain, Xtest=None, Ytest=None, ridges=[0.0], Li=None, kernel_name='linear', kernel_params=None, folds='cv', nfolds=5, blocklen=5, trainpct=0.8, verbose=True, EPS=1e-10, withinset_test=False, performance=False, predictions=False, weights=False, kernel_weights=False, metric='correlation'</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.cvridge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cross-validation procedure for tikhonov regularized regression.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>Xtrain (n, p):</strong></dt>
+<dd><p class="first last">Design matrix</p>
+</dd>
+<dt><strong>Ytrain (n, v):</strong></dt>
+<dd><p class="first last">Training set responses</p>
+</dd>
+<dt><strong>Xtest (None, (m, p)):</strong></dt>
+<dd><p class="first last">Design matrix for held-out set</p>
+</dd>
+<dt><strong>Ytest (None, (m, v)):</strong></dt>
+<dd><p class="first last">Held-out set responses</p>
+</dd>
+<dt><strong>ridges (r,):</strong></dt>
+<dd><p class="first last">Ridge parameters to evaluate</p>
+</dd>
+<dt><strong>Li (q,p):</strong></dt>
+<dd><p class="first last">Generalized tikhonov regression. This solves the problem with a
+prior on $eta$ determined by $L^       op L$. The problem is solved
+in the standard form and in kernel space if necessary.</p>
+</dd>
+<dt><strong>kernel_name (str):</strong></dt>
+<dd><p class="first last">Kernel to use</p>
+</dd>
+<dt><strong>kernel_params (None, (k,)):</strong></dt>
+<dd><p class="first last">Kernel parameters to cross-validate</p>
+</dd>
+<dt><strong>folds (str, list):</strong></dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>(str) Type of cross-validation</dt>
+<dd><ul class="first last">
+<li>‘cv’  - cross-validation with chunks of size <code class="docutils literal notranslate"><span class="pre">blocklen</span></code></li>
+<li>‘nbb’ - block boostrap with chunks of size <code class="docutils literal notranslate"><span class="pre">blocklen</span></code></li>
+<li>‘mbb’ - moving/overlapping block bootstrap chunks of size <code class="docutils literal notranslate"><span class="pre">blocklen</span></code></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>(list) Can also be a list of (train, test) pairs: [(trn1, test1),…]</li>
+</ul>
+</dd>
+<dt><strong>nfolds (int):</strong></dt>
+<dd><p class="first last">Number of learning folds</p>
+</dd>
+<dt><strong>blocklen (int):</strong></dt>
+<dd><p class="first last">Chunk data into blocks of this size, and sample these blocks</p>
+</dd>
+<dt><strong>trainpct (float 0-1):</strong></dt>
+<dd><p class="first last">Percentage of data to use in training if using a bootstrap sampler.</p>
+</dd>
+<dt><strong>withinset_test (bool):</strong></dt>
+<dd><p class="first last">If no <code class="docutils literal notranslate"><span class="pre">Xtest</span></code> or <code class="docutils literal notranslate"><span class="pre">Ytest</span></code> is given and <code class="docutils literal notranslate"><span class="pre">predictions</span></code> and/or
+<code class="docutils literal notranslate"><span class="pre">performance</span></code> are requested, compute these testues based on training set.</p>
+</dd>
+<dt><strong>performance (bool):</strong></dt>
+<dd><p class="first last">Held-out prediction performance</p>
+</dd>
+<dt><strong>predictions (bool):</strong></dt>
+<dd><p class="first last">Held-out timecourse predictions</p>
+</dd>
+<dt><strong>weights (bool):</strong></dt>
+<dd><p class="first last">Weight estimates on training set (does not depend on (<code class="docutils literal notranslate"><span class="pre">Xtest</span></code>,``Ytest``)</p>
+</dd>
+<dt><strong>kernel_weights (bool):</strong></dt>
+<dd><p class="first last">Whether to project kernel weights into feature weights.
+If True, the kernel weights are returned. This is useful when fitting
+large models and storing the feature weights is expensive.</p>
+</dd>
+<dt><strong>verbose (bool):</strong></dt>
+<dd><p class="first last">Verbosity</p>
+</dd>
+<dt><strong>EPS (float):</strong></dt>
+<dd><p class="first last">Testue used to threshold small eigentestues</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>fit (optional; dict):</dt>
+<dd><dl class="first docutils">
+<dt>cross-validation results per response for each fold, kernel and L2 parameters</dt>
+<dd><ul class="first last simple">
+<li>cvresults (<code class="docutils literal notranslate"><span class="pre">nfolds</span></code>, len(<code class="docutils literal notranslate"><span class="pre">kernel_params</span></code>), len(<code class="docutils literal notranslate"><span class="pre">ridges</span></code>), nresponses)</li>
+</ul>
+</dd>
+</dl>
+<p>If a held-out set (<code class="docutils literal notranslate"><span class="pre">Xtest</span></code> and <code class="docutils literal notranslate"><span class="pre">Ytest</span></code>) is specified, performs the
+fit on the full training set with the optimal L2 and kernel parameters.
+It returns, as requested, any of:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>predictions (m, v) <code class="docutils literal notranslate"><span class="pre">Ytest</span></code> prediction for each voxel</li>
+<li>performance (v,) correlation coefficient of predictions and <code class="docutils literal notranslate"><span class="pre">Ytest</span></code></li>
+<li>weights: (p, v) for linear models, (n by v) for non-linear models</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="dual2primal-weights">
+<h2>dual2primal_weights<a class="headerlink" href="#dual2primal-weights" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.dual2primal_weights">
+<code class="descclassname">tikreg.models.</code><code class="descname">dual2primal_weights</code><span class="sig-paren">(</span><em>kernel_weights</em>, <em>features_train</em>, <em>feature_priors</em>, <em>feature_hyparams</em>, <em>temporal_prior</em>, <em>temporal_hhparam=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.dual2primal_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recover the feature weights from the kernel weights
+for any one or all feature spaces.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>kernel_weights</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray</span></dt>
+<dd></dd>
+<dt><strong>features_train</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of np.ndarrays</span></dt>
+<dd><p class="first last">Training set feature spaces each of shape (n, p_i).</p>
+</dd>
+<dt><strong>feature_priors</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of <code class="docutils literal notranslate"><span class="pre">SpatialPrior</span></code> objects</span></dt>
+<dd><p class="first last">One feature prior per feature space.</p>
+</dd>
+<dt><strong>feature_hyparams</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of scalars</span></dt>
+<dd><p class="first last">Scalar for each feature space prior</p>
+</dd>
+<dt><strong>temporal_prior</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="docutils literal notranslate"><span class="pre">TemporalPrior</span></code> object</span></dt>
+<dd><p class="first last">A temporal prior object to use. The temporal
+prior may contain a hyper-prior.</p>
+</dd>
+<dt><strong>temporal_hhparam</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">Hyper-prior hyperparameter if required.
+Defaults to 1.0, no effect.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>weights</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">Feature space weights
+[(p_1, v), …, (p_l, v)]</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="dual2primal-weights-banded">
+<h2>dual2primal_weights_banded<a class="headerlink" href="#dual2primal-weights-banded" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.dual2primal_weights_banded">
+<code class="descclassname">tikreg.models.</code><code class="descname">dual2primal_weights_banded</code><span class="sig-paren">(</span><em>kernel_weights</em>, <em>feature_space_train</em>, <em>population_feature_prior</em>, <em>temporal_prior</em>, <em>delays_mean=False</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.dual2primal_weights_banded" title="Permalink to this definition">¶</a></dt>
+<dd><p>WIP. WILL CHANGE. USE AT OWN RISK.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="estimate-simple-stem-wmvnp">
+<h2>estimate_simple_stem_wmvnp<a class="headerlink" href="#estimate-simple-stem-wmvnp" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.estimate_simple_stem_wmvnp">
+<code class="descclassname">tikreg.models.</code><code class="descname">estimate_simple_stem_wmvnp</code><span class="sig-paren">(</span><em>features_train</em>, <em>responses_train</em>, <em>features_test=None</em>, <em>responses_test=None</em>, <em>feature_priors=None</em>, <em>feature_hyparams=None</em>, <em>temporal_prior=None</em>, <em>temporal_hhparam=1.0</em>, <em>ridge_scale=1.0</em>, <em>weights=False</em>, <em>performance=False</em>, <em>predictions=False</em>, <em>kernel_features=False</em>, <em>method='SVD'</em>, <em>verbosity=2</em>, <em>metric='correlation'</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.estimate_simple_stem_wmvnp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate model with given hyper-parameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>features_train</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of np.ndarrays</span></dt>
+<dd><p class="first last">Training set feature spaces each of shape (n, p_i).</p>
+</dd>
+<dt><strong>responses_train</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray</span></dt>
+<dd><p class="first last">Population responses to the training set (n, v).</p>
+</dd>
+<dt><strong>features_test</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of np.ndarrays</span></dt>
+<dd><p class="first last">Test set feature spaces each of shape (m, p_i)</p>
+</dd>
+<dt><strong>responses_test</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray</span></dt>
+<dd><p class="first last">Population responses to the test set (m, v)</p>
+</dd>
+<dt><strong>temporal_prior</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="docutils literal notranslate"><span class="pre">TemporalPrior</span></code> object</span></dt>
+<dd><p class="first last">A temporal prior object to use. The temporal
+prior may contain a hyper-prior.</p>
+</dd>
+<dt><strong>temporal_hhparam</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">Hyper-prior hyperparameter if required.
+Defaults to 1.0, no effect.</p>
+</dd>
+<dt><strong>feature_priors</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of <code class="docutils literal notranslate"><span class="pre">SpatialPrior</span></code> objects</span></dt>
+<dd><p class="first last">One feature prior per feature space.</p>
+</dd>
+<dt><strong>feature_hyparams</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of scalars</span></dt>
+<dd><p class="first last">Scalar for each feature space prior</p>
+</dd>
+<dt><strong>ridge_scale</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">Scalar on the feature prior hyper-parameters.
+Defaults to 1.0, no effect</p>
+</dd>
+<dt><strong>weights</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Compute weights</p>
+</dd>
+<dt><strong>performance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Compute accuracy of predictions against test set responses</p>
+</dd>
+<dt><strong>predictions: boot</strong></dt>
+<dd><p class="first last">Test set prediction time courses</p>
+</dd>
+<dt><strong>kernel_features</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boot</span></dt>
+<dd><p class="first last">If True, <code class="docutils literal notranslate"><span class="pre">features_train</span></code> and <code class="docutils literal notranslate"><span class="pre">features_test</span></code>
+is a list of kernels, one per feature space.
+This is only allowed if <code class="docutils literal notranslate"><span class="pre">feature_priors</span></code> are spherical.</p>
+</dd>
+<dt><strong>method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str {“SVD”, “Chol”}</span></dt>
+<dd><p class="first last">Solver to use</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>fit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
+<dd><p class="first last">Estimated model dictionary with keys:
+* weights : [(p_1, v), …, (p_l, v)]
+* performance : (1, v)
+* predictions : (m, v)</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="estimate-stem-wmvnp">
+<h2>estimate_stem_wmvnp<a class="headerlink" href="#estimate-stem-wmvnp" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<code class="descname">estimate_stem_wmvnp(features_train, responses_train, features_test=None, responses_test=None, ridges=array([   1.        ,    2.15443469,    4.64158883,   10.        ,</code></dt>
+<dt>
+<code class="descname">21.5443469 ,   46.41588834,  100.        ,  215.443469  ,</code></dt>
+<dt>
+<code class="descname">464.15888336, 1000.        ]), normalize_hyparams=False, normalize_kernel=False, temporal_prior=None, feature_priors=None, weights=False, predictions=False, performance=False, folds=(1, 5), method='SVD', verbosity=1, cvresults=None, population_optimal=False, keep_cvfolds=True, chunklen=True, metric='correlation')</code></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="featurespace-dual2primal">
+<h2>featurespace_dual2primal<a class="headerlink" href="#featurespace-dual2primal" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.featurespace_dual2primal">
+<code class="descclassname">tikreg.models.</code><code class="descname">featurespace_dual2primal</code><span class="sig-paren">(</span><em>kernel_weights</em>, <em>feature_space</em>, <em>feature_prior</em>, <em>feature_hyparam</em>, <em>temporal_prior</em>, <em>temporal_hhparam=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.featurespace_dual2primal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="find-optimum-mvn">
+<h2>find_optimum_mvn<a class="headerlink" href="#find-optimum-mvn" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.find_optimum_mvn">
+<code class="descclassname">tikreg.models.</code><code class="descname">find_optimum_mvn</code><span class="sig-paren">(</span><em>response_cvmean</em>, <em>temporal_hhparams</em>, <em>spatial_hyparams</em>, <em>ridge_hyparams</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.find_optimum_mvn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="generalized-tikhonov">
+<h2>generalized_tikhonov<a class="headerlink" href="#generalized-tikhonov" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.generalized_tikhonov">
+<code class="descclassname">tikreg.models.</code><code class="descname">generalized_tikhonov</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>Li</em>, <em>ridge=10.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.generalized_tikhonov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation fo tikhonov regression using the
+standard transform (cf. Hansen, 1998).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="hyperopt-crossval-stem-wmvnp">
+<h2>hyperopt_crossval_stem_wmvnp<a class="headerlink" href="#hyperopt-crossval-stem-wmvnp" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.hyperopt_crossval_stem_wmvnp">
+<code class="descclassname">tikreg.models.</code><code class="descname">hyperopt_crossval_stem_wmvnp</code><span class="sig-paren">(</span><em>features_train</em>, <em>responses_train</em>, <em>features_test=None</em>, <em>responses_test=None</em>, <em>temporal_prior=None</em>, <em>feature_priors=None</em>, <em>spatial_sampler=True</em>, <em>temporal_sampler=False</em>, <em>ridge_sampler=False</em>, <em>population_optimal=False</em>, <em>folds=(1</em>, <em>5)</em>, <em>method='SVD'</em>, <em>ntrials=100</em>, <em>verbosity=1</em>, <em>dumpcrossval=False</em>, <em>normalize_hyparams=False</em>, <em>normalize_kernel=False</em>, <em>weights=False</em>, <em>predictions=False</em>, <em>performance=True</em>, <em>metric='correlation'</em>, <em>zscore_ytrain=True</em>, <em>zscore_yval=True</em>, <em>search_algorithm='tpe'</em>, <em>trials=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.hyperopt_crossval_stem_wmvnp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use <code class="docutils literal notranslate"><span class="pre">hyperopt</span></code> to cross-validate all hyper-parameters parameters.</p>
+<p>Search the hyper-parameter space to find the population optimum using
+a cross-validation procedure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>features_train</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of np.ndarrays</span></dt>
+<dd><p class="first last">The feature spaces of shape (n, p_i).</p>
+</dd>
+<dt><strong>responses_train</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray</span></dt>
+<dd><p class="first last">The population responses to fit (n, v).</p>
+</dd>
+<dt><strong>temporal_prior</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="docutils literal notranslate"><span class="pre">TemporalPrior</span></code> object</span></dt>
+<dd><p class="first last">A temporal prior object to use. The temporal
+prior may contain a hyper-prior.</p>
+</dd>
+<dt><strong>feature_priors</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of <a href="#id1"><span class="problematic" id="id2">``</span></a>SpatialPrior``bjects</span></dt>
+<dd><p class="first last">One feature prior per feature space.</p>
+</dd>
+<dt><strong>spatial_sampler</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="docutils literal notranslate"><span class="pre">hyperopt.hp</span></code>, or bool</span></dt>
+<dd><p class="first last">Specifies how to sample the hyperparameter space.
+Defaults to hp.loguniform(0,7).</p>
+</dd>
+<dt><strong>temporal_sampler</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="docutils literal notranslate"><span class="pre">hyperopt.hp</span></code>, or bool</span></dt>
+<dd><p class="first last">Used iff <code class="docutils literal notranslate"><span class="pre">temporal_prior</span></code> has a hyper-prior set.</p>
+</dd>
+<dt><strong>ridge_sampler</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="docutils literal notranslate"><span class="pre">hyperopt.hp</span></code>, or bool</span></dt>
+<dd><p class="first last">Defaults to False.
+Use this with caution. Specifies how to sample
+the scaling on the spatial hyperparameters.  However,
+Specifying a <code class="docutils literal notranslate"><span class="pre">spatial_sampler</span></code> for all feature
+spaces and a <code class="docutils literal notranslate"><span class="pre">ridge_sampler</span></code> is redundant.</p>
+</dd>
+<dt><strong>population_optimal</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">If True, individual response cross-validation values
+are not kept. Only the mean across responses is stored.</p>
+</dd>
+<dt><strong>folds</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tuple (N,K), or list of tuples [(trn1, val1),…, (trnK, valK)]</span></dt>
+<dd><p class="first last">If tuple, the second element corresponds to the number
+of cross-validation folds. The first element determines
+how many times to repeat the cross validation.
+(1,5) is standard 5-folds cross-validation.
+(10,5) performs 5-fold cross-validation 10 times.</p>
+</dd>
+<dt><strong>method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str (“SVD”, “Chol”)</span></dt>
+<dd><p class="first last">Solver to use</p>
+</dd>
+<dt><strong>ntrials</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of <code class="docutils literal notranslate"><span class="pre">hyperopt</span></code> iterations</p>
+</dd>
+<dt><strong>verbosity</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int (1, 2)</span></dt>
+<dd><p class="first last">Level of print statements</p>
+</dd>
+<dt><strong>dumpcrossval</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function(iteration_num, crossval_dict)</span></dt>
+<dd><p class="first last">Save the cross-validation results for every iteration.
+The function takes the iteration number (int) and a
+dictionary containing the cross-validation results.
+This is useful for finding the optimum hyper-parameters
+for each response. The stored data contains all the info.
+Defaults to False.</p>
+</dd>
+<dt><strong>kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">Additional arguments passed to <code class="docutils literal notranslate"><span class="pre">crossval_stem_wmvnp</span></code>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>crossval_results</strong> <span class="classifier-delimiter">:</span> <span class="classifier">hyperopt.Trials object</span></dt>
+<dd><p class="first last">Contains the cross-validation results from hyperopt.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="hyperopt-estimate-stem-wmvnp">
+<h2>hyperopt_estimate_stem_wmvnp<a class="headerlink" href="#hyperopt-estimate-stem-wmvnp" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.hyperopt_estimate_stem_wmvnp">
+<code class="descclassname">tikreg.models.</code><code class="descname">hyperopt_estimate_stem_wmvnp</code><span class="sig-paren">(</span><em>features_train</em>, <em>responses_train</em>, <em>cvmean</em>, <em>hyparams</em>, <em>features_test=None</em>, <em>responses_test=None</em>, <em>temporal_prior=None</em>, <em>feature_priors=None</em>, <em>spatial_sampler=True</em>, <em>temporal_sampler=False</em>, <em>ridge_sampler=False</em>, <em>population_optimal=False</em>, <em>method='SVD'</em>, <em>verbosity=1</em>, <em>normalize_hyparams=False</em>, <em>normalize_kernel=False</em>, <em>weights=False</em>, <em>predictions=False</em>, <em>performance=True</em>, <em>kernel_features=False</em>, <em>metric='correlation'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.hyperopt_estimate_stem_wmvnp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="hyperopt-trials2cvperf">
+<h2>hyperopt_trials2cvperf<a class="headerlink" href="#hyperopt-trials2cvperf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.hyperopt_trials2cvperf">
+<code class="descclassname">tikreg.models.</code><code class="descname">hyperopt_trials2cvperf</code><span class="sig-paren">(</span><em>Trials</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.hyperopt_trials2cvperf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="kernel-banded-temporal-prior">
+<h2>kernel_banded_temporal_prior<a class="headerlink" href="#kernel-banded-temporal-prior" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.kernel_banded_temporal_prior">
+<code class="descclassname">tikreg.models.</code><code class="descname">kernel_banded_temporal_prior</code><span class="sig-paren">(</span><em>kernel</em>, <em>temporal_prior</em>, <em>spatial_prior</em>, <em>delays</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.kernel_banded_temporal_prior" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="kernel-cvridge">
+<h2>kernel_cvridge<a class="headerlink" href="#kernel-cvridge" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.kernel_cvridge">
+<code class="descclassname">tikreg.models.</code><code class="descname">kernel_cvridge</code><span class="sig-paren">(</span><em>Ktrain, Ytrain, Ktest=None, Ytest=None, ridges=[0.0], folds='cv', nfolds=5, blocklen=5, trainpct=0.8, performance=False, predictions=False, weights=False, metric='correlation', verbose=True, EPS=1e-10</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.kernel_cvridge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="kernel-spatiotemporal-prior">
+<h2>kernel_spatiotemporal_prior<a class="headerlink" href="#kernel-spatiotemporal-prior" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.kernel_spatiotemporal_prior">
+<code class="descclassname">tikreg.models.</code><code class="descname">kernel_spatiotemporal_prior</code><span class="sig-paren">(</span><em>Xtrain</em>, <em>temporal_prior</em>, <em>spatial_prior</em>, <em>Xtest=None</em>, <em>delays=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.kernel_spatiotemporal_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the kernel matrix of a model with a spatio-temporal prior</p>
+<p>temporal_prior (d, d): d = len(delays)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="loo-ols">
+<h2>loo_ols<a class="headerlink" href="#loo-ols" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.loo_ols">
+<code class="descclassname">tikreg.models.</code><code class="descname">loo_ols</code><span class="sig-paren">(</span><em>xtrain_samples</em>, <em>ytrain_samples</em>, <em>rcond=1e-08</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.loo_ols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leave-one out OLS
+Return the mean weight across head-out folds</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ytrain_samples</strong> <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray (nfolds, time, voxels)</span></dt>
+<dd></dd>
+<dt><strong>xtrain_samples</strong> <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray (nfolds, time, features)</span></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="nan-to-num">
+<h2>nan_to_num<a class="headerlink" href="#nan-to-num" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.nan_to_num">
+<code class="descclassname">tikreg.models.</code><code class="descname">nan_to_num</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.nan_to_num" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="ols">
+<h2>ols<a class="headerlink" href="#ols" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.ols">
+<code class="descclassname">tikreg.models.</code><code class="descname">ols</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>rcond=1e-08</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.ols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform OLS fit, return weight estimates</p>
+</dd></dl>
+
+</div>
+<div class="section" id="olspred">
+<h2>olspred<a class="headerlink" href="#olspred" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.olspred">
+<code class="descclassname">tikreg.models.</code><code class="descname">olspred</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>Xtest=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.olspred" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit OLS, return predictions <code class="docutils literal notranslate"><span class="pre">Yhat</span></code></p>
+</dd></dl>
+
+</div>
+<div class="section" id="should-solve-dual">
+<h2>should_solve_dual<a class="headerlink" href="#should-solve-dual" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.should_solve_dual">
+<code class="descclassname">tikreg.models.</code><code class="descname">should_solve_dual</code><span class="sig-paren">(</span><em>X</em>, <em>kernel</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.should_solve_dual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Answer whether we should solve the regression
+problem in the dual (kernel) space.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="simple-generalized-tikhonov">
+<h2>simple_generalized_tikhonov<a class="headerlink" href="#simple-generalized-tikhonov" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.simple_generalized_tikhonov">
+<code class="descclassname">tikreg.models.</code><code class="descname">simple_generalized_tikhonov</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>L</em>, <em>ridge=10.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.simple_generalized_tikhonov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Direct implementation of generalized tikhonov regression</p>
+</dd></dl>
+
+</div>
+<div class="section" id="simple-ridge-dual">
+<h2>simple_ridge_dual<a class="headerlink" href="#simple-ridge-dual" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.simple_ridge_dual">
+<code class="descclassname">tikreg.models.</code><code class="descname">simple_ridge_dual</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>ridge=10.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.simple_ridge_dual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return weights for linear kernel ridge regression</p>
+</dd></dl>
+
+</div>
+<div class="section" id="simple-ridge-primal">
+<h2>simple_ridge_primal<a class="headerlink" href="#simple-ridge-primal" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.simple_ridge_primal">
+<code class="descclassname">tikreg.models.</code><code class="descname">simple_ridge_primal</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>ridge=10.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.simple_ridge_primal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return weights for ridge regression</p>
+</dd></dl>
+
+</div>
+<div class="section" id="solve-l2">
+<h2>solve_l2<a class="headerlink" href="#solve-l2" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.solve_l2">
+<code class="descclassname">tikreg.models.</code><code class="descname">solve_l2</code><span class="sig-paren">(</span><em>Xtrain</em>, <em>Ytrain</em>, <em>Xtest=None</em>, <em>Ytest=None</em>, <em>ridge=0.0</em>, <em>verbose=False</em>, <em>kernel_name='linear'</em>, <em>kernel_param=None</em>, <em>kernel_weights=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.solve_l2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve L2 regularized regression problem</p>
+</dd></dl>
+
+</div>
+<div class="section" id="solve-l2-dual">
+<h2>solve_l2_dual<a class="headerlink" href="#solve-l2-dual" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.solve_l2_dual">
+<code class="descclassname">tikreg.models.</code><code class="descname">solve_l2_dual</code><span class="sig-paren">(</span><em>Ktrain, Ytrain, Ktest=None, Ytest=None, ridges=[0.0], method='SVD', EPS=1e-10, verbose=False, performance=False, predictions=False, weights=False, metric='correlation'</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.solve_l2_dual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve the dual (kernel) L2 regression problem for each L2 parameter.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="solve-l2-primal">
+<h2>solve_l2_primal<a class="headerlink" href="#solve-l2-primal" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.solve_l2_primal">
+<code class="descclassname">tikreg.models.</code><code class="descname">solve_l2_primal</code><span class="sig-paren">(</span><em>Xtrain, Ytrain, Xtest=None, Ytest=None, ridges=[0], method='SVD', zscore_ytrain=False, zscore_ytest=False, EPS=1e-10, verbose=False, performance=False, predictions=False, weights=False, metric='correlation'</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.solve_l2_primal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve the (primal) L2 regression problem for each L2 parameter.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="voxelwise-weights2preds">
+<h2>voxelwise_weights2preds<a class="headerlink" href="#voxelwise-weights2preds" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.voxelwise_weights2preds">
+<code class="descclassname">tikreg.models.</code><code class="descname">voxelwise_weights2preds</code><span class="sig-paren">(</span><em>kernel_weights</em>, <em>kernel_test</em>, <em>responses_test</em>, <em>feature_prior</em>, <em>feature_hyparam</em>, <em>temporal_prior</em>, <em>temporal_hyparam=1.0</em>, <em>verbose=True</em>, <em>metric='correlation'</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.voxelwise_weights2preds" title="Permalink to this definition">¶</a></dt>
+<dd><p>feature_prior : one per voxel!
+temporal_prior : one for all voxels</p>
+</dd></dl>
+
+</div>
+<div class="section" id="zscore">
+<h2>zscore<a class="headerlink" href="#zscore" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.models.zscore">
+<code class="descclassname">tikreg.models.</code><code class="descname">zscore</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.models.zscore" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Anwar O. Nunez-Elizalde.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

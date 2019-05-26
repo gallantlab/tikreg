@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>spatial_priors &#8212; tikreg 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="svd_dgesvd" href="tikreg.svd_dgesvd.html" />
+    <link rel="prev" title="priors" href="tikreg.priors.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          tikreg</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">spatial_priors</span></code></a><ul>
+<li><a class="reference internal" href="#customprior"><code class="docutils literal notranslate"><span class="pre">CustomPrior</span></code></a></li>
+<li><a class="reference internal" href="#priorfrompenalty"><code class="docutils literal notranslate"><span class="pre">PriorFromPenalty</span></code></a></li>
+<li><a class="reference internal" href="#sphericalprior"><code class="docutils literal notranslate"><span class="pre">SphericalPrior</span></code></a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="tikreg.priors.html" title="Previous Chapter: priors"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; priors</span>
+    </a>
+  </li>
+  <li>
+    <a href="tikreg.svd_dgesvd.html" title="Next Chapter: svd_dgesvd"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">svd_dgesvd &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/api/tikreg.spatial_priors.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+  <li>
+    <a href="tikreg.priors.html" title="Previous Chapter: priors"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; priors</span>
+    </a>
+  </li>
+  <li>
+    <a href="tikreg.svd_dgesvd.html" title="Next Chapter: svd_dgesvd"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">svd_dgesvd &raquo;</span>
+    </a>
+  </li>
+<form action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="col-md-9 content">
+      
+  <div class="section" id="module-tikreg.spatial_priors">
+<span id="spatial-priors"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">spatial_priors</span></code><a class="headerlink" href="#module-tikreg.spatial_priors" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.spatial_priors.CustomPrior" title="tikreg.spatial_priors.CustomPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomPrior</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Specify a custom prior</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.spatial_priors.PriorFromPenalty" title="tikreg.spatial_priors.PriorFromPenalty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PriorFromPenalty</span></code></a>(penalty[,&nbsp;wishart])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.spatial_priors.SphericalPrior" title="tikreg.spatial_priors.SphericalPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SphericalPrior</span></code></a>(feature_space,&nbsp;**kwargs)</td>
+<td>Equivalent to ridge.</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="customprior">
+<h2><a class="reference internal" href="#tikreg.spatial_priors.CustomPrior" title="tikreg.spatial_priors.CustomPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomPrior</span></code></a><a class="headerlink" href="#customprior" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.spatial_priors.CustomPrior">
+<em class="property">class </em><code class="descclassname">tikreg.spatial_priors.</code><code class="descname">CustomPrior</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.CustomPrior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tikreg.html#tikreg.BasePrior" title="tikreg.BasePrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.BasePrior</span></code></a></p>
+<p>Specify a custom prior</p>
+<dl class="method">
+<dt id="tikreg.spatial_priors.CustomPrior.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.CustomPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="priorfrompenalty">
+<h2><a class="reference internal" href="#tikreg.spatial_priors.PriorFromPenalty" title="tikreg.spatial_priors.PriorFromPenalty"><code class="xref py py-class docutils literal notranslate"><span class="pre">PriorFromPenalty</span></code></a><a class="headerlink" href="#priorfrompenalty" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.spatial_priors.PriorFromPenalty">
+<em class="property">class </em><code class="descclassname">tikreg.spatial_priors.</code><code class="descname">PriorFromPenalty</code><span class="sig-paren">(</span><em>penalty</em>, <em>wishart=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.PriorFromPenalty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tikreg.html#tikreg.BasePrior" title="tikreg.BasePrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.BasePrior</span></code></a></p>
+<dl class="method">
+<dt id="tikreg.spatial_priors.PriorFromPenalty.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>penalty</em>, <em>wishart=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.PriorFromPenalty.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tikreg.spatial_priors.PriorFromPenalty.get_prior">
+<code class="descname">get_prior</code><span class="sig-paren">(</span><em>self</em>, <em>alpha=1.0</em>, <em>wishart_lambda=0.0</em>, <em>dodetnorm=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.PriorFromPenalty.get_prior" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tikreg.spatial_priors.PriorFromPenalty.prior2penalty">
+<code class="descname">prior2penalty</code><span class="sig-paren">(</span><em>self</em>, <em>regularizer=0.0</em>, <em>dodetnorm=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.PriorFromPenalty.prior2penalty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tikreg.spatial_priors.PriorFromPenalty.set_wishart">
+<code class="descname">set_wishart</code><span class="sig-paren">(</span><em>self</em>, <em>wishart_prior</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.PriorFromPenalty.set_wishart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sphericalprior">
+<h2><a class="reference internal" href="#tikreg.spatial_priors.SphericalPrior" title="tikreg.spatial_priors.SphericalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">SphericalPrior</span></code></a><a class="headerlink" href="#sphericalprior" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tikreg.spatial_priors.SphericalPrior">
+<em class="property">class </em><code class="descclassname">tikreg.spatial_priors.</code><code class="descname">SphericalPrior</code><span class="sig-paren">(</span><em>feature_space</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.SphericalPrior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tikreg.html#tikreg.BasePrior" title="tikreg.BasePrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.BasePrior</span></code></a></p>
+<p>Equivalent to ridge.</p>
+<dl class="method">
+<dt id="tikreg.spatial_priors.SphericalPrior.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>feature_space</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.SphericalPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tikreg.spatial_priors.SphericalPrior.get_prior">
+<code class="descname">get_prior</code><span class="sig-paren">(</span><em>self</em>, <em>alpha=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.SphericalPrior.get_prior" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Anwar O. Nunez-Elizalde.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
