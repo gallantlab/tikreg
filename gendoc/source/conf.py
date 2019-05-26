@@ -112,7 +112,7 @@ todo_include_todos = True
 html_theme = 'bootstrap'
 html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
-html_theme_options = {'bootswatch_theme' : 'lumen',
+html_theme_options = {'bootswatch_theme' : 'cosmo',
                       'bootstrap_version' : '3'}
 
 # Theme options are theme-specific and customize the look and feel of a theme
