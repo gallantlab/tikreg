@@ -17,6 +17,17 @@ except NameError:
     from functools import reduce
 
 def isdiag(mat):
+    '''Determine whether matrix is diagonal.
+
+    Parameters
+    ----------
+    mat : 2D np.ndarray (n, n)
+
+    Returns
+    -------
+    ans : bool
+        True if matrix is diagonal
+    '''
     if mat.ndim != 2:
         return False
 
@@ -42,13 +53,29 @@ def isdiag(mat):
 
 
 def SVD(X, **kwargs):
-    '''
-    Wrapper for SVD factorization
-    Uses scipy.linalg.svd by default
-    if the SVD does not converge, it will
-    use a slower svd factorization (DGESVD)
+    '''Robust SVD decomposition.
 
-    see scipy.linalg.svd for documentation
+    First uses scipy.linalg.svd by default.
+    If the SVD does not converge, it will
+    use a slower more robust SVD algorithm (DGESVD).
+
+    Parameters
+    ----------
+    X : 2D np.ndarray (n, m)
+        Matrix to decompose
+
+    full_matrices : bool, optional
+        Faster performance when True.
+        Defaults to False (numpy/scipy convention).
+
+    Returns
+    -------
+    U, S, VT : tuple of np.ndarrays
+        SVD decomposition of the matrix
+
+    See
+    ---
+    `scipy.linalg.svd` for full documentation
     '''
     import scipy.linalg as LA
 
@@ -70,14 +97,15 @@ def difference_operator(order, nobs):
 
     Parameters
     ----------
-    order : int
-        The order of the derivative (e.g. 2nd derivative)
+    order : int, odd
+        The order of the discrete difference (e.g. 2nd order)
     nobs : int
         The size of the output matrix
 
     Returns
     -------
-    mat : (`nobs`,`nobs`) np.ndarray
+    mat : 2D np.ndarray (nobs, nobs)
+        Discrete difference operator
     '''
     if nobs == 1:
         return np.asarray([[1]])
@@ -102,11 +130,25 @@ def difference_operator(order, nobs):
 
 
 def hrf_default_basis(dt=2.0, duration=32):
-    '''
+    '''Hemodynamic response function basis set.
+
+    Wrapper to `hrf_estimation` package.
+
+    Parameters
+    ----------
+    dt : float, optional
+        Temporal sampling rate in seconds
+        Defaults to 2.0 (i.e TR=2.0[secs])
+
+    duration : int, optional
+        Period over which to sample the HRF.
+        Defaults to 32 [seconds].
 
     Returns
     --------
-    hrf_basis (time-by-3)
+    hrf_basis : 2D np.ndarray (duration/dt, 3)
+        HRF basis set sampled over the specified
+        time period at the sampling rate requested.
     '''
     try:
         import hrf_estimation as he
@@ -124,12 +166,28 @@ def hrf_default_basis(dt=2.0, duration=32):
 
 
 def fast_indexing(a, rows, cols=None):
-    '''
-    Much faster than fancy indexing for taking
-    selected rows and cols from matrix.
-    Slightly faster for row indexing, too
+    '''Extract row and column entries from a 2D np.ndarray.
 
+    Much faster and memory efficient than fancy indexing for
+    rows and cols from a matrix. Slightly faster for row indexing.
+
+    Parameters
+    ----------
+    a : 2D np.ndarray (n, m)
+        A matrix
+
+    rows : 1D np.ndarray (k)
+        Row indices
+
+    cols : 1D np.ndarray (l)
+        Column indices
+
+    Returns
+    -------
+    b : 2D np.ndarray (k, l)
+        Subset of the matrix `a`
     '''
+    # Cannot remember origin of this trick.
     if cols is None:
         cols = np.arange(a.shape[-1])
     idx = rows.reshape(-1,1)*a.shape[1] + cols
@@ -137,7 +195,9 @@ def fast_indexing(a, rows, cols=None):
 
 
 def determinant_normalizer(mat, thresh=1e-08):
-    '''Compute the pseudo-determinant of the matrix
+    '''Value to devide a matrix such that its determinant is 1.
+
+    Compute the pseudo-determinant of the matrix
     '''
     evals = np.linalg.eigvalsh(mat)
     gdx = evals > thresh
@@ -468,18 +528,6 @@ def generate_trnval_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
             yield train, val
 
 
-
-def fast_indexing(a, rows, cols=None):
-    '''
-    Much faster than fancy indexing for taking
-    selected rows and cols from matrix.
-    Slightly faster for row indexing, too
-
-    '''
-    if cols is None:
-        cols = np.arange(a.shape[-1])
-    idx = rows.reshape(-1,1)*a.shape[1] + cols
-    return a.take(idx)
 
 def hrf_convolution(input_responses, HRF=None, do_convolution=True, dt=None):
     '''Convolve a series of impulses in a matrix with a given HRF
