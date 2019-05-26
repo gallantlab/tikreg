@@ -28,6 +28,11 @@ def test_fast_indexing():
     a = tikutils.fast_indexing(D.T, cols).T
     b = D[:, cols]
     assert np.allclose(a, b)
+    rows = np.random.randint(0, 1000, (127))
+    cols = np.random.randint(0, 1000, (151))
+    a = tikutils.fast_indexing(D, rows, cols)
+    b = D[rows, :][:, cols]
+    assert np.allclose(a, b)
 
 
 def test_generators(N=100, testpct=0.2, nchunks=5, nfolds=5):
