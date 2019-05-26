@@ -1,0 +1,26 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`tikreg`
+=============
+.. automodule:: tikreg
+
+.. currentmodule:: tikreg
+.. autosummary::
+
+   BasePrior
+
+
+.. currentmodule:: tikreg
+
+
+:class:`BasePrior`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BasePrior
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+

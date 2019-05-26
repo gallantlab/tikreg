@@ -1,0 +1,110 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`temporal_priors`
+======================
+.. automodule:: tikreg.temporal_priors
+
+.. currentmodule:: tikreg.temporal_priors
+.. autosummary::
+
+   CustomPrior
+   GaussianKernelPrior
+   HRFPrior
+   PriorFromPenalty
+   SmoothnessPrior
+   SphericalPrior
+   TemporalPrior
+   get_delays_from_prior
+
+
+.. currentmodule:: tikreg.temporal_priors
+
+
+:class:`CustomPrior`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CustomPrior
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+
+:class:`GaussianKernelPrior`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: GaussianKernelPrior
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+
+:class:`HRFPrior`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: HRFPrior
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+
+:class:`PriorFromPenalty`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: PriorFromPenalty
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+
+:class:`SmoothnessPrior`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SmoothnessPrior
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+
+:class:`SphericalPrior`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SphericalPrior
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+
+:class:`TemporalPrior`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: TemporalPrior
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+get_delays_from_prior
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: get_delays_from_prior
+

@@ -1,0 +1,52 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`spatial_priors`
+=====================
+.. automodule:: tikreg.spatial_priors
+
+.. currentmodule:: tikreg.spatial_priors
+.. autosummary::
+
+   CustomPrior
+   PriorFromPenalty
+   SphericalPrior
+
+
+.. currentmodule:: tikreg.spatial_priors
+
+
+:class:`CustomPrior`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CustomPrior
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+
+:class:`PriorFromPenalty`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: PriorFromPenalty
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+
+:class:`SphericalPrior`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SphericalPrior
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+

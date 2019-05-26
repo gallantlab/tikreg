@@ -1,0 +1,81 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`kernels`
+==============
+.. automodule:: tikreg.kernels
+
+.. currentmodule:: tikreg.kernels
+.. autosummary::
+
+   SwitchError
+   lazy_kernel
+   gaussian_kernel
+   linear_kernel
+   multiquad_kernel
+   polyhomokern
+   polyinhomo
+   vector_norm_sq
+   volterra_temporal
+
+
+.. currentmodule:: tikreg.kernels
+
+
+:class:`SwitchError`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SwitchError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+
+:class:`lazy_kernel`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: lazy_kernel
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+gaussian_kernel
+~~~~~~~~~~~~~~~
+
+.. autofunction:: gaussian_kernel
+
+linear_kernel
+~~~~~~~~~~~~~
+
+.. autofunction:: linear_kernel
+
+multiquad_kernel
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: multiquad_kernel
+
+polyhomokern
+~~~~~~~~~~~~
+
+.. autofunction:: polyhomokern
+
+polyinhomo
+~~~~~~~~~~
+
+.. autofunction:: polyinhomo
+
+vector_norm_sq
+~~~~~~~~~~~~~~
+
+.. autofunction:: vector_norm_sq
+
+volterra_temporal
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: volterra_temporal
+

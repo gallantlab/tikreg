@@ -1,0 +1,15 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+API Reference
+=============
+
+.. toctree::
+
+   tikreg.rst
+   tikreg.kernels.rst
+   tikreg.models.rst
+   tikreg.priors.rst
+   tikreg.spatial_priors.rst
+   tikreg.svd_dgesvd.rst
+   tikreg.temporal_priors.rst
+   tikreg.utils.rst

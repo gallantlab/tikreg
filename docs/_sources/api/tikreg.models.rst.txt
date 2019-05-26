@@ -1,0 +1,212 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`models`
+=============
+.. automodule:: tikreg.models
+
+.. currentmodule:: tikreg.models
+.. autosummary::
+
+   counter
+   atleast_2d
+   check_response_dimensionality
+   clean_results_dict
+   crossval_stem_wmvnp
+   cvridge
+   dual2primal_weights
+   dual2primal_weights_banded
+   estimate_simple_stem_wmvnp
+   estimate_stem_wmvnp
+   featurespace_dual2primal
+   find_optimum_mvn
+   generalized_tikhonov
+   hyperopt_crossval_stem_wmvnp
+   hyperopt_estimate_stem_wmvnp
+   hyperopt_trials2cvperf
+   kernel_banded_temporal_prior
+   kernel_cvridge
+   kernel_spatiotemporal_prior
+   loo_ols
+   nan_to_num
+   ols
+   olspred
+   should_solve_dual
+   simple_generalized_tikhonov
+   simple_ridge_dual
+   simple_ridge_primal
+   solve_l2
+   solve_l2_dual
+   solve_l2_primal
+   voxelwise_weights2preds
+   zscore
+
+
+.. currentmodule:: tikreg.models
+
+
+:class:`counter`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: counter
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+atleast_2d
+~~~~~~~~~~
+
+.. autofunction:: atleast_2d
+
+check_response_dimensionality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: check_response_dimensionality
+
+clean_results_dict
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: clean_results_dict
+
+crossval_stem_wmvnp
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: crossval_stem_wmvnp
+
+cvridge
+~~~~~~~
+
+.. autofunction:: cvridge
+
+dual2primal_weights
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: dual2primal_weights
+
+dual2primal_weights_banded
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: dual2primal_weights_banded
+
+estimate_simple_stem_wmvnp
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: estimate_simple_stem_wmvnp
+
+estimate_stem_wmvnp
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: estimate_stem_wmvnp
+
+featurespace_dual2primal
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: featurespace_dual2primal
+
+find_optimum_mvn
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: find_optimum_mvn
+
+generalized_tikhonov
+~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: generalized_tikhonov
+
+hyperopt_crossval_stem_wmvnp
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: hyperopt_crossval_stem_wmvnp
+
+hyperopt_estimate_stem_wmvnp
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: hyperopt_estimate_stem_wmvnp
+
+hyperopt_trials2cvperf
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: hyperopt_trials2cvperf
+
+kernel_banded_temporal_prior
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: kernel_banded_temporal_prior
+
+kernel_cvridge
+~~~~~~~~~~~~~~
+
+.. autofunction:: kernel_cvridge
+
+kernel_spatiotemporal_prior
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: kernel_spatiotemporal_prior
+
+loo_ols
+~~~~~~~
+
+.. autofunction:: loo_ols
+
+nan_to_num
+~~~~~~~~~~
+
+.. autofunction:: nan_to_num
+
+ols
+~~~
+
+.. autofunction:: ols
+
+olspred
+~~~~~~~
+
+.. autofunction:: olspred
+
+should_solve_dual
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: should_solve_dual
+
+simple_generalized_tikhonov
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: simple_generalized_tikhonov
+
+simple_ridge_dual
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: simple_ridge_dual
+
+simple_ridge_primal
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: simple_ridge_primal
+
+solve_l2
+~~~~~~~~
+
+.. autofunction:: solve_l2
+
+solve_l2_dual
+~~~~~~~~~~~~~
+
+.. autofunction:: solve_l2_dual
+
+solve_l2_primal
+~~~~~~~~~~~~~~~
+
+.. autofunction:: solve_l2_primal
+
+voxelwise_weights2preds
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: voxelwise_weights2preds
+
+zscore
+~~~~~~
+
+.. autofunction:: zscore
+
