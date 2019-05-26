@@ -1116,7 +1116,7 @@ def estimate_stem_wmvnp(features_train,
     '''
     '''
     start_time = time.time()
-    population_mean = not keep_cvfolds
+    # population_mean = not keep_cvfolds
 
     delays = temporal_prior.delays
     ndelays = len(delays)
@@ -1133,7 +1133,7 @@ def estimate_stem_wmvnp(features_train,
                                         normalize_kernel=normalize_kernel,
                                         temporal_prior=temporal_prior,
                                         feature_priors=feature_priors,
-                                        population_mean=population_mean,
+                                        population_mean=population_optimal,
                                         folds=folds,
                                         method=method,
                                         verbosity=verbosity,
@@ -1147,6 +1147,9 @@ def estimate_stem_wmvnp(features_train,
 
     # find optima across cross-validation folds
     cvmean = cvresults['cvresults'].mean(0)
+    if keep_cvfolds is False:
+        # clear memory
+        cvresults['cvresults'] = cvmean
 
     if 'dims' in cvresults:
         dims = cvresults['dims']
