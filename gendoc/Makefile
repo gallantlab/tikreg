@@ -3,7 +3,7 @@
 
 
 ## Copied from nibabel
-PYTHON ?= python
+PYTHON ?= python3
 API_DIR = source/api
 BUILDROOT = build
 HTMLOUTPATH = ../docs
@@ -35,6 +35,7 @@ api:
 
 
 html-only:
+	@mkdir -p $(SOURCEDIR)/_static
 	mkdir -p $(BUILDROOT)/html $(BUILDROOT)/doctrees
 	$(SPHINXBUILD) -b html $(SOURCEDIR) $(BUILDROOT)/html -d $(BUILDROOT)/doctrees
 	@echo

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Script to auto-generate our API docs.
 """
 from __future__ import print_function, division
