@@ -16,11 +16,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
+import os
+import sys
 # sys.path.insert(0, os.path.abspath('.'))
 import sphinx_bootstrap_theme
-
+import numpydoc
 
 # -- General configuration ------------------------------------------------
 
@@ -39,9 +39,13 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.githubpages',
               # 'sphinx_gallery.gen_gallery',
               # 'nbsphinx'
+              'numpydoc',
               ]
 
 autosummary_generate = True
+numpydoc_class_members_toctree = False
+numpydoc_show_class_members = False
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -107,6 +111,9 @@ todo_include_todos = True
 #
 html_theme = 'bootstrap'
 html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+
+html_theme_options = {'bootswatch_theme' : 'lumen',
+                      'bootstrap_version' : '3'}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
