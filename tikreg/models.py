@@ -1116,7 +1116,6 @@ def estimate_stem_wmvnp(features_train,
     '''
     '''
     start_time = time.time()
-    # population_mean = not keep_cvfolds
 
     delays = temporal_prior.delays
     ndelays = len(delays)
