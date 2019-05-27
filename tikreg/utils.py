@@ -310,7 +310,7 @@ def generate_data(n=100, p=10, v=2,
     noise : float
         Noise level
     testsize : int, optional
-        Samples in the test set. Defaults to same as `n`.
+        Samples in the test set. Defaults None (i.e. no test set).
     dozscore : bool
         Standardize the features are responses to zero-mean and unit-norm.
     feature_sparsity : float between 0-1
@@ -336,7 +336,7 @@ def generate_data(n=100, p=10, v=2,
     ((10, 2), (100, 10), (100, 2))
     '''
     if testsize is None:
-        testsize = n
+        testsize = 0
 
     X = np.random.randn(n, p)
     B = np.random.randn(p, v)
@@ -345,9 +345,14 @@ def generate_data(n=100, p=10, v=2,
     if nzeros > 0:
         B[-nzeros:,:] = 0
 
-    Y = zscore(np.dot(X, B))
-    Y += np.random.randn(*Y.shape)*noise
-    if dozscore: Y = zscore(Y)
+    Y = np.dot(X, B)
+    if dozscore:
+        Y = zscore(Y)
+
+    E = np.random.randn(*Y.shape)*noise
+    Y += E
+    if dozscore:
+        Y = zscore(Y)
 
     if testsize:
         Xval = np.random.randn(testsize, p)
@@ -357,7 +362,7 @@ def generate_data(n=100, p=10, v=2,
         if dozscore: Yval = zscore(Yval)
         return B, (X,Xval), (Y, Yval)
 
-    return B, X,Y
+    return B, X, Y
 
 
 def mult_diag(d, mat, left=True):
@@ -452,7 +457,7 @@ def noise_ceiling_correction(repeats, yhat, dozscore=True):
     First, simulate some repeated data for 50 units (e.g. voxels, neurons).
 
     >>> nreps, ntpts, nunits, noise = 10, 100, 50, 2.0
-    >>> _, _, Y = generate_data(n=ntpts, testsize=0, v=nunits, noise=0.0)
+    >>> _, _, Y = generate_data(n=ntpts, testsize=0, v=nunits, noise=0.0, dozscore=True)
     >>> repeats = np.asarray([Y for i in range(nreps)])
     >>> # Add i.i.d. gaussian noise to each copy of the data
     >>> repeats += np.random.randn(nreps, ntpts, nunits)*noise
