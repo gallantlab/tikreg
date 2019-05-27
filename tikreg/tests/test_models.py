@@ -144,7 +144,7 @@ def test_solve_l2_dual():
     assert np.allclose(Bhat_primal, Bhat_indirect)
 
     # test non-linear kernel
-    kernels_to_test = ['gaussian', 'poly', 'polyhomo', 'multiquad']
+    kernels_to_test = ['gaussian', 'ihpolykern', 'hpolykern', 'multiquad']
     kernel_params_to_test = [10., 3., 2., 20.]
     ridges = [0] # No regularization
     for kernel_name, kernel_param in zip(kernels_to_test, kernel_params_to_test):
@@ -254,7 +254,7 @@ def test_cvridge():
                                                             dozscore=False)
 
         # test non-linear kernel
-        kernels_to_test = ['gaussian', 'poly', 'polyhomo', 'multiquad']
+        kernels_to_test = ['gaussian', 'ihpolykern', 'hpolykern', 'multiquad']
         kernel_params = [10., 3., 2., 100.]
         ridges = [0.0]
         for kernel_name, kernel_param in zip(kernels_to_test, kernel_params):
