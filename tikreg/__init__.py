@@ -45,6 +45,18 @@ class BasePrior(object):
         self.penalty /= self.penalty_detnorm
 
     def get_prior(self, alpha=1.0, dodetnorm=False, **kwargs):
+        r'''
+        Parameters
+        ----------
+        alpha : scalar
+            Regularization parameter (lambda).
+
+        Returns
+        -------
+        regularized_covar : 2D np.ndarray (p, p)
+            Scaled ridge matrix (i.e. :math:`\lambda^{-2} \Sigma_p`)
+        '''
+
         if dodetnorm:
             prior = self.asarray / tikutils.determinant_normalizer(self.asarray)
         else:
