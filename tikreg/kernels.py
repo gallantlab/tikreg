@@ -17,30 +17,30 @@ class lazy_kernel(object):
     time a new parameter is passed. This is useful when cross-validating kernel
     parameters (e.g. for a gaussian kernel) or when switching between different
     kernels types (e.g. from gaussian to multi-quadratic).
-
-    Parameters
-    ----------
-    xdata (nx-by-p)
-        The feature matrix X
-    ydata (ny-by-p)
-        The feature matrix Y. If none is given,
-        the kernel space in ``xdata`` is constructed.
-    kernel_type (str)
-        * 'linear': Linear kernel (default)
-        * 'poly' : Inhomogeneous polynomial kernel
-        * 'polyhomo': Homogeneous polynomial kernel
-        * 'gaussian': Gaussian kernel
-        * 'multiquad': Multiquadratic kernel
     """
     def __init__(self, xdata, ydata=None,
                  kernel_type=None, dtype=np.float64):
+        '''
+        Parameters
+        ----------
+        xdata : 2D np.ndarray (nx, p)
+            The feature matrix X
+        ydata : 2D np.ndarray (ny, p)
+            If None, ``ydata = xdata``.
+        kernel_type (str)
+            * 'linear': Linear kernel (default)
+            * 'ihpolykern' : Inhomogeneous polynomial kernel
+            * 'hpolykern': Homogeneous polynomial kernel
+            * 'gaussian': Gaussian kernel
+            * 'multiquad': Multiquadratic kernel
+        '''
         if kernel_type is None:
             kernel_type = 'linear'
-        self.kernel_types = ['gaussian', 'multiquad', 'linear', 'poly', 'polyhomo']
+        self.kernel_types = ['gaussian', 'multiquad', 'linear', 'ihpolykern', 'hpolykern']
         assert kernel_type in self.kernel_types
         self.kernel_type = kernel_type
         self.kernel_parameter = None
-        if kernel_type in ['linear', 'poly', 'polyhomo']:
+        if kernel_type in ['linear', 'ihpolykern', 'hpolykern']:
             # This simply gets the linear kernel
             self.cache = linear_kernel(xdata, ydata).astype(dtype)
             if kernel_type == 'linear':
@@ -63,19 +63,21 @@ class lazy_kernel(object):
             The kernel to use. If none is given, assume
             we are using the kernel with which the class was instantiated.
             One can switch kernels in these directions:
+
             * multiquad <-> gaussian
-            * linear <-> poly <-> polyhomo
+
+            * linear <-> ihpolykern <-> hpolykern
 
         Returns
         -------
-        lazy_kernel.kernel (nx by ny)
+        lazy_kernel.kernel : np.ndarray (nx, ny)
             Sets the ``kernel`` property with the computed kernel.
         '''
         if kernel_type is None:
             kernel_type = self.kernel_type
 
         # Linear and polynomial kernels are a special case
-        innerprod_kernels = ['linear', 'poly', 'polyhomo']
+        innerprod_kernels = ['linear', 'ihpolykern', 'hpolykern']
         if self.kernel_type in innerprod_kernels:
             if not (kernel_type in innerprod_kernels):
                 msg = 'Cannot update "%s" to "%s". '%(self.kernel_type, kernel_type)
@@ -91,7 +93,7 @@ class lazy_kernel(object):
 
         # Check if we already have this update, in which case just return verbosely
         if (kernel_type == self.kernel_type) and (self.kernel_parameter == kernel_parameter):
-            print('kernel is already set: %s'%self)
+            if verbose: print('kernel is already set: %s'%self)
             return
 
         self.kernel_parameter = kernel_parameter
@@ -100,9 +102,9 @@ class lazy_kernel(object):
             self.kernel = np.exp(-1*self.cache/(2*self.kernel_parameter**2))
         elif kernel_type == 'multiquad':
             self.kernel = np.sqrt(self.cache + self.kernel_parameter**2)
-        elif kernel_type == 'poly':
+        elif kernel_type == 'ihpolykern':
             self.kernel = (self.cache + 1.0)**self.kernel_parameter
-        elif kernel_type == 'polyhomo':
+        elif kernel_type == 'hpolykern':
             self.kernel = (self.cache)**self.kernel_parameter
         elif kernel_type == 'linear':
             self.kernel = self.cache
@@ -118,33 +120,79 @@ class lazy_kernel(object):
 
 
 def linear_kernel(xdata, ydata=None):
-    '''
-    xdata is n-by-p
-    ydata is m-by-p or none
+    '''Compute a linear kernel
+
+    Parameters
+    ----------
+    xdata : 2D np.ndarray (nx, p)
+    ydata : 2D np.ndarray (ny, p), or None
+        If None, ``ydata = xdata``.
+
+    Returns
+    -------
+    linear_kernel : 2D np.ndarray (nx, ny)
     '''
     if ydata is None:
         ydata = xdata
     return np.dot(xdata, ydata.T)
 
 
-def polyhomokern(data,ydata=None,powa=2):
-    '''
-    Compute the polynomial kernel to the
-    `powa` degree
+def homogeneous_polykern(data,ydata=None,powa=2):
+    '''Compute the homogeneous polynomial kernel.
+
+    The polynomial expansion does not include interactions.
+
+    Parameters
+    ----------
+    xdata : 2D np.ndarray (nx, p)
+    ydata : 2D np.ndarray (ny, p), or None
+        If None, ``ydata = xdata``.
+    powa : scalar
+        Degree of polynomial expansion.
+        Defaults to 2.
+
+    Returns
+    -------
+    hpoly_kernel : 2D np.ndarray (nx, ny)
     '''
     return linear_kernel(data,ydata)**powa
 
 
-def polyinhomo(data,ydata=None,powa=2):
-    '''
-    Compute the inhomogeneous polynomial kernel to the
-    `powa` degree
+def inhomogeneous_polykern(data,ydata=None,powa=2):
+    '''Compute the homogeneous polynomial kernel.
+
+    The polynomial expansion includes interaction terms.
+
+    Parameters
+    ----------
+    xdata : 2D np.ndarray (nx, p)
+    ydata : 2D np.ndarray (ny, p), or None
+        If None, ``ydata = xdata``.
+    powa : scalar
+        Degree of polynomial expansion.
+        Defaults to 2.
+
+    Returns
+    -------
+    ihpoly_kernel : 2D np.ndarray (nx, ny)
     '''
     return (linear_kernel(data,ydata) + 1)**powa
 
 
 def multiquad_kernel(xdata, ydata=None, c=1.0):
-    '''Multiquadratic kernel.
+    '''Compute the multi-quadratic kernel.
+
+    Parameters
+    ----------
+    xdata : 2D np.ndarray (nx, p)
+    ydata : 2D np.ndarray (ny, p), or None
+        If None, ``ydata = xdata``.
+    c : scalar
+        Defaults to 1.
+
+    Returns
+    -------
+    multiquad_kernel : 2D np.ndarray (nx, ny)
     '''
     norm = vector_norm_sq(xdata, ydata)
     # Based on M. Oliver's MATLAB implementation.
@@ -160,16 +208,15 @@ def gaussian_kernel(xdata, ydata=None, sigma=1.0):
 
     Parameters
     ----------
-    xdata (nx by p)
-    ydata (ny by p)
-         If None, ydata = xdata, so we compute the
-         gaussian kernel for the dataset ``xdata`` along the first dimension
+    xdata : 2D np.ndarray (nx, p)
+    ydata : 2D np.ndarray (ny by p) or None
+         If None, ``ydata = xdata``.
     sigma (float):
-         The width of the gaussian
+         The width of the gaussian.
 
     Returns
     -------
-    gaukern (nx by ny) np.ndarray
+    gaussian_kern : 2D np.ndarray (nx, ny)
          The gaussian kernel
     '''
     sigma = float(sigma)
@@ -178,21 +225,19 @@ def gaussian_kernel(xdata, ydata=None, sigma=1.0):
 
 
 def vector_norm_sq(xdata, ydata=None):
-    '''
-    Compute the element-wise vector norm
-    across two matrices. This assumes the
-    vectors are contained in the first dimension.
+    '''Compute the squared vector norm.
+
+    This assumes the vectors are in the first dimension.
 
     Parameters
     ----------
-    xdata  (nx by p)
-    ydata  (ny by p)
-         If None, ydata = xdata, so we compute the,
-         norm of each vector in the dataset ``xdata``
+    xdata : 2D np.ndarray (nx by p)
+    ydata : 2D np.ndarray (ny by p) or None
+         If None, ydata = xdata
 
     Returns
     -------
-    Q (nx by ny)
+    Q : 2D np.ndarray (nx, ny)
          The vectorm norms
 
     Examples
@@ -216,9 +261,9 @@ def vector_norm_sq(xdata, ydata=None):
 
 
 def volterra_temporal(X, delays=[0,1,2], degree=2.0):
-    '''Basically a wrapper around poly
+    '''Volterra series.
 
-    Each column of X is used to
+    Implemented as a wrapper around inhomogenous poly
     '''
     n, p = X.shape
     K = 0.0

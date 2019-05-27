@@ -27,13 +27,13 @@ def test_kernel_switching():
         pass
 
     try:    # cannot switch to inhomo poly
-        lz.update(10.0, kernel_type='poly')
+        lz.update(10.0, kernel_type='ihpolykern')
         raise ValueError('Wrong update to poly')
     except SwitchError:
         pass
 
     try:    # cannot switch to homo poly
-        lz.update(10.0, kernel_type='polyhomo')
+        lz.update(10.0, kernel_type='hpolykern')
         raise ValueError('Wrong update to poly homo')
     except SwitchError:
         pass
@@ -46,12 +46,12 @@ def test_kernel_switching_innerprod():
     lz = lazy_kernel(xdata, ydata)
     lz.update(param)
     # Update to homogeneous poly
-    K = polyhomokern(xdata, ydata=ydata, powa=2.0)
-    lz.update(2.0, kernel_type='polyhomo')
+    K = homogeneous_polykern(xdata, ydata=ydata, powa=2.0)
+    lz.update(2.0, kernel_type='hpolykern')
     assert np.allclose(K, lz.kernel)
     # update to inhomogenous poly
-    K = polyinhomo(xdata, ydata=ydata, powa=3.0)
-    lz.update(3.0, kernel_type='poly')
+    K = inhomogeneous_polykern(xdata, ydata=ydata, powa=3.0)
+    lz.update(3.0, kernel_type='ihpolykern')
     assert np.allclose(K, lz.kernel)
     # update back to linear
     K = linear_kernel(xdata, ydata)
@@ -102,16 +102,16 @@ def test_linear_kernel():
     assert np.allclose(K, lz.kernel)
 
 
-def test_polyhomo():
+def test_hpolykern():
     xdata = np.random.rand(10,5)
     ydata = np.random.rand(6,5)
     param = np.random.randint(2,10)
-    K = polyhomokern(xdata, ydata=ydata, powa=param)
-    lz = lazy_kernel(xdata, ydata, kernel_type='polyhomo')
+    K = homogeneous_polykern(xdata, ydata=ydata, powa=param)
+    lz = lazy_kernel(xdata, ydata, kernel_type='hpolykern')
     lz.update(param)
     assert np.allclose(K, lz.kernel)
     # update
-    K = polyhomokern(xdata, ydata=ydata, powa=param*2)
+    K = homogeneous_polykern(xdata, ydata=ydata, powa=param*2)
     lz.update(param*2)
     assert np.allclose(K, lz.kernel)
     # param = 1 is same as linear
@@ -119,16 +119,16 @@ def test_polyhomo():
     assert np.allclose(linear_kernel(xdata, ydata), lz.kernel)
 
 
-def test_polyinhomo():
+def test_ihpolykern():
     xdata = np.random.rand(10,5)
     ydata = np.random.rand(6,5)
     param = np.random.randint(2,10)
-    K = polyinhomo(xdata, ydata=ydata, powa=param)
-    lz = lazy_kernel(xdata, ydata, kernel_type='poly')
+    K = inhomogeneous_polykern(xdata, ydata=ydata, powa=param)
+    lz = lazy_kernel(xdata, ydata, kernel_type='ihpolykern')
     lz.update(param)
     assert np.allclose(K, lz.kernel)
     # update
-    K = polyinhomo(xdata, ydata=ydata, powa=param*2)
+    K = inhomogeneous_polykern(xdata, ydata=ydata, powa=param*2)
     lz.update(param*2)
     assert np.allclose(K, lz.kernel)
     # linear is approximately the same
