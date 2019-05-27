@@ -59,6 +59,8 @@ def SVD(X, **kwargs):
     If the SVD does not converge, it will
     use a slower more robust SVD algorithm (DGESVD).
 
+    See `scipy.linalg.svd` for full documentation.
+
     Parameters
     ----------
     X : 2D np.ndarray (n, m)
@@ -72,10 +74,6 @@ def SVD(X, **kwargs):
     -------
     U, S, VT : tuple of np.ndarrays
         SVD decomposition of the matrix
-
-    See
-    ---
-    `scipy.linalg.svd` for full documentation
     '''
     import scipy.linalg as LA
 
@@ -139,7 +137,6 @@ def hrf_default_basis(dt=2.0, duration=32):
     dt : float, optional
         Temporal sampling rate in seconds
         Defaults to 2.0 (i.e TR=2.0[secs])
-
     duration : int, optional
         Period over which to sample the HRF.
         Defaults to 32 [seconds].
@@ -175,10 +172,8 @@ def fast_indexing(a, rows, cols=None):
     ----------
     a : 2D np.ndarray (n, m)
         A matrix
-
     rows : 1D np.ndarray (k)
         Row indices
-
     cols : 1D np.ndarray (l)
         Column indices
 
@@ -195,7 +190,7 @@ def fast_indexing(a, rows, cols=None):
 
 
 def determinant_normalizer(mat, thresh=1e-08):
-    '''Compute scalar to normalize matrix determinant to 1.
+    '''Compute scalar to normalize covariance matrix determinant to 1.
 
     Uses the pseudo-determinant for numerical robustness.
     This is implemented by ignoring the smallest eigenvalues.
@@ -203,7 +198,7 @@ def determinant_normalizer(mat, thresh=1e-08):
     Parameters
     ----------
     mat : 2D np.ndarray (n, n)
-        Matrix
+        Covariance matrix
     thresh : float_like, optional
         Threshold for the smallest eigenvalues to use.
         Only eigenvalues larger than this are used to
@@ -453,7 +448,6 @@ def noise_ceiling_correction(repeats, yhat, dozscore=True):
 
     Examples
     --------
-
     First, simulate some repeated data for 50 units (e.g. voxels, neurons).
 
     >>> nreps, ntpts, nunits, noise = 10, 100, 50, 2.0
@@ -623,9 +617,7 @@ def delay_signal(mat, delays=[0, 1, 2, 3], fill=0):
     where :math:`X_{\delta \left(j \right)}` corresponds to the original data delayed by `j` samples.
 
     Examples
-
     --------
-
     >>> mat = np.arange(5*3).reshape(5,3)
     >>> print(mat)
     [[ 0  1  2]
@@ -666,39 +658,19 @@ def delay_signal(mat, delays=[0, 1, 2, 3], fill=0):
     return out
 
 
-def whiten_penalty(X, penalty=0.0):
-    '''Whiten a matrix
-
-    Whitening along second dimension.
-    After whitening: np.dot(X.T, X) = I
-
-    Parameters
-    ----------
-    X : 2D np.ndarray (n, p)
-        Matrix
-
-    Returns
-    -------
-    WX : 2D np.ndarray(n,p)
-        Whitened matrix
-    '''
-    cov = np.cov(X.T)
-    u, s, ut = scipy.linalg.svd(cov, full_matrices=False)
-    covnegsqrt = np.dot(mult_diag((s+penalty)**(-1/2.0), u, left=False), ut)
-    return np.dot(covnegsqrt, X.T).T
-
-
 def columnwise_rsquared(ypred, y, **kwargs):
     '''Compute the R2
+
+    Predictions and actual responses are matrices whose columns
+    correspond to the units sampled (e.g. voxels, neurons, etc).
 
     Parameters
     ----------
     ypred : 2D np.ndarray (n, v)
-        Matrix of predicted responses. The first dimension is time.
-
+        Matrix of predicted responses. The first dimension is samples.
+        The second dimension is corresponds to the measured signals.
     y : 2D np.ndarray (n, v)
-        Matrix of actual responses. The first dimension is time.
-
+        Matrix of actual responses.
     kwargs : optional
         These are ignored.
 
@@ -707,7 +679,6 @@ def columnwise_rsquared(ypred, y, **kwargs):
     R2 : 1D np.ndarray (v,)
         The coefficient of determination (R2) for each
         of the `v` responses measured
-
 
     References
     ----------
@@ -718,7 +689,33 @@ def columnwise_rsquared(ypred, y, **kwargs):
 
 
 def columnwise_correlation(ypred, y, zscorea=True, zscoreb=True, axis=0):
-    r'''Compute correlations efficiently
+    r'''Compute the correlation coefficients
+
+    Predictions and actual responses are matrices whose columns
+    correspond to the units sampled (e.g. voxels, neurons, etc).
+
+    Parameters
+    ----------
+    ypred : 2D np.ndarray (n, v)
+        Matrix of predicted responses. The first dimension is samples.
+        The second dimension is corresponds to the measured signals.
+    y : 2D np.ndarray (n, v)
+        Matrix of actual responses.
+    zscorea, zscoreb : bool, optional
+        Defaults to True.
+        This implementation works by first z-scoring
+        the actual and predicted responses. If they are
+        already z-scored, then the computation is made
+        faster by setting these values to False.
+    axis : int, optional
+        Dimension corresponding to samples over which to correlate.
+        Defaults to 0.
+
+    Returns
+    -------
+    corr : 1D np.ndarray (v,)
+        The correlation coefficient (R2) for each
+        of the `v` responses.
 
     Examples
     --------
@@ -755,17 +752,80 @@ def columnwise_correlation(ypred, y, zscorea=True, zscoreb=True, axis=0):
 
 
 
-def generate_trnval_folds(N, sampler='cv', testpct=0.2, nchunks=5, nfolds=5):
-    '''
+def generate_trnval_folds(N, sampler='cv', nchunks=5, nfolds=5, testpct=0.2):
+    '''Split dataset into training and validation folds
+
+    Parameters
+    ----------
     N : int
-        The number of samples in the training set
-    samplers : str
-        * cv: `nfolds` for cross-validation
-        * bcv: `nfolds` is a tuple of (nrepeats, nfolds)
-               for repeated cross-validation.
+        The number of samples in the full training set
+    nchunks : int
+        Divide the dataset into chunks of size `nchunks` before sampling.
+    nfolds : int, tuple
+        Number of folds to return
+    sampler : {'cv', 'bcv', 'mbb', nbb'}
+        * cv:  standard k-fold cross-validation
+                Samples are first split into chunks of size `nchunks`.
+                The folds are then constructed by splitting these chunks
+                into training sets of approximately (1 - 1/`nfolds`)% in size.
+                For nfolds=5, the training set is ~80% in size.
+        * bcv : repeated k-fold cross-validation.
+                K-fold cross-validation repeated Q times.
+                `nfolds` is given as a tuple of (nreps, nfolds).
+                E.g., for twice repeated 5-fold cross-validation: `nfolds=(1, 5)`.
+                This sampler first splits the dataset into chunks of size `nchunks`.
+        * nbb : bootstrap
+                Classic naive bootstrap sampler that respects `nchunks`.
+                For each `fold`, a total of N*(1.0 - testpct)
+                observations are sampled with replacement for the training set.
+                The rest of the unsampled observations is used for the validation set.
+        * mbb : moving block bootstrap
+                Blocked bootstrap sampler that respects `nchunks`.
+                For each `fold`, a total of approximately N*(1.0 - testpct)
+                observations are sampled with replacement for the training set.
+                The rest of the unsampled observations is used for the validation set.
+                Bootstrap samples are generated in blocks of size `nchunks` and .
+                the start of the blocks is random. The same training fold may
+                contain the blocks: [[0,1,2,3,4], [2,3,4,5,6], ...].
+    testpct : float (in 0-1 range), optional
+        Only used when using bootstrap samplers (i.e. `mbb` and `nbb`)
+
+    Yields
+    ------
+    ifold : tuple of 1D arrays  (trainidx, validx)
+        Training indices for each fold are the first element of the tuple.
+        Validation indices for each fold are the second element of the tuple.
+
+    Notes
+    -----
+    By default, this function is optimized for autocorrelated signals.
+    If sampled signals are not autocorrelated, set `nchunks=1`
+
+    Examples
+    --------
+    >>> folds = generate_trnval_folds(100, sampler='cv')
+    >>> fold_sizes = [(len(trnidx),len(validx)) for trnidx, validx in folds]
+    >>> print(fold_sizes)
+    [(80, 20), (80, 20), (80, 20), (80, 20), (80, 20)]
+    >>> folds = generate_trnval_folds(100, sampler='bcv', nfolds=(2,5))
+    >>> print(len(list(folds)))
+    10
+    >>> folds = generate_trnval_folds(127, sampler='cv', nchunks=10, nfolds=5)
+    >>> fold_sizes = [(len(trnidx),len(validx)) for trnidx, validx in folds]
+    >>> print(fold_sizes)       # doctest: +SKIP
+    [(97, 30), (97, 30), (107, 20), (107, 20), (107, 20)]
+    >>> folds = generate_trnval_folds(100, sampler='nbb')
+    >>> fold_sizes = [(len(np.unique(trnidx)),len(validx)) for trnidx, validx in folds]
+    >>> print(fold_sizes)       # doctest: +SKIP
+    [(50, 50), (60, 40), (55, 45), (60, 40), (55, 45)]
+    >>> folds = generate_trnval_folds(100, sampler='mbb')
+    >>> fold_sizes = [(len(np.unique(trnidx)),len(validx)) for trnidx, validx in folds]
+    >>> print(fold_sizes)       # doctest: +SKIP
+    [(57, 43), (60, 40), (60, 40), (65, 35), (51, 49)]
     '''
+    # TODO This function is a POS. Needs rewrite.
     oN = N
-    ntrain = int(N - N*(testpct))
+    ntrain = int(N - N*(testpct)) # for bootstrap only
     samples = np.arange(N)
     step = 1 if sampler == 'mbb' else nchunks
     samples = [samples[idx:idx+nchunks] for idx in range(0,N-nchunks+1, step)]
@@ -811,7 +871,7 @@ def hrf_convolution(input_responses, HRF=None, do_convolution=True, dt=None):
          A matrix containing ``p`` impulse time courses of length ``n``.
     HRF (m, or None)
          The HRF to convolve the impulses with. If ``None`` we will
-         use the canonical given by :func:`hrf`
+         use the canonical HRF.
     dt (scalar)
          The sampling rate. This is only used to get the hemodynamic response
          function to convolve with if ``HRF`` is None.
@@ -863,7 +923,7 @@ def hyperopt_make_trial_data(tid, vals, loss):
         trial id
     vals : dict
         mapping between parameter name and list of values, e.g.
-        `{'speechsem': [1.0], 'visualsem': [100.0]}`
+        `{'feature_space_one': [1.0], 'feature_space_two': [100.0]}`
     loss : float
         loss for the current trial
 
@@ -945,7 +1005,6 @@ def analytic_expected_correlation(noise_level):
         The correlation coefficient that can be expected at the
         limit of infinite data given the amount of noise.
 
-
     Notes
     -----
     Assumes both signal and noise are generated from a MVN distribution
@@ -961,9 +1020,7 @@ def analytic_expected_correlation(noise_level):
 
 
     If our model is perfect (i.e. :math:`\hat{y} = y`), then the maximum correlation coefficient
-    we can achieve is determined by :math:`\sigma`.
-
-    Concretely:
+    we can achieve is determined by :math:`\sigma`. Concretely:
 
     .. math::
 
@@ -971,9 +1028,7 @@ def analytic_expected_correlation(noise_level):
 
         {\text{lim}_{n \to \infty}}: \rho(\hat{y}, y_{sampled}) = \sqrt{\left(\frac{1}{1 + \sigma^2}\right)}
 
-
     where :math:`\rho` is the correlation coefficient.
-
 
     Example
     -------
