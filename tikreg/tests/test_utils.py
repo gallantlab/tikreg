@@ -125,3 +125,20 @@ def test_noise_ceiling_correction():
     assert np.allclose(eqn27, res)
     assert np.allclose(corrected, res)
     assert np.allclose(CCnorm, res)
+
+
+def test_make_trials():
+    """smoke test"""
+    values = [[1.0, 3.0, 4.0],
+              [44.0, 33.0, 2.0]]
+    losses = [0.3, -0.2]
+
+    hpo_trials = tikutils.hyperopt_make_trials(values, losses)
+    parameter_names = ['X{}'.format(i) for i in range(3)]
+    vals = [{pn: [v] for pn, v in zip(parameter_names, val)} for val in values]
+
+    assert len(hpo_trials.trials) == len(values)
+    for trl, val, loss in zip(hpo_trials.trials, vals, losses):
+        assert trl['result']['loss'] == loss
+        assert trl['misc']['vals'] == val
+    return hpo_trials
