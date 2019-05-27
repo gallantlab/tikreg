@@ -16,6 +16,7 @@ try:
 except NameError:
     from functools import reduce
 
+
 def isdiag(mat):
     '''Determine whether matrix is diagonal.
 
@@ -49,7 +50,6 @@ def isdiag(mat):
         return False
 
     return True
-
 
 
 def SVD(X, **kwargs):
@@ -195,9 +195,46 @@ def fast_indexing(a, rows, cols=None):
 
 
 def determinant_normalizer(mat, thresh=1e-08):
-    '''Value to devide a matrix such that its determinant is 1.
+    '''Compute scalar to normalize matrix determinant to 1.
 
-    Compute the pseudo-determinant of the matrix
+    Uses the pseudo-determinant for numerical robustness.
+    This is implemented by ignoring the smallest eigenvalues.
+
+    Parameters
+    ----------
+    mat : 2D np.ndarray (n, n)
+        Matrix
+    thresh : float_like, optional
+        Threshold for the smallest eigenvalues to use.
+        Only eigenvalues larger than this are used to
+        compute the pseudo-determinant.
+
+    Returns
+    -------
+    scale : float_like
+        Scalar such that dividing `mat` by this scalar
+        sets the matrix determinant to 1
+
+    Notes
+    -----
+    The determinant can be thought of as the variance of
+    a covariance matrix in high-dimensions. Analogous to
+    standardizing data to have unit variance (e.g. z-scoring),
+    one can standardize a matrix to have a determinant of 1.
+    Setting the determinant to 1 allows the covariance structure
+    to vary while keeping the 'variance' constant.
+
+    This function is useful when sampling covariance matrices
+    from Wishart distributions or when the generating covariance
+    matrix function has hyper-parameters of its own.
+
+    Examples
+    --------
+    >>> mat = np.random.randn(20,20)
+    >>> cov = np.dot(mat.T, mat)
+    >>> assert np.allclose(np.linalg.det(cov), 1.0) is False
+    >>> scale = determinant_normalizer(cov)
+    >>> assert np.allclose(np.linalg.det(cov/scale), 1.0)
     '''
     evals = np.linalg.eigvalsh(mat)
     gdx = evals > thresh
@@ -208,6 +245,48 @@ def determinant_normalizer(mat, thresh=1e-08):
     return scale
 
 def delay2slice(delay):
+    '''Get a slicer for an array at a desired delay (e.g. a[delay2slice(3)]).
+
+    Parameters
+    ----------
+    delay : int
+        Delay number (in units of samples)
+
+    Returns
+    -------
+    slicer : slice_object
+        Object used to get data from an array
+        at the specified delay.
+
+    See also
+    --------
+    delay_signal : Explicitly delay data by creating a copy.
+
+    Examples
+    --------
+    >>> # e.g. 5 timepoints and 3 features
+    >>> mat = np.arange(5*3).reshape(5,3)
+    >>> print(mat)
+    [[ 0  1  2]
+     [ 3  4  5]
+     [ 6  7  8]
+     [ 9 10 11]
+     [12 13 14]]
+    >>> slicer = delay2slice(2) # delay by 2 samples
+    >>> # starts at `delay` and has (n - delay) samples
+    >>> print(mat[slicer])
+    [[0 1 2]
+     [3 4 5]
+     [6 7 8]]
+    >>> # starts at 0th sample and shifts data explicitly
+    >>> delayed_mat = delay_signal(mat, [2])
+    >>> print(delayed_mat)
+    [[0 0 0]
+     [0 0 0]
+     [0 1 2]
+     [3 4 5]
+     [6 7 8]]
+    '''
     if delay > 0:
         ii = slice(None, -delay)
     elif delay == 0:
@@ -219,43 +298,46 @@ def delay2slice(delay):
 
 def generate_data(n=100, p=10, v=2,
                   noise=1.0,
-                  testsize=0,
+                  testsize=None,
                   dozscore=False,
                   feature_sparsity=0.0):
     '''Get some B,X,Y data generated from gaussian (0,1).
 
     Parameters
     ----------
-    n (int): Number of samples
-    p (int): Number of features
-    v (int): Number of responses
-    noise (float): Noise level
-    testsize (int): samples in validation set
-    dozscore (bool): z-score features and responses?
-    feature_sparsity (float in 0-1):
-        number of irrelevant features as
-        percentage of total
+    n, p, v : int
+        Number of samples (n), features (p) and responses (v).
+    noise : float
+        Noise level
+    testsize : int, optional
+        Samples in the test set. Defaults to same as `n`.
+    dozscore : bool
+        Standardize the features are responses to zero-mean and unit-norm.
+    feature_sparsity : float between 0-1
+        Number of irrelevant features as percentage of total.
 
     Returns
     -------
-    B (p-by-v np.ndarray):
+    B : 2D np.ndarray (p, v)
         True feature weights
-    (Xtrain, Xval):
-        Feature matrix for training and validation
-        Xval is optional and contains no noise
-    (Ytrain, Yval):
-        Response matrix for training and validation
-        Yval is optional and contains no noise
+    (Xtrain, Xtest): two-tuple of 2D np.ndarrays ((n,p), (testsize, p))
+        Feature matrix for training and test set.
+    (Ytrain, Ytest): two-tuple of 2D np.ndarrays ((n,v), (testsize, v))
+        Response matrix for training and test set.
+        Ytest is optional and contains no noise.
 
     Examples
     --------
-    >>> B, X, Y = generate_data(n=100, p=10, v=2,noise=1.0,testsize=0)
+    >>> B, (Xtrain, Xtest), (Ytrain, Ytest) = generate_data(n=100, p=10, v=2,testsize=20)
+    >>> B.shape, (Xtrain.shape, Xtest.shape), (Ytrain.shape, Ytest.shape)
+    ((10, 2), ((100, 10), (20, 10)), ((100, 2), (20, 2)))
+    >>> B, X, Y = generate_data(n=100, p=10, v=2,noise=1.0,testsize=0) # No test data
     >>> B.shape, X.shape, Y.shape
     ((10, 2), (100, 10), (100, 2))
-    >>> B, (Xtrn, Xval), (Ytrn, Yval) = generate_data(n=100, p=10, v=2,testsize=20)
-    >>> B.shape, Xval.shape, Yval.shape
-    ((10, 2), (20, 10), (20, 2))
     '''
+    if testsize is None:
+        testsize = n
+
     X = np.random.randn(n, p)
     B = np.random.randn(p, v)
     if dozscore: X = zscore(X)
@@ -263,7 +345,7 @@ def generate_data(n=100, p=10, v=2,
     if nzeros > 0:
         B[-nzeros:,:] = 0
 
-    Y = np.dot(X, B)
+    Y = zscore(np.dot(X, B))
     Y += np.random.randn(*Y.shape)*noise
     if dozscore: Y = zscore(Y)
 
@@ -278,22 +360,22 @@ def generate_data(n=100, p=10, v=2,
     return B, X,Y
 
 
-def mult_diag(d, mtx, left=True):
-    """
-    Multiply a full matrix by a diagonal matrix.
+def mult_diag(d, mat, left=True):
+    """Efficient multiply a full matrix by a diagonal matrix.
+
     This function should always be faster than dot.
 
     Parameters
     ----------
-    d [1D (N,) array]
-         contains the diagonal elements
-    mtx [2D (N,N) array]
-         contains the matrix
+    d : 1D np.ndarray (n)
+        Contains the diagonal elements.
+    mat : 2D np.ndarray (n,n)
+        Contains the matrix
 
     Returns
     --------
-    res (N, N)
-         Result of multiplying the matrices
+    res (n, n)
+        Result of multiplying the matrices
 
     Notes
     ------
@@ -302,47 +384,109 @@ def mult_diag(d, mtx, left=True):
     Mon Mar 26 11:55:47 CDT 2007
     http://mail.scipy.org/pipermail/numpy-discussion/2007-March/026807.html
 
-    mult_diag(d, mts, left=True) == dot(diag(d), mtx)
-    mult_diag(d, mts, left=False) == dot(mtx, diag(d))
-
-
+    Examples
+    --------
+    >>> mat = np.random.randn(20,20)
+    >>> d = np.random.randn(20)
+    >>> assert np.allclose(mult_diag(d, mat, left=True), np.dot(np.diag(d), mat))
+    >>> assert np.allclose(mult_diag(d, mat, left=False), np.dot(mat, np.diag(d)))
     """
     if left:
-        return (d*mtx.T).T
+        return (d*mat.T).T
     else:
-        return d*mtx
+        return d*mat
 
 
 def noise_ceiling_correction(repeats, yhat, dozscore=True):
     """Noise ceiling corrected correlation coefficient.
 
+    Correlation coefficient estimate that better reflects
+    the error in the predictions that is due to the inaccuracy
+    of the model, rather than the noise intrinsic in the responses.
+    This is achieved by removing the non-stationary part of the
+    noise in the measured signals across multiple repetitions of the
+    same stimulus/task/conditions.
+
     Parameters
     ----------
-    repeats: np.ndarray, (nreps, ntpts, nsignals)
-        The stimulus timecourses for each repeat.
+    repeats : np.ndarray (nreps, ntpts, nunits)
+        Timecourses for each repeat.
         Each repeat is `ntpts` long.
-    yhat: np.ndarray, (ntpts, nsignals)
-        The predicted timecourse for each signal.
-    dozscore: bool
-        This algorithm only works correctly if the
+    yhat : np.ndarray (ntpts, nunits)
+        Predicted timecourse for each unit measured (e.g. voxels, neurons, etc).
+    dozscore : bool
+        This implementation only works correctly if the
         `repeats` and `yhat` timecourses are z-scored.
         If these are already z-scored, set to False.
 
     Returns
     -------
-    r_ns: np.ndarray, (nsignals)
+    r_ncc : np.ndarray (nunits)
         The noise ceiling corrected correlation coefficient
-        for each of the signals. One may square this result
-        (while keeping the sign) to obtain the
-        'explainable variance explained.'
+        for each of the units. One may square this result
+        (while keeping the sign) to obtain the amount of
+        explainable variance explained.
 
     Notes
     -----
-    $r_{ns}$ is misbehaved if $R^2$ is very low.
+    Repeats are used to compute the amount of explainable variance
+    in each one of the units  (e.g. voxels, neurons, etc.). This is
+    equivalent to estimating the adjusted :math:`R^2` of an OLS model
+    that predicts each individual repeat timecourse with
+    the mean timecourse computed across repetitions.
+    This process is performed individually for each unit.
+
+    The mean timecouse of each unit is computed. The product between
+    the predicted responses and the mean timecourse is then computed.
+    This value is then divided by the amount of explainable variance.
+
+    :math:`r_{ncc}` is misbehaved if :math:`R^2` is very low.
 
     References
     ----------
     Schoppe, et al. (2016), Hsu, et al. (2004), David, et al. (2005).
+
+    Examples
+    --------
+
+    First, simulate some repeated data for 50 units (e.g. voxels, neurons).
+
+    >>> nreps, ntpts, nunits, noise = 10, 100, 50, 2.0
+    >>> _, _, Y = generate_data(n=ntpts, testsize=0, v=nunits, noise=0.0)
+    >>> repeats = np.asarray([Y for i in range(nreps)])
+    >>> # Add i.i.d. gaussian noise to each copy of the data
+    >>> repeats += np.random.randn(nreps, ntpts, nunits)*noise
+    >>> print(repeats.shape)
+    (10, 100, 50)
+
+    Compute the noise ceiling corrected correlation coefficient using random predictions.
+    Because the predictions are unrelated to the data, we expected a value of 0.
+
+    >>> mean_nccr = noise_ceiling_correction(repeats, np.random.randn(ntpts, nunits)).mean()
+    >>> mean_nccR2 = (mean_nccr**2)*np.sign(mean_nccr)
+    >>> # As ntpts -> inf, this converges to 0 because predictions are random
+    >>> assert np.allclose(round(mean_nccR2, 2), 0)
+
+    Next, we produce more accurate predictions.
+
+    >>> Yhat = Y + np.random.randn(ntpts, nunits)*0.5 # little noise
+    >>> # raw correlation reflects both noise in signals (2.0) and predictions (0.5)
+    >>> raw_perf = columnwise_correlation(repeats.mean(0), Yhat).mean()
+    >>> print(raw_perf)         # doctest: +SKIP
+    0.7534268012539665
+
+    The raw correlation coefficient computed reflects the amount of noise in the signals (2.0)
+    and the amount of noise in our model (0.5). The noise ceiling corrected correlation coefficient
+    can be used to obtain an estimate that more closely reflects the error due to predictions alone.
+
+    >>> accurate_mean_nccr = noise_ceiling_correction(repeats, Yhat).mean()
+    >>> print(accurate_mean_nccr) # doctest: +SKIP
+    0.8954483753448146
+    >>> # As nreps, ntpts -> inf, the nccr is determined by the prediction error alone (0.5)
+    >>> # Analytically, the error in the predictions is 0.5 so the expected correlation is ~0.89
+    >>> print(round(analytic_expected_correlation(0.5), 6))
+    0.894427
+    >>> assert np.allclose(accurate_mean_nccr, analytic_expected_correlation(0.5), rtol=1e-01) # Small simulation
     """
     ntpts = repeats.shape[1]
     reps = zscore(repeats, 1) if dozscore else repeats
@@ -357,26 +501,57 @@ def noise_ceiling_correction(repeats, yhat, dozscore=True):
 def explainable_variance(repeats, ncorrection=True, dozscore=True):
     '''Compute the explainable variance in the recorded signals.
 
-    This can be interpreted as the R^2 of a model that predicts
-    each repetition with the mean across repetitions.
-
     Parameters
     ----------
-    repeats: np.ndarray, (nreps, ntpts, nsignals)
+    repeats : np.ndarray (nreps, ntpts, nsignals)
         The timecourses for each stimulus repetition.
         Each of repeat is `ntpts` long.
-    ncorrection: bool
+    ncorrection : bool, optional
         Bias correction for number of repeats.
         Equivalent to computing the adjusted R^2.
-    dozscore: bool
-        This algorithm only works with z-scored repeats. If
+    dozscore : bool, optional
+        This implementation only works with z-scored repeats. If
         the each repetition is already z-scored, set to False.
 
     Returns
     -------
-    EV: np.ndarray (nsignals)
+    EV : np.ndarray (nsignals)
         The explainable variance computed across repeats.
-        Equivalently, the (adjusted) R^2 value.
+        Equivalently, the adjusted :math:`R^2` value.
+
+    References
+    ----------
+    Schoppe, et al. (2016), Hsu, et al. (2004), David, et al. (2005).
+
+    Notes
+    -----
+    Explainable variance can be interpreted as the :math:`R^2` of a model
+    that predicts each repetition with the mean across repetitions.
+
+    Examples
+    --------
+
+    First, simulate some repeated data for 50 units (e.g. voxels, neurons).
+
+    >>> nreps, ntpts, nunits, noise = 10, 100, 50, 2.0
+    >>> _, _, Y = generate_data(n=ntpts, testsize=0, v=nunits, noise=0.0)
+    >>> repeats = np.asarray([Y for i in range(nreps)])
+    >>> # Add i.i.d. gaussian noise to each copy of the data
+    >>> repeats += np.random.randn(nreps, ntpts, nunits)*noise
+    >>> print(repeats.shape)
+    (10, 100, 50)
+
+    The repeats can be used to compute the explainable variance
+    for each simulated unit.
+
+    >>> EV = explainable_variance(repeats)
+    >>> EV.shape
+    (50,)
+    >>> print(EV.mean()) # doctest: +SKIP
+    0.20099454817453574
+    >>> analytic_R2 = analytic_expected_correlation(2.0)**2
+    >>> print(round(analytic_R2, 6))
+    0.2
     '''
     repeats = zscore(repeats, 1) if dozscore else repeats
     residual = repeats - repeats.mean(0)
@@ -389,58 +564,151 @@ def explainable_variance(repeats, ncorrection=True, dozscore=True):
 
 
 def absmax(arr):
+    '''Find the absolute maximum of an array.
+
+    This is somewhat more efficient than e.g. np.nanmax(np.abs(arr))
+
+    Parameter
+    ----------
+    arr : np.ndarray
+
+    Returns
+    -------
+    maxval : scalar
+        The absolute maximum value in the array
+
+    Examples
+    --------
+    >>> arr = np.random.randn(20,20)
+    >>> maxval = absmax(arr)
+    >>> direct_maxval = np.nanmax(np.abs(arr))
+    >>> assert np.allclose(maxval, direct_maxval)
+    '''
     return max(abs(np.nanmin(arr)), abs(np.nanmax(arr)))
 
 
-def delay_signal(data, delays=[0, 1, 2, 3], fill=0):
+def delay_signal(mat, delays=[0, 1, 2, 3], fill=0):
+    r'''Create a temporally shifted version of the data
+
+    Parameters
+    ----------
+    mat : 2D np.ndarray (n, p)
+        The first dimension is time.
+    delays : list_like (d,)
+        Amount by which to shift the signals in time.
+    fill : scalar, optional
+        Value to fill the empty values with.
+
+    Returns
+    -------
+    delayed_mat : 2D np.ndarray (n, p*d)
+        The data delayed at the requested lags.
+        The resulting array is larger than the original
+        whenever more than one delay is requested.
+
+    Notes
+    -----
+    The data is delayed such that each `p` columns correspond
+    to one delay. The order of the delays is preserved.
+
+    .. math::
+
+        X = \left[X_{\delta \left(d_1 \right)}, X_{\delta \left(d_2 \right)}, \ldots, X_{\delta \left(d_D \right)}\right]
+
+    where :math:`X_{\delta \left(j \right)}` corresponds to the original data delayed by `j` samples.
+
+    Examples
+
+    --------
+
+    >>> mat = np.arange(5*3).reshape(5,3)
+    >>> print(mat)
+    [[ 0  1  2]
+     [ 3  4  5]
+     [ 6  7  8]
+     [ 9 10 11]
+     [12 13 14]]
+    >>> delayed_mat = delay_signal(mat, [0,1,2])
+    >>> print(delayed_mat.shape)
+    (5, 9)
+    >>> print(delayed_mat) #
+    [[ 0  1  2  0  0  0  0  0  0]
+     [ 3  4  5  0  1  2  0  0  0]
+     [ 6  7  8  3  4  5  0  1  2]
+     [ 9 10 11  6  7  8  3  4  5]
+     [12 13 14  9 10 11  6  7  8]]
+    >>> delayed_mat_neg = delay_signal(mat, [-1,0,1]) # negative delays
+    >>> print(delayed_mat_neg)
+    [[ 3  4  5  0  1  2  0  0  0]
+     [ 6  7  8  3  4  5  0  1  2]
+     [ 9 10 11  6  7  8  3  4  5]
+     [12 13 14  9 10 11  6  7  8]
+     [ 0  0  0 12 13 14  9 10 11]]
     '''
-    >>> x = np.arange(6).reshape(2,3).T + 1
-    >>> x
-    array([[1, 4],
-           [2, 5],
-           [3, 6]])
-    >>> delay_signal(x, [-1,2,1,0], fill=0)
-    array([[2, 5, 0, 0, 0, 0, 1, 4],
-           [3, 6, 0, 0, 1, 4, 2, 5],
-           [0, 0, 1, 4, 2, 5, 3, 6]])
-    >>> delay_signal(x, [-1,2,1,0], fill=np.nan)
-    array([[  2.,   5.,  nan,  nan,  nan,  nan,   1.,   4.],
-           [  3.,   6.,  nan,  nan,   1.,   4.,   2.,   5.],
-           [ nan,  nan,   1.,   4.,   2.,   5.,   3.,   6.]])
-    '''
-    if data.ndim == 1:
-        data = data[...,None]
-    n, p = data.shape
-    out = np.ones((n, p*len(delays)), dtype=data.dtype)*fill
+    if mat.ndim == 1:
+        mat = mat[...,None]
+    n, p = mat.shape
+    out = np.ones((n, p*len(delays)), dtype=mat.dtype)*fill
 
     for ddx, num in enumerate(delays):
         beg, end = ddx*p, (ddx+1)*p
         if num == 0:
-            out[:, beg:end] = data
+            out[:, beg:end] = mat
         elif num > 0:
-            out[num:, beg:end] = data[:-num]
+            out[num:, beg:end] = mat[:-num]
         elif num < 0:
-            out[:num, beg:end] = data[abs(num):]
+            out[:num, beg:end] = mat[abs(num):]
     return out
 
 
 def whiten_penalty(X, penalty=0.0):
-    '''Whiten features (p)
-    X (n, p) (e.g. time by features)
+    '''Whiten a matrix
+
+    Whitening along second dimension.
+    After whitening: np.dot(X.T, X) = I
+
+    Parameters
+    ----------
+    X : 2D np.ndarray (n, p)
+        Matrix
+
+    Returns
+    -------
+    WX : 2D np.ndarray(n,p)
+        Whitened matrix
     '''
     cov = np.cov(X.T)
-    u, s, ut = np.linalg.svd(cov, full_matrices=False)
+    u, s, ut = scipy.linalg.svd(cov, full_matrices=False)
     covnegsqrt = np.dot(mult_diag((s+penalty)**(-1/2.0), u, left=False), ut)
     return np.dot(covnegsqrt, X.T).T
 
 
 def columnwise_rsquared(ypred, y, **kwargs):
-    '''
+    '''Compute the R2
 
-    Notes
-    -----
+    Parameters
+    ----------
+    ypred : 2D np.ndarray (n, v)
+        Matrix of predicted responses. The first dimension is time.
+
+    y : 2D np.ndarray (n, v)
+        Matrix of actual responses. The first dimension is time.
+
+    kwargs : optional
+        These are ignored.
+
+    Returns
+    -------
+    R2 : 1D np.ndarray (v,)
+        The coefficient of determination (R2) for each
+        of the `v` responses measured
+
+
+    References
+    ----------
     https://en.wikipedia.org/wiki/Coefficient_of_determination#Extensions
     '''
+    assert ypred.shape == y.shape # dimensions must match
     return 1 - np.var(y - ypred, axis=0)/np.var(y, axis=0)
 
 
@@ -654,18 +922,67 @@ def hyperopt_make_trials(values, losses, parameter_names=None):
     return hpo_trials
 
 
-def test_make_trials():
-    """smoke test"""
-    values = [[1.0, 3.0, 4.0],
-              [44.0, 33.0, 2.0]]
-    losses = [0.3, -0.2]
+def analytic_expected_correlation(noise_level):
+    r'''Expected correlation coefficient of simulated i.i.d. normal data.
 
-    hpo_trials = hyperopt_make_trials(values, losses)
-    parameter_names = ['X{}'.format(i) for i in range(3)]
-    vals = [{pn: [v] for pn, v in zip(parameter_names, val)} for val in values]
+    Compute the expectation on the correlation coefficient given
+    the amount of noise in the data. Assumes signal and noise are
+    i.i.d. normal with a fixed noise_level.
 
-    assert len(hpo_trials.trials) == len(values)
-    for trl, val, loss in zip(hpo_trials.trials, vals, losses):
-        assert trl['result']['loss'] == loss
-        assert trl['misc']['vals'] == val
-    return hpo_trials
+    Parameters
+    ----------
+    noise_level : float_like
+        This corresponds to the sigma parameter of a MVN distribution.
+
+    Returns
+    -------
+    expected_correlation : float
+        The correlation coefficient that can be expected at the
+        limit of infinite data given the amount of noise.
+
+
+    Notes
+    -----
+    Assumes both signal and noise are generated from a MVN distribution
+    with zero-mean and the noise variance is determined by :math:`\sigma` (`noise_level`).
+
+    .. math::
+
+        y = N(0, I)
+
+        \epsilon = N(0, \sigma^2 I)
+
+        y_{sampled} = y + \epsilon
+
+
+    If our model is perfect (i.e. :math:`\hat{y} = y`), then the maximum correlation coefficient
+    we can achieve is determined by :math:`\sigma`.
+
+    Concretely:
+
+    .. math::
+
+        {\text{lim}_{n \to \infty}}:  R^2(\hat{y}, y_{sampled}) = \left(\frac{1}{1 + \sigma^2}\right)
+
+        {\text{lim}_{n \to \infty}}: \rho(\hat{y}, y_{sampled}) = \sqrt{\left(\frac{1}{1 + \sigma^2}\right)}
+
+
+    where :math:`\rho` is the correlation coefficient.
+
+
+    Example
+    -------
+    >>> nstim, noise_level = 100000, 1.0
+    >>> ydata = np.random.randn(nstim)
+    >>> noise = np.random.randn(nstim)*noise_level
+    >>> ypred = zscore(ydata) + noise
+    >>> empirical_correlation = columnwise_correlation(ydata, ypred)
+    >>> print(empirical_correlation) # doctest: +SKIP
+    0.7073279476259667
+    >>> # As nstim -> inf, this converges to the analytic solution
+    >>> expected_correlation = analytic_expected_correlation(noise_level)
+    >>> print(round(expected_correlation, 6))
+    0.707107
+    >>> assert np.allclose(expected_correlation, empirical_correlation, atol=1e-02)
+    '''
+    return np.sqrt((1.0 + noise_level**2.0)**-1.0)
