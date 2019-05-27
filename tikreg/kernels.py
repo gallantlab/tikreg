@@ -144,12 +144,10 @@ def polyinhomo(data,ydata=None,powa=2):
 
 
 def multiquad_kernel(xdata, ydata=None, c=1.0):
-    '''
-    Multiquadratic kernel.
-    Code taken from M.O.
-    Matlab implementation: /auto/k1/moliver/code/krls.m
+    '''Multiquadratic kernel.
     '''
     norm = vector_norm_sq(xdata, ydata)
+    # Based on M. Oliver's MATLAB implementation.
     return np.sqrt(norm + c**2)
 
 
@@ -199,12 +197,11 @@ def vector_norm_sq(xdata, ydata=None):
 
     Examples
     --------
-    >>> np.random.seed(33)
-    >>> xdata = np.random.randint(1,5, size=(3,10)).astype(np.float)
-    >>> np.round(vector_norm_sq(xdata), 4)
-    array([[  0.,  21.,   9.],
-           [ 21.,   0.,  20.],
-           [  9.,  20.,   0.]])
+    >>> xdata = np.arange(3*10).reshape(3,10)
+    >>> print(vector_norm_sq(xdata))
+    [[   0 1000 4000]
+     [1000    0 1000]
+     [4000 1000    0]]
     '''
     simple = False
     if ydata is None:
