@@ -10,10 +10,14 @@ python:
   - "3.6"
 # command to install dependencies
 install:
+  - pip install codecov pytest-cov
   - pip install -r requirements.txt
   - pip install joblib
   - pip install hrf_estimation
   - python setup.py install
 
 # command to run tests
-script: pytest -v
+script: pytest -v --cov=./
+
+after_success:
+  - codecov
