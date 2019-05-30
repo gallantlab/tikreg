@@ -28,5 +28,5 @@ APPOLOGIES FOR THE LACK OF DOCUMENTATION!
 Working on it! In the mean time, please refer to the unitests.
 
 ## Cite as
-Nunez-Elizalde AO, Huth AG, and Gallant, JL (2018). Voxelwise encoding models with non-spherical multivariate normal priors. BioRxiv. https://doi.org/10.1101/386318.
+Nunez-Elizalde AO, Huth AG, and Gallant, JL (2019). Voxelwise encoding models with non-spherical multivariate normal priors. NeuroImage. https://doi.org/10.1016/j.neuroimage.2019.04.012
 
