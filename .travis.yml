@@ -20,7 +20,8 @@ install:
   - python setup.py install
 
 # command to run tests
-script: pytest -v --cov=tikreg
+script:
+  - coverage run -m pytest
 
 after_success:
   - codecov
