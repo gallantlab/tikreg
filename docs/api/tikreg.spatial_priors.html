@@ -145,6 +145,7 @@
       
   <div class="section" id="module-tikreg.spatial_priors">
 <span id="spatial-priors"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">spatial_priors</span></code><a class="headerlink" href="#module-tikreg.spatial_priors" title="Permalink to this headline">¶</a></h1>
+<p>Handle feature MVN priors.</p>
 <table border="1" class="longtable docutils">
 <colgroup>
 <col width="10%" />
@@ -152,13 +153,13 @@
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#tikreg.spatial_priors.CustomPrior" title="tikreg.spatial_priors.CustomPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomPrior</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Specify a custom prior</td>
+<td>Specify a custom feature prior</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#tikreg.spatial_priors.PriorFromPenalty" title="tikreg.spatial_priors.PriorFromPenalty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PriorFromPenalty</span></code></a>(penalty[,&nbsp;wishart])</td>
-<td></td>
+<td>Build a prior from a Tikhnov feature penalty covariance.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#tikreg.spatial_priors.SphericalPrior" title="tikreg.spatial_priors.SphericalPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SphericalPrior</span></code></a>(feature_space,&nbsp;**kwargs)</td>
-<td>Equivalent to ridge.</td>
+<td>Equivalent to ridge regression.</td>
 </tr>
 </tbody>
 </table>
@@ -168,11 +169,46 @@
 <dt id="tikreg.spatial_priors.CustomPrior">
 <em class="property">class </em><code class="descclassname">tikreg.spatial_priors.</code><code class="descname">CustomPrior</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.CustomPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tikreg.html#tikreg.BasePrior" title="tikreg.BasePrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.BasePrior</span></code></a></p>
-<p>Specify a custom prior</p>
+<p>Specify a custom feature prior</p>
 <dl class="method">
 <dt id="tikreg.spatial_priors.CustomPrior.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.CustomPrior.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>covmat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (p, p)</span></dt>
+<dd><p class="first last">Covariance matrix of MVN.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">mat</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_prior</span> <span class="o">=</span> <span class="n">CustomPrior</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">custom_prior</span><span class="o">.</span><span class="n">asarray</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(5, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prior_lambda_one</span> <span class="o">=</span> <span class="n">custom_prior</span><span class="o">.</span><span class="n">get_prior</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">prior_lambda_one</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
+<span class="go">[[ 3.27 -2.02  2.18  0.05 -5.37]</span>
+<span class="go"> [-2.02  6.59  0.47 -1.2   3.95]</span>
+<span class="go"> [ 2.18  0.47  3.75  0.35 -2.52]</span>
+<span class="go"> [ 0.05 -1.2   0.35  5.9   1.31]</span>
+<span class="go"> [-5.37  3.95 -2.52  1.31 10.86]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prior_lambda_two</span> <span class="o">=</span> <span class="n">custom_prior</span><span class="o">.</span><span class="n">get_prior</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">prior_lambda_two</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
+<span class="go">[[ 0.82 -0.51  0.54  0.01 -1.34]</span>
+<span class="go"> [-0.51  1.65  0.12 -0.3   0.99]</span>
+<span class="go"> [ 0.54  0.12  0.94  0.09 -0.63]</span>
+<span class="go"> [ 0.01 -0.3   0.09  1.48  0.33]</span>
+<span class="go"> [-1.34  0.99 -0.63  0.33  2.72]]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -183,15 +219,75 @@
 <dt id="tikreg.spatial_priors.PriorFromPenalty">
 <em class="property">class </em><code class="descclassname">tikreg.spatial_priors.</code><code class="descname">PriorFromPenalty</code><span class="sig-paren">(</span><em>penalty</em>, <em>wishart=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.PriorFromPenalty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tikreg.html#tikreg.BasePrior" title="tikreg.BasePrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.BasePrior</span></code></a></p>
+<p>Build a prior from a Tikhnov feature penalty covariance.</p>
 <dl class="method">
 <dt id="tikreg.spatial_priors.PriorFromPenalty.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>penalty</em>, <em>wishart=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.PriorFromPenalty.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>penalty</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (p, p)</span></dt>
+<dd><p class="first last">Penalty covariance. If the Tikhhov penalty is C,
+then the penalty covariance is: np.dot(C.T, C)</p>
+</dd>
+<dt><strong>wishart</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Regularize the penalty covariance before taking
+the inverse to compute the prior.</p>
+</dd>
+<dt><strong>hhparams</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Parameters used to regularize the computation of the prior
+from the penalty.</p>
+</dd>
+<dt><strong>dodetnorm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Set the determinat of the initial prior to 1.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="tikreg.spatial_priors.PriorFromPenalty.get_prior">
 <code class="descname">get_prior</code><span class="sig-paren">(</span><em>self</em>, <em>alpha=1.0</em>, <em>wishart_lambda=0.0</em>, <em>dodetnorm=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.PriorFromPenalty.get_prior" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Convert the penalty to a prior.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>alpha</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">The regularization scale on the prior (i.e. lambda)</p>
+</dd>
+<dt><strong>wishart_lambda</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">The regularization parameter for the hyper-prior.
+Defaults to <cite>0</cite> for no regularization.</p>
+</dd>
+<dt><strong>dodetnorm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Set the determinant of the MVN prior to 1.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>regularized_prior</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (p, p)</span></dt>
+<dd><p class="first last">Regularized prior from penalty.
+By default, no regularization is applied.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<div class="math notranslate nohighlight">
+\[\Sigma = (P + \gamma I)^{-1}\]</div>
+<p>where P is the penalty covariance, <span class="math notranslate nohighlight">\(\gamma\)</span> is the
+hyper-prior parameter (<cite>hhparam</cite>).</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="tikreg.spatial_priors.PriorFromPenalty.prior2penalty">
@@ -212,16 +308,76 @@
 <dt id="tikreg.spatial_priors.SphericalPrior">
 <em class="property">class </em><code class="descclassname">tikreg.spatial_priors.</code><code class="descname">SphericalPrior</code><span class="sig-paren">(</span><em>feature_space</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.SphericalPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tikreg.html#tikreg.BasePrior" title="tikreg.BasePrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.BasePrior</span></code></a></p>
-<p>Equivalent to ridge.</p>
+<p>Equivalent to ridge regression.</p>
 <dl class="method">
 <dt id="tikreg.spatial_priors.SphericalPrior.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>feature_space</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.SphericalPrior.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Create a spherical MVN prior for a feature space.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>feature_space</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (n, p) or int</span></dt>
+<dd><p class="first last">Matrix containing features (one column per feature).
+Or a scalar corresponding to
+the number of features (i.e. p).</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spherical_prior</span> <span class="o">=</span> <span class="n">SphericalPrior</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">spherical_prior</span><span class="o">.</span><span class="n">asarray</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(5, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">spherical_prior</span><span class="o">.</span><span class="n">asarray</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="go">[[1. 0. 0. 0. 0.]</span>
+<span class="go"> [0. 1. 0. 0. 0.]</span>
+<span class="go"> [0. 0. 1. 0. 0.]</span>
+<span class="go"> [0. 0. 0. 1. 0.]</span>
+<span class="go"> [0. 0. 0. 0. 1.]]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="method">
 <dt id="tikreg.spatial_priors.SphericalPrior.get_prior">
 <code class="descname">get_prior</code><span class="sig-paren">(</span><em>self</em>, <em>alpha=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.spatial_priors.SphericalPrior.get_prior" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Apply regularization to prior</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>alpha</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">Regularization parameter (lambda).</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ridge_matrix</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (p, p)</span></dt>
+<dd><p class="first last">Scaled ridge matrix (i.e. <span class="math notranslate nohighlight">\(\lambda^{-2} I_p\)</span>)</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spherical_prior</span> <span class="o">=</span> <span class="n">SphericalPrior</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prior_covar</span> <span class="o">=</span> <span class="n">spherical_prior</span><span class="o">.</span><span class="n">get_prior</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">prior_covar</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="go">[[0.25 0.   0.   0.   0.  ]</span>
+<span class="go"> [0.   0.25 0.   0.   0.  ]</span>
+<span class="go"> [0.   0.   0.25 0.   0.  ]</span>
+<span class="go"> [0.   0.   0.   0.25 0.  ]</span>
+<span class="go"> [0.   0.   0.   0.   0.25]]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 

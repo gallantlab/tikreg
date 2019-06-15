@@ -75,10 +75,10 @@
 <li><a class="reference internal" href="#switcherror"><code class="docutils literal notranslate"><span class="pre">SwitchError</span></code></a></li>
 <li><a class="reference internal" href="#lazy-kernel"><code class="docutils literal notranslate"><span class="pre">lazy_kernel</span></code></a></li>
 <li><a class="reference internal" href="#gaussian-kernel">gaussian_kernel</a></li>
+<li><a class="reference internal" href="#homogeneous-polykern">homogeneous_polykern</a></li>
+<li><a class="reference internal" href="#inhomogeneous-polykern">inhomogeneous_polykern</a></li>
 <li><a class="reference internal" href="#linear-kernel">linear_kernel</a></li>
 <li><a class="reference internal" href="#multiquad-kernel">multiquad_kernel</a></li>
-<li><a class="reference internal" href="#polyhomokern">polyhomokern</a></li>
-<li><a class="reference internal" href="#polyinhomo">polyinhomo</a></li>
 <li><a class="reference internal" href="#vector-norm-sq">vector_norm_sq</a></li>
 <li><a class="reference internal" href="#volterra-temporal">volterra_temporal</a></li>
 </ul>
@@ -167,23 +167,23 @@
 <tr class="row-odd"><td><a class="reference internal" href="#tikreg.kernels.gaussian_kernel" title="tikreg.kernels.gaussian_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussian_kernel</span></code></a>(xdata[,&nbsp;ydata,&nbsp;sigma])</td>
 <td>Compute the gaussian kernel along the first dimension This uses the <a class="reference internal" href="#tikreg.kernels.vector_norm_sq" title="tikreg.kernels.vector_norm_sq"><code class="xref py py-func docutils literal notranslate"><span class="pre">vector_norm_sq()</span></code></a> to compute the norms across the vectors in the matrices and then re-scales it</td>
 </tr>
+<tr class="row-even"><td><a class="reference internal" href="#tikreg.kernels.homogeneous_polykern" title="tikreg.kernels.homogeneous_polykern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">homogeneous_polykern</span></code></a>(data[,&nbsp;ydata,&nbsp;powa])</td>
+<td>Compute the homogeneous polynomial kernel.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tikreg.kernels.inhomogeneous_polykern" title="tikreg.kernels.inhomogeneous_polykern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inhomogeneous_polykern</span></code></a>(data[,&nbsp;ydata,&nbsp;powa])</td>
+<td>Compute the homogeneous polynomial kernel.</td>
+</tr>
 <tr class="row-even"><td><a class="reference internal" href="#tikreg.kernels.linear_kernel" title="tikreg.kernels.linear_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">linear_kernel</span></code></a>(xdata[,&nbsp;ydata])</td>
-<td>xdata is n-by-p ydata is m-by-p or none</td>
+<td>Compute a linear kernel</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#tikreg.kernels.multiquad_kernel" title="tikreg.kernels.multiquad_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">multiquad_kernel</span></code></a>(xdata[,&nbsp;ydata,&nbsp;c])</td>
-<td>Multiquadratic kernel.</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#tikreg.kernels.polyhomokern" title="tikreg.kernels.polyhomokern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polyhomokern</span></code></a>(data[,&nbsp;ydata,&nbsp;powa])</td>
-<td>Compute the polynomial kernel to the <cite>powa</cite> degree</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#tikreg.kernels.polyinhomo" title="tikreg.kernels.polyinhomo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polyinhomo</span></code></a>(data[,&nbsp;ydata,&nbsp;powa])</td>
-<td>Compute the inhomogeneous polynomial kernel to the <cite>powa</cite> degree</td>
+<td>Compute the multi-quadratic kernel.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#tikreg.kernels.vector_norm_sq" title="tikreg.kernels.vector_norm_sq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vector_norm_sq</span></code></a>(xdata[,&nbsp;ydata])</td>
-<td>Compute the element-wise vector norm across two matrices.</td>
+<td>Compute the squared vector norm.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#tikreg.kernels.volterra_temporal" title="tikreg.kernels.volterra_temporal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">volterra_temporal</span></code></a>(X[,&nbsp;delays,&nbsp;degree])</td>
-<td>Basically a wrapper around poly</td>
+<td>Volterra series.</td>
 </tr>
 </tbody>
 </table>
@@ -216,23 +216,25 @@ This is fast because the inner-products don’t need to be recomputed every
 time a new parameter is passed. This is useful when cross-validating kernel
 parameters (e.g. for a gaussian kernel) or when switching between different
 kernels types (e.g. from gaussian to multi-quadratic).</p>
-<table class="docutils field-list" frame="void" rules="none">
+<dl class="method">
+<dt id="tikreg.kernels.lazy_kernel.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>xdata</em>, <em>ydata=None</em>, <em>kernel_type=None</em>, <em>dtype=&lt;type 'numpy.float64'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.lazy_kernel.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>xdata (nx-by-p)</strong></dt>
+<dt><strong>xdata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, p)</span></dt>
 <dd><p class="first last">The feature matrix X</p>
 </dd>
-<dt><strong>ydata (ny-by-p)</strong></dt>
-<dd><p class="first last">The feature matrix Y. If none is given,
-the kernel space in <code class="docutils literal notranslate"><span class="pre">xdata</span></code> is constructed.</p>
+<dt><strong>ydata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (ny, p)</span></dt>
+<dd><p class="first last">If None, <code class="docutils literal notranslate"><span class="pre">ydata</span> <span class="pre">=</span> <span class="pre">xdata</span></code>.</p>
 </dd>
 <dt><strong>kernel_type (str)</strong></dt>
 <dd><ul class="first last simple">
 <li>‘linear’: Linear kernel (default)</li>
-<li>‘poly’ : Inhomogeneous polynomial kernel</li>
-<li>‘polyhomo’: Homogeneous polynomial kernel</li>
+<li>‘ihpolykern’ : Inhomogeneous polynomial kernel</li>
+<li>‘hpolykern’: Homogeneous polynomial kernel</li>
 <li>‘gaussian’: Gaussian kernel</li>
 <li>‘multiquad’: Multiquadratic kernel</li>
 </ul>
@@ -242,10 +244,6 @@ the kernel space in <code class="docutils literal notranslate"><span class="pre"
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="tikreg.kernels.lazy_kernel.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>xdata</em>, <em>ydata=None</em>, <em>kernel_type=None</em>, <em>dtype=&lt;type 'numpy.float64'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.lazy_kernel.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__init__(…) initializes x; see help(type(x)) for signature</p>
 </dd></dl>
 
 <dl class="method">
@@ -261,17 +259,19 @@ the kernel space in <code class="docutils literal notranslate"><span class="pre"
 <dd><p class="first last">The parameter for the particular kernel</p>
 </dd>
 <dt><strong>kernel_type (str)</strong></dt>
-<dd><p class="first last">The kernel to use. If none is given, assume
+<dd><p class="first">The kernel to use. If none is given, assume
 we are using the kernel with which the class was instantiated.
-One can switch kernels in these directions:
-* multiquad &lt;-&gt; gaussian
-* linear &lt;-&gt; poly &lt;-&gt; polyhomo</p>
+One can switch kernels in these directions:</p>
+<ul class="last simple">
+<li>multiquad &lt;-&gt; gaussian</li>
+<li>linear &lt;-&gt; ihpolykern &lt;-&gt; hpolykern</li>
+</ul>
 </dd>
 </dl>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt>lazy_kernel.kernel (nx by ny)</dt>
+<dt><strong>lazy_kernel.kernel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray (nx, ny)</span></dt>
 <dd><p class="first last">Sets the <code class="docutils literal notranslate"><span class="pre">kernel</span></code> property with the computed kernel.</p>
 </dd>
 </dl>
@@ -298,22 +298,91 @@ and then re-scales it</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>xdata (nx by p)</strong></dt>
+<dt><strong>xdata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, p)</span></dt>
 <dd></dd>
-<dt><strong>ydata (ny by p)</strong></dt>
-<dd><p class="first last">If None, ydata = xdata, so we compute the
-gaussian kernel for the dataset <code class="docutils literal notranslate"><span class="pre">xdata</span></code> along the first dimension</p>
+<dt><strong>ydata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (ny by p) or None</span></dt>
+<dd><p class="first last">If None, <code class="docutils literal notranslate"><span class="pre">ydata</span> <span class="pre">=</span> <span class="pre">xdata</span></code>.</p>
 </dd>
 <dt><strong>sigma (float):</strong></dt>
-<dd><p class="first last">The width of the gaussian</p>
+<dd><p class="first last">The width of the gaussian.</p>
 </dd>
 </dl>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt>gaukern (nx by ny) np.ndarray</dt>
+<dt><strong>gaussian_kern</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, ny)</span></dt>
 <dd><p class="first last">The gaussian kernel</p>
 </dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="homogeneous-polykern">
+<h2>homogeneous_polykern<a class="headerlink" href="#homogeneous-polykern" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.kernels.homogeneous_polykern">
+<code class="descclassname">tikreg.kernels.</code><code class="descname">homogeneous_polykern</code><span class="sig-paren">(</span><em>data</em>, <em>ydata=None</em>, <em>powa=2</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.homogeneous_polykern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the homogeneous polynomial kernel.</p>
+<p>The polynomial expansion does not include interactions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>xdata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, p)</span></dt>
+<dd></dd>
+<dt><strong>ydata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (ny, p), or None</span></dt>
+<dd><p class="first last">If None, <code class="docutils literal notranslate"><span class="pre">ydata</span> <span class="pre">=</span> <span class="pre">xdata</span></code>.</p>
+</dd>
+<dt><strong>powa</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">Degree of polynomial expansion.
+Defaults to 2.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>hpoly_kernel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, ny)</span></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="inhomogeneous-polykern">
+<h2>inhomogeneous_polykern<a class="headerlink" href="#inhomogeneous-polykern" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tikreg.kernels.inhomogeneous_polykern">
+<code class="descclassname">tikreg.kernels.</code><code class="descname">inhomogeneous_polykern</code><span class="sig-paren">(</span><em>data</em>, <em>ydata=None</em>, <em>powa=2</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.inhomogeneous_polykern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the homogeneous polynomial kernel.</p>
+<p>The polynomial expansion includes interaction terms.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>xdata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, p)</span></dt>
+<dd></dd>
+<dt><strong>ydata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (ny, p), or None</span></dt>
+<dd><p class="first last">If None, <code class="docutils literal notranslate"><span class="pre">ydata</span> <span class="pre">=</span> <span class="pre">xdata</span></code>.</p>
+</dd>
+<dt><strong>powa</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">Degree of polynomial expansion.
+Defaults to 2.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ihpoly_kernel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, ny)</span></dt>
+<dd></dd>
 </dl>
 </td>
 </tr>
@@ -327,8 +396,28 @@ gaussian kernel for the dataset <code class="docutils literal notranslate"><span
 <dl class="function">
 <dt id="tikreg.kernels.linear_kernel">
 <code class="descclassname">tikreg.kernels.</code><code class="descname">linear_kernel</code><span class="sig-paren">(</span><em>xdata</em>, <em>ydata=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.linear_kernel" title="Permalink to this definition">¶</a></dt>
-<dd><p>xdata is n-by-p
-ydata is m-by-p or none</p>
+<dd><p>Compute a linear kernel</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>xdata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, p)</span></dt>
+<dd></dd>
+<dt><strong>ydata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (ny, p), or None</span></dt>
+<dd><p class="first last">If None, <code class="docutils literal notranslate"><span class="pre">ydata</span> <span class="pre">=</span> <span class="pre">xdata</span></code>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>linear_kernel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, ny)</span></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -337,29 +426,31 @@ ydata is m-by-p or none</p>
 <dl class="function">
 <dt id="tikreg.kernels.multiquad_kernel">
 <code class="descclassname">tikreg.kernels.</code><code class="descname">multiquad_kernel</code><span class="sig-paren">(</span><em>xdata</em>, <em>ydata=None</em>, <em>c=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.multiquad_kernel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Multiquadratic kernel.
-Code taken from M.O.
-Matlab implementation: /auto/k1/moliver/code/krls.m</p>
-</dd></dl>
-
-</div>
-<div class="section" id="polyhomokern">
-<h2>polyhomokern<a class="headerlink" href="#polyhomokern" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="tikreg.kernels.polyhomokern">
-<code class="descclassname">tikreg.kernels.</code><code class="descname">polyhomokern</code><span class="sig-paren">(</span><em>data</em>, <em>ydata=None</em>, <em>powa=2</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.polyhomokern" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the polynomial kernel to the
-<cite>powa</cite> degree</p>
-</dd></dl>
-
-</div>
-<div class="section" id="polyinhomo">
-<h2>polyinhomo<a class="headerlink" href="#polyinhomo" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="tikreg.kernels.polyinhomo">
-<code class="descclassname">tikreg.kernels.</code><code class="descname">polyinhomo</code><span class="sig-paren">(</span><em>data</em>, <em>ydata=None</em>, <em>powa=2</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.polyinhomo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the inhomogeneous polynomial kernel to the
-<cite>powa</cite> degree</p>
+<dd><p>Compute the multi-quadratic kernel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>xdata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, p)</span></dt>
+<dd></dd>
+<dt><strong>ydata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (ny, p), or None</span></dt>
+<dd><p class="first last">If None, <code class="docutils literal notranslate"><span class="pre">ydata</span> <span class="pre">=</span> <span class="pre">xdata</span></code>.</p>
+</dd>
+<dt><strong>c</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">Defaults to 1.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>multiquad_kernel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, ny)</span></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -368,25 +459,23 @@ Matlab implementation: /auto/k1/moliver/code/krls.m</p>
 <dl class="function">
 <dt id="tikreg.kernels.vector_norm_sq">
 <code class="descclassname">tikreg.kernels.</code><code class="descname">vector_norm_sq</code><span class="sig-paren">(</span><em>xdata</em>, <em>ydata=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.vector_norm_sq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the element-wise vector norm
-across two matrices. This assumes the
-vectors are contained in the first dimension.</p>
+<dd><p>Compute the squared vector norm.</p>
+<p>This assumes the vectors are in the first dimension.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>xdata  (nx by p)</strong></dt>
+<dt><strong>xdata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx by p)</span></dt>
 <dd></dd>
-<dt><strong>ydata  (ny by p)</strong></dt>
-<dd><p class="first last">If None, ydata = xdata, so we compute the,
-norm of each vector in the dataset <code class="docutils literal notranslate"><span class="pre">xdata</span></code></p>
+<dt><strong>ydata</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (ny by p) or None</span></dt>
+<dd><p class="first last">If None, ydata = xdata</p>
 </dd>
 </dl>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt>Q (nx by ny)</dt>
+<dt><strong>Q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (nx, ny)</span></dt>
 <dd><p class="first last">The vectorm norms</p>
 </dd>
 </dl>
@@ -395,12 +484,11 @@ norm of each vector in the dataset <code class="docutils literal notranslate"><s
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">33</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">vector_norm_sq</span><span class="p">(</span><span class="n">xdata</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
-<span class="go">array([[  0.,  21.,   9.],</span>
-<span class="go">       [ 21.,   0.,  20.],</span>
-<span class="go">       [  9.,  20.,   0.]])</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">vector_norm_sq</span><span class="p">(</span><span class="n">xdata</span><span class="p">))</span>
+<span class="go">[[   0 1000 4000]</span>
+<span class="go"> [1000    0 1000]</span>
+<span class="go"> [4000 1000    0]]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -411,8 +499,8 @@ norm of each vector in the dataset <code class="docutils literal notranslate"><s
 <dl class="function">
 <dt id="tikreg.kernels.volterra_temporal">
 <code class="descclassname">tikreg.kernels.</code><code class="descname">volterra_temporal</code><span class="sig-paren">(</span><em>X, delays=[0, 1, 2], degree=2.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.kernels.volterra_temporal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Basically a wrapper around poly</p>
-<p>Each column of X is used to</p>
+<dd><p>Volterra series.</p>
+<p>Implemented as a wrapper around inhomogenous poly</p>
 </dd></dl>
 
 </div>

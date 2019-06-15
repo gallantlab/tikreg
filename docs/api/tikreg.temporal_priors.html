@@ -150,6 +150,7 @@
       
   <div class="section" id="module-tikreg.temporal_priors">
 <span id="temporal-priors"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">temporal_priors</span></code><a class="headerlink" href="#module-tikreg.temporal_priors" title="Permalink to this headline">¶</a></h1>
+<p>Handle temporal MVN priors.</p>
 <table border="1" class="longtable docutils">
 <colgroup>
 <col width="10%" />
@@ -157,28 +158,36 @@
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="#tikreg.temporal_priors.CustomPrior" title="tikreg.temporal_priors.CustomPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomPrior</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>Specify a custom prior</td>
+<td>Specify a custom temporal MVN prior.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#tikreg.temporal_priors.GaussianKernelPrior" title="tikreg.temporal_priors.GaussianKernelPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GaussianKernelPrior</span></code></a>([delays,&nbsp;sigma])</td>
-<td>Smoothness prior</td>
+<td>Gaussian kernel temporal prior (a.k.a RBF kernel).</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#tikreg.temporal_priors.HRFPrior" title="tikreg.temporal_priors.HRFPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HRFPrior</span></code></a>([delays,&nbsp;dt,&nbsp;duration])</td>
 <td>Haemodynamic response function prior</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#tikreg.temporal_priors.PriorFromPenalty" title="tikreg.temporal_priors.PriorFromPenalty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PriorFromPenalty</span></code></a>(penalty[,&nbsp;delays,&nbsp;wishart])</td>
-<td></td>
+<td>Build a prior from a Tikhnov temporal penalty covariance.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#tikreg.temporal_priors.SmoothnessPrior" title="tikreg.temporal_priors.SmoothnessPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SmoothnessPrior</span></code></a>([delays,&nbsp;order,&nbsp;wishart])</td>
-<td></td>
+<td>Smoothness temporal MVN prior.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#tikreg.temporal_priors.SphericalPrior" title="tikreg.temporal_priors.SphericalPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SphericalPrior</span></code></a>([delays])</td>
-<td>Equivalent to ridge.</td>
+<td>Equivalent to ridge regression.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemporalPrior</span></code></a>(prior[,&nbsp;delays,&nbsp;hhparams])</td>
-<td>Basic temporal prior</td>
+<td>Basic temporal MVN prior.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#tikreg.temporal_priors.get_delays_from_prior" title="tikreg.temporal_priors.get_delays_from_prior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_delays_from_prior</span></code></a>(raw_prior,&nbsp;delays)</td>
-<td></td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
 </tr>
 </tbody>
 </table>
@@ -188,11 +197,48 @@
 <dt id="tikreg.temporal_priors.CustomPrior">
 <em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">CustomPrior</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.CustomPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.TemporalPrior</span></code></a></p>
-<p>Specify a custom prior</p>
+<p>Specify a custom temporal MVN prior.</p>
 <dl class="method">
 <dt id="tikreg.temporal_priors.CustomPrior.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.CustomPrior.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>covmat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (d d)</span></dt>
+<dd><p class="first last">Covariance matrix of MVN</p>
+</dd>
+<dt><strong>delays</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Number of delays to use. Only positive delays supported.
+Defaults to size of prior <cite>np.arange(d)</cite>.</p>
+</dd>
+<dt><strong>hhparams</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">MVN hyper-prior parameters to evaluate.
+Only used if the prior is constructed from a hyper-prior.
+Defaults to <cite>[0]</cite>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">mat</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_prior</span> <span class="o">=</span> <span class="n">CustomPrior</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prior_covar</span> <span class="o">=</span> <span class="n">custom_prior</span><span class="o">.</span><span class="n">get_prior</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">prior_covar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(5, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">prior_covar</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
+<span class="go">[[ 4.98  0.   -0.66 -2.72 -3.89]</span>
+<span class="go"> [ 0.   12.28 -5.91  0.49 -4.39]</span>
+<span class="go"> [-0.66 -5.91  9.88 -2.15  7.56]</span>
+<span class="go"> [-2.72  0.49 -2.15  5.49  3.13]</span>
+<span class="go"> [-3.89 -4.39  7.56  3.13 12.95]]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -201,18 +247,83 @@
 <h2><a class="reference internal" href="#tikreg.temporal_priors.GaussianKernelPrior" title="tikreg.temporal_priors.GaussianKernelPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianKernelPrior</span></code></a><a class="headerlink" href="#gaussiankernelprior" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="tikreg.temporal_priors.GaussianKernelPrior">
-<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">GaussianKernelPrior</code><span class="sig-paren">(</span><em>delays=[0, 1, 2, 3, 4], sigma=1.0, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.GaussianKernelPrior" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">GaussianKernelPrior</code><span class="sig-paren">(</span><em>delays=None</em>, <em>sigma=1.0</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.GaussianKernelPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.TemporalPrior</span></code></a></p>
-<p>Smoothness prior</p>
+<p>Gaussian kernel temporal prior (a.k.a RBF kernel).</p>
 <dl class="method">
 <dt id="tikreg.temporal_priors.GaussianKernelPrior.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>self, delays=[0, 1, 2, 3, 4], sigma=1.0, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.GaussianKernelPrior.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>delays=None</em>, <em>sigma=1.0</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.GaussianKernelPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a temporal MVN prior from a Gaussian (RBF) kernel</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>delays</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Number of delays to use. Only positive delays supported.
+Defaults to: <cite>[0,1,2,3,4]</cite>.</p>
+</dd>
+<dt><strong>sigma</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar, optional</span></dt>
+<dd><p class="first last">The width of the Gaussian.
+Defaults to <cite>1</cite>.</p>
+</dd>
+<dt><strong>hhparams</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Parameters used to regularize the computation of the prior
+from the penalty.
+Defaults to sigma value used on instantiation: <cite>[sigma]</cite>.</p>
+</dd>
+<dt><strong>dodetnorm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Set the determinat of the initial prior to 1.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>For a great description of Gaussian Processes and their
+relationship to RBF Kernels:
+<a class="reference external" href="https://distill.pub/2019/visual-exploration-gaussian-processes/">https://distill.pub/2019/visual-exploration-gaussian-processes/</a></p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gaussian_prior</span> <span class="o">=</span> <span class="n">GaussianKernelPrior</span><span class="p">(</span><span class="n">delays</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prior_covar</span> <span class="o">=</span> <span class="n">gaussian_prior</span><span class="o">.</span><span class="n">get_prior</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">prior_covar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(5, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">prior_covar</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="go">[[1.   0.61 0.14 0.01 0.  ]</span>
+<span class="go"> [0.61 1.   0.61 0.14 0.01]</span>
+<span class="go"> [0.14 0.61 1.   0.61 0.14]</span>
+<span class="go"> [0.01 0.14 0.61 1.   0.61]</span>
+<span class="go"> [0.   0.01 0.14 0.61 1.  ]]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="method">
 <dt id="tikreg.temporal_priors.GaussianKernelPrior.get_prior">
 <code class="descname">get_prior</code><span class="sig-paren">(</span><em>self</em>, <em>alpha=1.0</em>, <em>hhparam=1.0</em>, <em>dodetnorm=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.GaussianKernelPrior.get_prior" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Gaussian/RBF kernel as a temporal prior covariance matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>alpha</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar, optional</span></dt>
+<dd><p class="first last">The regularization scale (i.e. lambda).</p>
+</dd>
+<dt><strong>hhparam</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar, optional</span></dt>
+<dd><p class="first last">The width of the Gaussian
+Defaults to <cite>1</cite>.</p>
+</dd>
+<dt><strong>dodetnorm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Set the determinat of the prior covariance matrix to 1.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -227,7 +338,46 @@
 <dl class="method">
 <dt id="tikreg.temporal_priors.HRFPrior.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>delays=None</em>, <em>dt=2.0</em>, <em>duration=20</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.HRFPrior.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generates a discrete sampling of the HRF.</p>
+<p>The time samples are generated as:
+<cite>time_samples = np.arange(0, duration, dt)</cite></p>
+<p>And the corresponding delays:
+<cite>delays = np.arange(len(time_samples))</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>dt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Sampling rate of the BOLD signal (TR).</p>
+</dd>
+<dt><strong>duration</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Duration in seconds over which to sample the HRF.</p>
+</dd>
+<dt><strong>delays</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Defaults to all delays spanning the requested duration.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hrf_prior</span> <span class="o">=</span> <span class="n">HRFPrior</span><span class="p">(</span><span class="n">delays</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">dt</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">hrf_prior</span><span class="o">.</span><span class="n">delays</span><span class="p">)</span>
+<span class="go">[0 1 2 3 4]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prior_covar</span> <span class="o">=</span> <span class="n">hrf_prior</span><span class="o">.</span><span class="n">get_prior</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">prior_covar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(5, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">prior_covar</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="go">[[0.   0.   0.   0.   0.  ]</span>
+<span class="go"> [0.   0.44 0.55 0.22 0.18]</span>
+<span class="go"> [0.   0.55 1.28 0.97 0.54]</span>
+<span class="go"> [0.   0.22 0.97 1.   0.56]</span>
+<span class="go"> [0.   0.18 0.54 0.56 0.36]]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -238,20 +388,89 @@
 <dt id="tikreg.temporal_priors.PriorFromPenalty">
 <em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">PriorFromPenalty</code><span class="sig-paren">(</span><em>penalty</em>, <em>delays=None</em>, <em>wishart=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.PriorFromPenalty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.TemporalPrior</span></code></a></p>
+<p>Build a prior from a Tikhnov temporal penalty covariance.</p>
 <dl class="method">
 <dt id="tikreg.temporal_priors.PriorFromPenalty.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>penalty</em>, <em>delays=None</em>, <em>wishart=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.PriorFromPenalty.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>penalty</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (d, d)</span></dt>
+<dd><p class="first last">Temporal penalty covariance. If the Tikhhov temporal penalty is C,
+then the temporal penalty covariance is: np.dot(C.T, C)</p>
+</dd>
+<dt><strong>delays</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Number of delays to use. Only positive delays supported.
+Defaults to <cite>np.arange(d)</cite></p>
+</dd>
+<dt><strong>wishart</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Regularize the temporal penalty covariance before taking
+the inverse to compute the prior.</p>
+</dd>
+<dt><strong>hhparams</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Parameters used to regularize the computation of the prior
+from the penalty.</p>
+</dd>
+<dt><strong>dodetnorm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Set the determinat of the initial prior to 1.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="tikreg.temporal_priors.PriorFromPenalty.get_prior">
 <code class="descname">get_prior</code><span class="sig-paren">(</span><em>self</em>, <em>alpha=1.0</em>, <em>hhparam=0.0</em>, <em>dodetnorm=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.PriorFromPenalty.get_prior" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Convert the penalty to a prior.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>alpha</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">The regularization scale on the prior (i.e. lambda)</p>
+</dd>
+<dt><strong>hhparam</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">The regularization parameter for the hyper-prior.
+Defaults to <cite>0</cite> for no regularization.</p>
+</dd>
+<dt><strong>dodetnorm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Set the determinant of the MVN prior to 1.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>regularized_prior</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (d, d)</span></dt>
+<dd><p class="first last">Regularized prior from penalty.
+By default, no regularization is applied.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<div class="math notranslate nohighlight">
+\[\Sigma = (P + \gamma I)^{-1}\]</div>
+<p>where P is the temporal penalty covariance, <span class="math notranslate nohighlight">\(\gamma\)</span> is the
+hyper-prior parameter (<cite>hhparam</cite>).</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="tikreg.temporal_priors.PriorFromPenalty.set_wishart">
 <code class="descname">set_wishart</code><span class="sig-paren">(</span><em>self</em>, <em>wishart</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.PriorFromPenalty.set_wishart" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set the covariance of the hyper-prior regularization.</p>
+<dl class="docutils">
+<dt>wishart <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (d,d)</span></dt>
+<dd>Defaults to an identity.</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -262,10 +481,59 @@
 <dt id="tikreg.temporal_priors.SmoothnessPrior">
 <em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">SmoothnessPrior</code><span class="sig-paren">(</span><em>delays=[0, 1, 2, 3, 4], order=2, wishart=True, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.SmoothnessPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.PriorFromPenalty" title="tikreg.temporal_priors.PriorFromPenalty"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.PriorFromPenalty</span></code></a></p>
+<p>Smoothness temporal MVN prior.</p>
 <dl class="method">
 <dt id="tikreg.temporal_priors.SmoothnessPrior.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>self, delays=[0, 1, 2, 3, 4], order=2, wishart=True, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.SmoothnessPrior.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>delays</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Number of delays to use. Only positive delays supported.
+Defaults to: <cite>[0,1,2,3,4]</cite>.</p>
+</dd>
+<dt><strong>order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">even integer, optional</span></dt>
+<dd><p class="first last">The order of the difference operator that defines the smoothness prior.
+Defaults to <cite>2</cite> for a second-order difference operator.</p>
+</dd>
+<dt><strong>wishart</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Regularize the temporal penalty covariance before taking
+the inverse to compute the prior.</p>
+</dd>
+<dt><strong>hhparams</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Parameters used to regularize the computation of the prior
+from the penalty.</p>
+</dd>
+<dt><strong>dodetnorm</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Set the determinat of the initial prior to 1.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">smoothness_prior</span> <span class="o">=</span> <span class="n">SmoothnessPrior</span><span class="p">(</span><span class="n">delays</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">smoothness_prior</span><span class="o">.</span><span class="n">penalty</span><span class="p">)</span>
+<span class="go">[[ 5. -4.  1.  0.  0.]</span>
+<span class="go"> [-4.  6. -4.  1.  0.]</span>
+<span class="go"> [ 1. -4.  6. -4.  1.]</span>
+<span class="go"> [ 0.  1. -4.  6. -4.]</span>
+<span class="go"> [ 0.  0.  1. -4.  5.]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prior_covar</span> <span class="o">=</span> <span class="n">smoothness_prior</span><span class="o">.</span><span class="n">get_prior</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">prior_covar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(5, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">prior_covar</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="go">[[1.53 2.22 2.25 1.78 0.97]</span>
+<span class="go"> [2.22 3.78 4.   3.22 1.78]</span>
+<span class="go"> [2.25 4.   4.75 4.   2.25]</span>
+<span class="go"> [1.78 3.22 4.   3.78 2.22]</span>
+<span class="go"> [0.97 1.78 2.25 2.22 1.53]]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -276,11 +544,38 @@
 <dt id="tikreg.temporal_priors.SphericalPrior">
 <em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">SphericalPrior</code><span class="sig-paren">(</span><em>delays=[0, 1, 2, 3, 4], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.SphericalPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.temporal_priors.TemporalPrior</span></code></a></p>
-<p>Equivalent to ridge.</p>
+<p>Equivalent to ridge regression.</p>
 <dl class="method">
 <dt id="tikreg.temporal_priors.SphericalPrior.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>self, delays=[0, 1, 2, 3, 4], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.SphericalPrior.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>delays</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Number of delays to use. Only positive delays supported.
+Defaults to: <cite>[0,1,2,3,4]</cite>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spherical_prior</span> <span class="o">=</span> <span class="n">SphericalPrior</span><span class="p">(</span><span class="n">delays</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prior_covar</span> <span class="o">=</span> <span class="n">spherical_prior</span><span class="o">.</span><span class="n">get_prior</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">prior_covar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(5, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">prior_covar</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="go">[[1. 0. 0. 0. 0.]</span>
+<span class="go"> [0. 1. 0. 0. 0.]</span>
+<span class="go"> [0. 0. 1. 0. 0.]</span>
+<span class="go"> [0. 0. 0. 1. 0.]</span>
+<span class="go"> [0. 0. 0. 0. 1.]]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -289,23 +584,47 @@
 <h2><a class="reference internal" href="#tikreg.temporal_priors.TemporalPrior" title="tikreg.temporal_priors.TemporalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemporalPrior</span></code></a><a class="headerlink" href="#temporalprior" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="tikreg.temporal_priors.TemporalPrior">
-<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">TemporalPrior</code><span class="sig-paren">(</span><em>prior, delays=None, hhparams=[1.0], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tikreg.temporal_priors.</code><code class="descname">TemporalPrior</code><span class="sig-paren">(</span><em>prior, delays=None, hhparams=[0.0], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tikreg.html#tikreg.BasePrior" title="tikreg.BasePrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">tikreg.BasePrior</span></code></a></p>
-<p>Basic temporal prior</p>
+<p>Basic temporal MVN prior.</p>
 <dl class="method">
 <dt id="tikreg.temporal_priors.TemporalPrior.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>self, prior, delays=None, hhparams=[1.0], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self, prior, delays=None, hhparams=[0.0], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>prior</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (d d)</span></dt>
+<dd><p class="first last">Covariance matrix of MVN</p>
+</dd>
+<dt><strong>delays</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">Number of delays to use. Only positive delays supported.
+Defaults to size of prior <cite>np.arange(d)</cite>.</p>
+</dd>
+<dt><strong>hhparams</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list_like, optional</span></dt>
+<dd><p class="first last">MVN hyper-prior parameters to evaluate.
+Only used if the prior is constructed from a hyper-prior.
+Defaults to <cite>[0]</cite>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="tikreg.temporal_priors.TemporalPrior.get_hhparams">
 <code class="descname">get_hhparams</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior.get_hhparams" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the active hyper-prior parameters.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="tikreg.temporal_priors.TemporalPrior.set_hhparameters">
 <code class="descname">set_hhparameters</code><span class="sig-paren">(</span><em>self</em>, <em>hhparams</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.TemporalPrior.set_hhparameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set the hyper-prior parameters</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -315,7 +634,27 @@
 <dl class="function">
 <dt id="tikreg.temporal_priors.get_delays_from_prior">
 <code class="descclassname">tikreg.temporal_priors.</code><code class="descname">get_delays_from_prior</code><span class="sig-paren">(</span><em>raw_prior</em>, <em>delays</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.temporal_priors.get_delays_from_prior" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>raw_prior</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (k, k)</span></dt>
+<dd><p class="first last">The raw array defined continuously from
+the first delay to the last: <cite>[min(delays),…, max(delays)]</cite>,
+and <cite>max(delays) - min(delays) = k</cite>.</p>
+</dd>
+<dt><strong>delays</strong> <span class="classifier-delimiter">:</span> <span class="classifier">None or list_like (d)</span></dt>
+<dd><p class="first last">When delays is None, the delays of the <cite>raw_prior</cite>
+are assumed to be <cite>[0, 1, …, k-1]</cite>.
+Otherwise, the delays are specified and are relative to the <cite>raw_prior</cite>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 </div>

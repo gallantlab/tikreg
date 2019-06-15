@@ -179,7 +179,27 @@
 <dl class="method">
 <dt id="tikreg.BasePrior.get_prior">
 <code class="descname">get_prior</code><span class="sig-paren">(</span><em>self</em>, <em>alpha=1.0</em>, <em>dodetnorm=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tikreg.BasePrior.get_prior" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>alpha</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar</span></dt>
+<dd><p class="first last">Regularization parameter (lambda).</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>regularized_covar</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D np.ndarray (p, p)</span></dt>
+<dd><p class="first last">Scaled ridge matrix (i.e. <span class="math notranslate nohighlight">\(\lambda^{-2} \Sigma_p\)</span>)</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="tikreg.BasePrior.normalize_penalty">

@@ -9,6 +9,7 @@
 
    SVD
    absmax
+   analytic_expected_correlation
    columnwise_correlation
    columnwise_rsquared
    delay2slice
@@ -26,8 +27,6 @@
    isdiag
    mult_diag
    noise_ceiling_correction
-   test_make_trials
-   whiten_penalty
 
 
 .. currentmodule:: tikreg.utils
@@ -41,6 +40,11 @@ absmax
 ~~~~~~
 
 .. autofunction:: absmax
+
+analytic_expected_correlation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: analytic_expected_correlation
 
 columnwise_correlation
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -126,14 +130,4 @@ noise_ceiling_correction
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: noise_ceiling_correction
-
-test_make_trials
-~~~~~~~~~~~~~~~~
-
-.. autofunction:: test_make_trials
-
-whiten_penalty
-~~~~~~~~~~~~~~
-
-.. autofunction:: whiten_penalty
 
