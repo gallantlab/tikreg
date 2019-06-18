@@ -753,7 +753,7 @@ def columnwise_correlation(ypred, y, zscorea=True, zscoreb=True, axis=0):
 
 
 def generate_trnval_folds(N, sampler='cv', nchunks=5, nfolds=5, testpct=0.2):
-    '''Split dataset into training and validation folds
+    """Split dataset into training and validation folds
 
     Parameters
     ----------
@@ -822,7 +822,7 @@ def generate_trnval_folds(N, sampler='cv', nchunks=5, nfolds=5, testpct=0.2):
     >>> fold_sizes = [(len(np.unique(trnidx)),len(validx)) for trnidx, validx in folds]
     >>> print(fold_sizes)       # doctest: +SKIP
     [(57, 43), (60, 40), (60, 40), (65, 35), (51, 49)]
-    '''
+    """
     # TODO This function is a POS. Needs rewrite.
     oN = N
     ntrain = int(N - N*(testpct)) # for bootstrap only
@@ -1030,8 +1030,8 @@ def analytic_expected_correlation(noise_level):
 
     where :math:`\rho` is the correlation coefficient.
 
-    Example
-    -------
+    Examples
+    --------
     >>> nstim, noise_level = 100000, 1.0
     >>> ydata = np.random.randn(nstim)
     >>> noise = np.random.randn(nstim)*noise_level
