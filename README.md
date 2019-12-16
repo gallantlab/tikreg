@@ -21,11 +21,22 @@ $ cd tikreg
 $ sudo python setup.py install
 ```
 
+## Getting started
+
+...Coming soon.
+
 ## Documentation
 
-APPOLOGIES FOR THE LACK OF DOCUMENTATION!
+https://gallantlab.github.io/tikreg/index.html
 
-Working on it! In the mean time, please refer to the unitests.
+## Tutorials
+
+moar tutorials coming soon.
+
+
+### Banded ridge regression:
+https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/master/examples/tutorial_banded_ridge_polar.ipynb
+
 
 ## Cite as
 Nunez-Elizalde AO, Huth AG, and Gallant, JL (2019). Voxelwise encoding models with non-spherical multivariate normal priors. NeuroImage. https://doi.org/10.1016/j.neuroimage.2019.04.012
