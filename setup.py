@@ -7,15 +7,18 @@ except ImportError:
     import ConfigParser as configparser
 
 
-if len(set(('develop', 'bdist_egg', 'bdist_rpm', 'bdist', 'bdist_dumb',
-            'bdist_wininst', 'install_egg_info', 'egg_info', 'easy_install',
-            )).intersection(sys.argv)) > 0:
+if len(set(('develop', 'bdist_wheel', 'bdist_egg',
+            'bdist_rpm', 'bdist',
+            'sdist', 'bdist_wheel', 'bdist_dumb',
+            'bdist_wininst', 'install_egg_info',
+            'egg_info', 'easy_install')).intersection(sys.argv)) > 0:
+
     from setuptools import setup
+    from setuptools.command.install import install
 else:
     # Use standard
     from distutils.core import setup
-
-from distutils.command.install import install
+    from distutils.command.install import install
 
 def set_default_options(optfile):
     config = configparser.ConfigParser()
