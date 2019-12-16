@@ -38,15 +38,19 @@ if not 'extra_setuptools_args' in globals():
 
 
 long_description = """
+tikreg: Tikhonov regression in Python.
+
+Tikhonov regression can be used to estimate encoding models with non-spherical multivariate normal priors.
+This framework is useful to model biological signals. This package was developed to analyze brain data collected using functional magnetic resonance imaging (fMRI). tikreg can also be used to model other neuroimaging signals (e.g. 2P, ECoG, etc) and LTI signals more generally.
 """
 
 def main(**kwargs):
     setup(name="""tikreg""",
-          version='0.01',
-          description="""""",
-          # author='Anwar O. Nunez-Elizalde',
-          # author_email='anwarnunez@gmail.com',
-          # url='gallantlab.github.io/cottoncandy/',
+          version='0.0.1',
+          description="""tikreg: Tikhonov regression in Python""",
+          author='Anwar O. Nunez-Elizalde',
+          author_email='anwarnunez@gmail.com',
+          url='https://gallantlab.github.io/tikreg/',
           packages=['tikreg',
                     ],
           package_data={
