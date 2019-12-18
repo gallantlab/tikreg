@@ -24,7 +24,7 @@ $ sudo python setup.py install
 Or with pip:
 
 ```
-$pip install tikreg
+$ pip install tikreg
 ```
 
 ## Getting started
@@ -39,11 +39,15 @@ https://gallantlab.github.io/tikreg/index.html
 
 moar tutorials coming soon.
 
-### Non-spherical MVN prior on features
+### Non-spherical MVN prior on features 
 https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/master/examples/tutorial_feature_priors.ipynb
+
+[Launch Google Colab notebook](https://colab.research.google.com/github/gallantlab/tikreg/blob/master/examples/tutorial_feature_priors.ipynb)
 
 ### Non-spherical MVN prior on temporal delays
 https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/master/examples/tutorial_temporal_priors.ipynb
+
+[Launch Google Colab notebook](https://colab.research.google.com/github/gallantlab/tikreg/blob/master/examples/tutorial_temporal_priors.ipynb)
 
 
 
