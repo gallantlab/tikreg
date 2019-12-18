@@ -21,6 +21,12 @@ $ cd tikreg
 $ sudo python setup.py install
 ```
 
+Or with pip:
+
+```
+$pip install tikreg
+```
+
 ## Getting started
 
 ...Coming soon.
@@ -32,6 +38,13 @@ https://gallantlab.github.io/tikreg/index.html
 ## Tutorials
 
 moar tutorials coming soon.
+
+### Non-spherical MVN prior on features
+https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/master/examples/tutorial_feature_priors.ipynb
+
+### Non-spherical MVN prior on temporal delays
+https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/master/examples/tutorial_temporal_priors.ipynb
+
 
 
 ### Banded ridge regression:
