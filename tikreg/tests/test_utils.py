@@ -142,3 +142,15 @@ def test_make_trials():
         assert trl['result']['loss'] == loss
         assert trl['misc']['vals'] == val
     return hpo_trials
+
+def test_correlation():
+    A = np.random.randn(10, 3)
+    B = np.random.randn(10, 5)
+    cc = tikutils.cross_correlation(A, B)
+
+    mat = np.zeros((A.shape[-1], B.shape[-1]))
+    for adx in range(A.shape[-1]):
+        for bdx in range(B.shape[-1]):
+            corr = np.corrcoef(A[:,adx], B[:, bdx])[0,1]
+            mat[adx, bdx] = corr
+    assert np.allclose(mat, cc)
