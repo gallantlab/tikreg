@@ -1917,7 +1917,10 @@ def hyperopt_estimate_stem_wmvnp(features_train,
             stxt = "spatial=("
             stxt += ', '.join(["%0.03f"]*(len(spatial_opt)))
             stxt = stxt%tuple(spatial_opt) + ')'
-            perf = 'perf=%0.04f'%response_solution['performance'].mean()
+            if 'performance' in response_solution:
+                perf = 'perf=%0.04f'%response_solution['performance'].mean()
+            else:
+                perf = ''
             print(' '.join([itxt, ttxt, stxt, perf]))
 
     if population_optimal:
