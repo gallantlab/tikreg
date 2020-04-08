@@ -205,7 +205,6 @@ def solve_l2_primal(Xtrain, Ytrain,
                 txt = "lambda %02i: %8.03f, mean=%0.04f, (25,50,75)pctl=(%0.04f,%0.04f,%0.04f),"
                 txt += "(0.0<r>0.5): (%03i,%03i)"
                 print(txt % contents)
-
         if predictions and performance:
             results['predictions'].append(Ypred)
         elif predictions:
@@ -521,6 +520,7 @@ def cvridge(Xtrain, Ytrain,
             withinset_test=False,
             performance=False, predictions=False, weights=False,
             kernel_weights=False,
+            yzscore=True,
             metric=METRIC):
     """Cross-validation procedure for tikhonov regularized regression.
 
@@ -645,9 +645,10 @@ def cvridge(Xtrain, Ytrain,
                 txt = (fdx+1,nfolds,ntrn,nval)
                 print('train ridge fold  %i/%i: ntrain=%i, nval=%i'%txt)
 
-            if solve_dual is False:
-                res = solve_l2_primal(Xtrain[trn], Ytrain[trn],
-                                      Xtrain[val], zscore(Ytrain[val]),
+                res = solve_l2_primal(Xtrain[trn],
+                                      Ytrain[trn],
+                                      Xtrain[val],
+                                      zscore(Ytrain[val]) if yzscore else Ytrain[val],
                                       ridges, EPS=EPS,
                                       weights=False,
                                       predictions=False,
@@ -658,8 +659,10 @@ def cvridge(Xtrain, Ytrain,
             else:
                 Ktrain = tikutils.fast_indexing(kernel,trn, trn)
                 Kval = tikutils.fast_indexing(kernel,val, trn)
-                res = solve_l2_dual(Ktrain, Ytrain[trn],
-                                    Kval, zscore(Ytrain[val]),
+                res = solve_l2_dual(Ktrain,
+                                    Ytrain[trn],
+                                    Kval,
+                                    zscore(Ytrain[val]) if yzscore else Ytrain[val],
                                     ridges, EPS=EPS,
                                     weights=False,
                                     predictions=False,
@@ -697,7 +700,7 @@ def cvridge(Xtrain, Ytrain,
         ktrain_object.update(kernopt, verbose=verbose)
 
         if Ytest is not None:
-            Ytest = zscore(Ytest)
+            Ytest = zscore(Ytest) if yzscore else Ytest
 
         if Xtest is not None:
             if Li is not None: Xtest = np.dot(Xtest, Li)
@@ -708,7 +711,7 @@ def cvridge(Xtrain, Ytrain,
         elif withinset_test:
             # predict within set if so desired
             ktest = ktrain_object.kernel
-            Ytest = zscore(Ytrain)
+            Ytest = zscore(Ytrain) if yzscore else Ytrain
         else:
             ktest = None
 
@@ -727,12 +730,12 @@ def cvridge(Xtrain, Ytrain,
             fit['weights'] = np.dot(Xtrain.T, fit['weights'])
     else:
         if Ytest is not None:
-            Ytest = zscore(Ytest)
+            Ytest = zscore(Ytest) if yzscore else Ytest
         if Xtest is not None:
             if Li is not None: Xtest = np.dot(Xtest, Li)
         elif withinset_test:
             Xtest = Xtrain
-            Ytest = zscore(Ytrain)
+            Ytest = zscore(Ytrain) if yzscore else Ytrain
 
         fit = solve_l2_primal(Xtrain, Ytrain,
                               Xtest, Ytest,
