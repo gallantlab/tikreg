@@ -750,9 +750,30 @@ def columnwise_correlation(ypred, y, zscorea=True, zscoreb=True, axis=0):
     return corr
 
 
+def check_random_state(seed):
+    """Turn seed into a np.random.RandomState instance
+
+    Parameters
+    ----------
+    seed : None | int | instance of RandomState
+        If seed is None, return the RandomState singleton used by np.random.
+        If seed is an int, return a new RandomState instance seeded with seed.
+        If seed is already a RandomState instance, return it.
+        Otherwise raise ValueError.
+    """
+    import numbers
+    if seed is None or seed is np.random:
+        return np.random.mtrand._rand
+    if isinstance(seed, numbers.Integral):
+        return np.random.RandomState(seed)
+    if isinstance(seed, np.random.RandomState):
+        return seed
+    raise ValueError('%r cannot be used to seed a numpy.random.RandomState'
+                     ' instance' % seed)
 
 
-def generate_trnval_folds(N, sampler='cv', nchunks=5, nfolds=5, testpct=0.2):
+def generate_trnval_folds(N, sampler='cv', nchunks=5, nfolds=5, testpct=0.2,
+                          random_state=None):
     """Split dataset into training and validation folds
 
     Parameters
@@ -789,6 +810,8 @@ def generate_trnval_folds(N, sampler='cv', nchunks=5, nfolds=5, testpct=0.2):
                 contain the blocks: [[0,1,2,3,4], [2,3,4,5,6], ...].
     testpct : float (in 0-1 range), optional
         Only used when using bootstrap samplers (i.e. `mbb` and `nbb`)
+    random_state : int, np.random.RandomState, or None
+        Random generator state, used for reproducibility.
 
     Yields
     ------
@@ -832,10 +855,12 @@ def generate_trnval_folds(N, sampler='cv', nchunks=5, nfolds=5, testpct=0.2):
     N = len(samples)
     samples = [list(tt) for tt in samples]
 
+    rng = check_random_state(random_state)
+
     append = lambda z: reduce(lambda x, y: x+y, z)
     allidx = np.arange(oN)
     if sampler == 'cv':
-        np.random.shuffle(samples)
+        rng.shuffle(samples)
         sets = np.array_split(np.arange(len(samples)), nfolds)
         for i,v in enumerate(sets):
             val = np.asarray(append([samples[t] for t in v]))
@@ -846,7 +871,7 @@ def generate_trnval_folds(N, sampler='cv', nchunks=5, nfolds=5, testpct=0.2):
         assert isinstance(nfolds, tuple)
         reps, nfolds = nfolds
         for rdx in range(reps):
-            np.random.shuffle(samples)
+            rng.shuffle(samples)
             sets = np.array_split(np.arange(len(samples)), nfolds)
             for i,v in enumerate(sets):
                 val = np.asarray(append([samples[t] for t in v]))
@@ -854,7 +879,7 @@ def generate_trnval_folds(N, sampler='cv', nchunks=5, nfolds=5, testpct=0.2):
                 yield train, val
 
     elif sampler == 'nbb' or sampler == 'mbb':
-        fun = lambda x: [x[t] for t in np.random.randint(0, N, int(ntrain/nchunks))]
+        fun = lambda x: [x[t] for t in rng.randint(0, N, int(ntrain/nchunks))]
         for bdx in range(nfolds):
             train = np.asarray(append(fun(samples)))
             val = allidx[~np.in1d(allidx, train)]
