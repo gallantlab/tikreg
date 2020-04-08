@@ -644,7 +644,7 @@ def cvridge(Xtrain, Ytrain,
             if verbose:
                 txt = (fdx+1,nfolds,ntrn,nval)
                 print('train ridge fold  %i/%i: ntrain=%i, nval=%i'%txt)
-
+            if solve_dual is False:
                 res = solve_l2_primal(Xtrain[trn],
                                       Ytrain[trn],
                                       Xtrain[val],
