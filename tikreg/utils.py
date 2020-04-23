@@ -685,7 +685,7 @@ def columnwise_rsquared(ypred, y, **kwargs):
     https://en.wikipedia.org/wiki/Coefficient_of_determination#Extensions
     '''
     assert ypred.shape == y.shape # dimensions must match
-    return 1 - np.var(y - ypred, axis=0)/np.var(y, axis=0)
+    return 1 - (y - ypred).var(axis=0)/y.var(axis=0)
 
 
 def columnwise_correlation(ypred, y, zscorea=True, zscoreb=True, axis=0):
