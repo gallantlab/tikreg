@@ -694,36 +694,39 @@ def cvridge(Xtrain, Ytrain,
         max_point = map(max, max_point)
         # The maximum point
         kernmax, ridgemax = max_point
-        kernopt, ridgeopt = kernel_params[kernmax], ridges[ridgemax]
-        optima = np.asarray([[kernopt, ridgeopt]], dtype=np.float32)
+        optima = np.asarray([[kernmax, ridgemax]], dtype=np.int)
     else:
-        # find optimum for each response
-        optima = np.zeros((nresponses, 2), dtype=np.float32)
+        optima = np.zeros((nresponses, 2), dtype=np.int)
         for rdx in range(nresponses):
-            kernmax, ridgemax = np.argmax(results[...,rdx].mean(0))
-            kernopt, ridgeopt = kernel_params[kernmax], ridges[ridgemax]
-            optima[rdx] = (kernopt, ridgeopt)
+            kernmax, ridgemax = np.unravel_index(np.argmax(results[...,rdx].mean(0)),
+                                                 (len(kernel_params), len(ridges)))
+            optima[rdx] = (kernmax, ridgemax)
 
     # super hacky...
     hparams, respidx = np.unique(optima, axis=0, return_inverse=True)
     fullfit = {}
 
-    for uidx, (kernopt, ridgeopt) in enumerate(hparams):
-        if np.isnan(kernopt):
-            kernopt = None
-
-        if verbose:
-            desc = 'held-out' if (Xtest is not None) else 'within'
-            outro = 'Predicting {d} set:\ncvperf={cc},ridge={alph},kernel={kn},kernel_param={kp}'
-            outro = outro.format(d=desc,cc=surface.max(),alph=ridgeopt,
-                                 kn=kernel_name,kp=kernopt)
-            print(outro)
+    for uidx, (kernoptidx, ridgeoptidx) in enumerate(hparams):
+        kernopt, ridgeopt = kernel_params[kernoptidx], ridges[ridgeoptidx]
 
         if uidx == 0:
             # the full model is first on first iteration =S
             responses_mask = np.ones(nresponses, dtype=np.bool)
         else:
             responses_mask = respidx == uidx
+
+        if verbose:
+            desc = 'held-out' if (Xtest is not None) else 'within'
+            outro = 'Predicting {d} set:\ncvperf={cc},ridge={alph},kernel={kn},kernel_param={kp}'
+            tmpcc = results[:, kernoptidx, ridgeoptidx,
+                            responses_mask if population_optimum else respidx==uidx]
+            cctmp = np.nanmean(np.nanmean(tmpcc, 0))
+            outro = outro.format(d=desc,
+                                 cc='%0.04f'%cctmp,
+                                 alph=ridgeopt,
+                                 kn=kernel_name,kp=kernopt)
+            print(outro)
+
 
         if solve_dual:
             # Set the parameter to the optimal
@@ -779,20 +782,20 @@ def cvridge(Xtrain, Ytrain,
                                   )
             if uidx == 0:
                 # copy the first full fit
-                fullfit = fit
+                fullfit = fit.copy()
             else:
-                for k,v in fullfit.keys():
+                for k,v in fullfit.items():
                     if v.shape[-1] == nresponses:
                         fullfit[k][...,responses_mask] = fit[k]
 
-    if (Li is not None) and ('weights' in fit):
+    if (Li is not None) and ('weights' in fullfit):
         # project back
-        fit['weights'] = np.dot(Li, fit['weights'])
+        fullfit['weights'] = np.dot(Li, fullfit['weights'])
 
     if verbose: print('Duration %0.04f[mins]' % ((time.time()-start_time)/60.))
-    fit = clean_results_dict(dict(fit))
-    fit['cvresults'] = results
-    return fit
+    fullfit = clean_results_dict(dict(fullfit))
+    fullfit['cvresults'] = results
+    return fullfit
 
 
 def simple_ridge_dual(X, Y, ridge=10.0):
