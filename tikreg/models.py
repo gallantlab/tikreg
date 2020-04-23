@@ -780,13 +780,13 @@ def cvridge(Xtrain, Ytrain,
                                   verbose=verbose,
                                   EPS=EPS,
                                   )
-            if uidx == 0:
-                # copy the first full fit
-                fullfit = fit.copy()
-            else:
-                for k,v in fullfit.items():
-                    if v.shape[-1] == nresponses:
-                        fullfit[k][...,responses_mask] = fit[k]
+        if uidx == 0:
+            # copy the first full fit
+            fullfit = fit.copy()
+        else:
+            for k,v in fullfit.items():
+                if v.shape[-1] == nresponses:
+                    fullfit[k][...,responses_mask] = fit[k]
 
     if (Li is not None) and ('weights' in fullfit):
         # project back
