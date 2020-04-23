@@ -152,8 +152,8 @@ def test_solve_l2_dual():
         lzk.update(kernel_param)
         rlambdas = zscore(np.random.randn(Xtrn.shape[0], 20))
         Y = np.dot(lzk.kernel, rlambdas)
-        # NB: multiquad kernel produces negative eigen-testues! This means that
-        # thresholding the eigen-testues to be positive (EPS > 0) will lead to
+        # NB: multiquad kernel produces negative eigen-values! This means that
+        # thresholding the eigen-values to be positive (EPS > 0) will lead to
         # inperfect weight recovery. For this reason, the test uses EPS=None.
         EPS = None if kernel_name == 'multiquad' else 0
         fit = solve_l2_dual(lzk.kernel, Y,
@@ -262,8 +262,8 @@ def test_cvridge():
             lzk.update(kernel_param)
             rlambdas = zscore(np.random.randn(Xtrn.shape[0], 20))
             Y = np.dot(lzk.kernel, rlambdas)
-            # NB: multiquad kernel produces negative eigen-testues! This means that
-            # thresholding the eigen-testues to be positive (EPS > 0) will lead to
+            # NB: multiquad kernel produces negative eigen-values! This means that
+            # thresholding the eigen-values to be positive (EPS > 0) will lead to
             # inperfect weight recovery. For this reason, the test uses EPS=None.
             EPS = None if kernel_name == 'multiquad' else 0
             fit = cvridge(Xtrn, Y,

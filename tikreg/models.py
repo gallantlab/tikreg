@@ -521,6 +521,7 @@ def cvridge(Xtrain, Ytrain,
             performance=False, predictions=False, weights=False,
             kernel_weights=False,
             yzscore=True,
+            population_optimum=True,
             metric=METRIC):
     """Cross-validation procedure for tikhonov regularized regression.
 
@@ -558,7 +559,7 @@ def cvridge(Xtrain, Ytrain,
         Percentage of data to use in training if using a bootstrap sampler.
     withinset_test (bool):
         If no ``Xtest`` or ``Ytest`` is given and ``predictions`` and/or
-        ``performance`` are requested, compute these testues based on training set.
+        ``performance`` are requested, compute these values based on training set.
     performance (bool):
         Held-out prediction performance
     predictions (bool):
@@ -572,7 +573,7 @@ def cvridge(Xtrain, Ytrain,
     verbose (bool):
         Verbosity
     EPS (float):
-        Testue used to threshold small eigentestues
+        Value used to threshold small eigenvalues
 
     Returns
     -------
@@ -590,7 +591,7 @@ def cvridge(Xtrain, Ytrain,
     import time
     start_time = time.time()
 
-    if kernel_name is None: raise TestueError('Say linear if linear')
+    if kernel_name is None: raise ValueError('Say linear if linear')
     kernel_params = [None] if (kernel_name == 'linear') else kernel_params
     nkparams = len(kernel_params)
 
@@ -679,74 +680,111 @@ def cvridge(Xtrain, Ytrain,
         if verbose: print('Duration %0.04f[mins]' % ((time.time()-start_time)/60.))
         return {'cvresults' : results}
 
-    # Find best parameters across responses
-    surface = np.nan_to_num(results.mean(0)).mean(-1)
-    # find the best point in the 2D space
-    max_point = np.where(surface.max() == surface)
-    # make sure it's unique (conservative-ish biggest ridge/parameter)
-    max_point = map(max, max_point)
-    # The maximum point
-    kernmax, ridgemax = max_point
-    kernopt, ridgeopt = kernel_params[kernmax], ridges[ridgemax]
-    if verbose:
-        desc = 'held-out' if (Xtest is not None) else 'within'
-        outro = 'Predicting {d} set:\ncvperf={cc},ridge={alph},kernel={kn},kernel_param={kp}'
-        outro = outro.format(d=desc,cc=surface.max(),alph=ridgeopt,
-                             kn=kernel_name,kp=kernopt)
-        print(outro)
+    if Ytest is not None:
+        Ytest = zscore(Ytest) if yzscore else Ytest
 
-    if solve_dual:
-        # Set the parameter to the optimal
-        ktrain_object.update(kernopt, verbose=verbose)
-
-        if Ytest is not None:
-            Ytest = zscore(Ytest) if yzscore else Ytest
-
-        if Xtest is not None:
-            if Li is not None: Xtest = np.dot(Xtest, Li)
-            # project test data to kernel
-            ktest_object = lazy_kernel(Xtest, Xtrain, kernel_type=kernel_name)
-            ktest_object.update(kernopt, verbose=verbose)
-            ktest = ktest_object.kernel
-        elif withinset_test:
-            # predict within set if so desired
-            ktest = ktrain_object.kernel
-            Ytest = zscore(Ytrain) if yzscore else Ytrain
-        else:
-            ktest = None
-
-        fit = solve_l2_dual(ktrain_object.kernel, Ytrain,
-                            ktest, Ytest,
-                            ridges=[ridgeopt],
-                            performance=performance,
-                            predictions=predictions,
-                            weights=weights,
-                            EPS=EPS,
-                            metric=metric,
-                            verbose=verbose,
-                            )
-        # Project to linear space if we can
-        if (kernel_name == 'linear') and ('weights' in fit) and (not kernel_weights):
-            fit['weights'] = np.dot(Xtrain.T, fit['weights'])
+    # prepare for solutions
+    nresponses = Ytrain.shape[1]
+    if population_optimum:
+        # Find best parameters across responses
+        surface = np.nan_to_num(results.mean(0)).mean(-1)
+        # find the best point in the 2D space
+        max_point = np.where(surface.max() == surface)
+        # make sure it's unique (conservative-ish biggest ridge/parameter)
+        max_point = map(max, max_point)
+        # The maximum point
+        kernmax, ridgemax = max_point
+        kernopt, ridgeopt = kernel_params[kernmax], ridges[ridgemax]
+        optima = np.asarray([[kernopt, ridgeopt]], dtype=np.float32)
     else:
-        if Ytest is not None:
-            Ytest = zscore(Ytest) if yzscore else Ytest
-        if Xtest is not None:
-            if Li is not None: Xtest = np.dot(Xtest, Li)
-        elif withinset_test:
-            Xtest = Xtrain
-            Ytest = zscore(Ytrain) if yzscore else Ytrain
+        # find optimum for each response
+        optima = np.zeros((nresponses, 2), dtype=np.float32)
+        for rdx in range(nresponses):
+            kernmax, ridgemax = np.argmax(results[...,rdx].mean(0))
+            kernopt, ridgeopt = kernel_params[kernmax], ridges[ridgemax]
+            optima[rdx] = (kernopt, ridgeopt)
 
-        fit = solve_l2_primal(Xtrain, Ytrain,
-                              Xtest, Ytest,
-                              ridges=[ridgeopt],
-                              performance=performance,
-                              predictions=predictions,
-                              weights=weights,
-                              metric=metric,
-                              verbose=verbose,
-                              EPS=EPS,
-                              )
+    # super hacky...
+    hparams, respidx = np.unique(optima, axis=0, return_inverse=True)
+    fullfit = {}
+
+    for uidx, (kernopt, ridgeopt) in enumerate(hparams):
+        if np.isnan(kernopt):
+            kernopt = None
+
+        if verbose:
+            desc = 'held-out' if (Xtest is not None) else 'within'
+            outro = 'Predicting {d} set:\ncvperf={cc},ridge={alph},kernel={kn},kernel_param={kp}'
+            outro = outro.format(d=desc,cc=surface.max(),alph=ridgeopt,
+                                 kn=kernel_name,kp=kernopt)
+            print(outro)
+
+        if uidx == 0:
+            # the full model is first on first iteration =S
+            responses_mask = np.ones(nresponses, dtype=np.bool)
+        else:
+            responses_mask = respidx == uidx
+
+        if solve_dual:
+            # Set the parameter to the optimal
+            ktrain_object.update(kernopt, verbose=verbose)
+
+            if Xtest is not None:
+                if Li is not None: Xtest = np.dot(Xtest, Li)
+                # project test data to kernel
+                ktest_object = lazy_kernel(Xtest, Xtrain, kernel_type=kernel_name)
+                ktest_object.update(kernopt, verbose=verbose)
+                ktest = ktest_object.kernel
+            elif withinset_test:
+                # predict within set if so desired
+                ktest = ktrain_object.kernel
+                Ytest = zscore(Ytrain) if yzscore else Ytrain
+            else:
+                ktest = None
+
+            fit = solve_l2_dual(ktrain_object.kernel,
+                                Ytrain[:, responses_mask],
+                                ktest,
+                                Ytest[:, responses_mask] if Ytest is not None else Ytest,
+                                ridges=[ridgeopt],
+                                performance=performance,
+                                predictions=predictions,
+                                weights=weights,
+                                EPS=EPS,
+                                metric=metric,
+                                verbose=verbose,
+                                )
+            # Project to primal space if we can
+            if (kernel_name == 'linear') and ('weights' in fit) and (not kernel_weights):
+                fit['weights'] = np.dot(Xtrain.T, fit['weights'])
+        else:
+
+            if Xtest is not None:
+                if Li is not None: Xtest = np.dot(Xtest, Li)
+            elif withinset_test:
+                Xtest = Xtrain
+                Ytest = zscore(Ytrain) if yzscore else Ytrain
+
+            fit = solve_l2_primal(Xtrain,
+                                  Ytrain[:, responses_mask],
+                                  Xtest,
+                                  Ytest[:, responses_mask] if Ytest is not None else Ytest,
+                                  ridges=[ridgeopt],
+                                  performance=performance,
+                                  predictions=predictions,
+                                  weights=weights,
+                                  metric=metric,
+                                  verbose=verbose,
+                                  EPS=EPS,
+                                  )
+            if uidx == 0:
+                # copy the first full fit
+                fullfit = fit
+            else:
+                for k,v in fullfit.keys():
+                    if v.shape[-1] == nresponses:
+                        fullfit[k][...,responses_mask] = fit[k]
+
     if (Li is not None) and ('weights' in fit):
         # project back
         fit['weights'] = np.dot(Li, fit['weights'])
@@ -1017,7 +1055,7 @@ def crossval_stem_wmvnp(features_train,
 
             if verbosity > 1:
                 txt = (ifold+1,nfolds,len(trnidx),len(validx))
-                print('train fold  %i/%i: ntrain=%i, ntest=%i'%txt)
+                print('train fold  %i/%i: ntrain=%i, nval=%i'%txt)
 
             # solve the regression problem
             norm_train = zscore if zscore_ytrain else lambda x: x
