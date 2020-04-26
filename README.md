@@ -1,7 +1,7 @@
 # tikreg: Tikhonov regression in Python
 
 [![Build Status](https://travis-ci.com/gallantlab/tikreg.svg?token=DG1xpt4Upohy9kdU6zzg&branch=master)](https://travis-ci.com/gallantlab/tikreg)
-[![License](https://img.shields.io/badge/license-BSD%203--Clause-blue)](https://opensource.org/licenses/BSD-2-Clause)
+[![License](https://img.shields.io/badge/license-BSD%203--Clause-blue)](https://opensource.org/licenses/BSD-3-Clause)
 [![codecov](https://codecov.io/gh/gallantlab/tikreg/branch/master/graph/badge.svg)](https://codecov.io/gh/gallantlab/tikreg)
 [![Downloads](https://pepy.tech/badge/tikreg)](https://pepy.tech/project/tikreg)
 
