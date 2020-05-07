@@ -37,29 +37,29 @@ $ pip install tikreg
 The following code performs 5-fold cross-validated ridge regression. 
   
 ```python
-  from tikreg import models
-  from tikreg import utils as tikutils
-  
-  # Generate synthetic data
-  weights_true, (Xtrain, Xtest), (Ytrain, Ytest) = tikutils.generate_data(noise=1, testsize=100)
-  
-  # Specify fit
-  options = dict(ridges=np.logspace(0,3,11), weights=True, metric='rsquared')
-  fit = models.cvridge(Xtrain, Ytrain, Xtest, Ytest, **options)
-  
-  # Evaluate results
-  weights_estimate = fit['weights']
-  weights_corr = tikutils.columnwise_correlation(weights_true, weights_estimate)
-  print(weights_corr.mean())  	# > 0.9
-  print(fit['cvresults'].shape) # (5, 1, 11, 2): (nfolds, 1, nridges, nresponses)
+from tikreg import models
+from tikreg import utils as tikutils
+
+# Generate synthetic data
+weights_true, (Xtrain, Xtest), (Ytrain, Ytest) = tikutils.generate_data(noise=1, testsize=100)
+
+# Specify fit
+options = dict(ridges=np.logspace(0,3,11), weights=True, metric='rsquared')
+fit = models.cvridge(Xtrain, Ytrain, Xtest, Ytest, **options)
+
+# Evaluate results
+weights_estimate = fit['weights']
+weights_corr = tikutils.columnwise_correlation(weights_true, weights_estimate)
+print(weights_corr.mean())  	# > 0.9
+print(fit['cvresults'].shape) # (5, 1, 11, 2): (nfolds, 1, nridges, nresponses)
 ```
 
 By default, the optimal ridge regularization parameter is found across the population of responses. We can specifiy that the optimal regularization parameter be found for each individual response (`population_optimum=False`). 
   
 ```python
-  options = dict(ridges=np.logspace(0,3,11), performance=True, predictions=True, weights=True, metric='rsquared')
-  fit = models.cvridge(Xtrain, Ytrain, Xtest, Ytest, population_optimum=False, **options)
-  print(fit.keys())
+options = dict(ridges=np.logspace(0,3,11), performance=True, predictions=True, weights=True, metric='rsquared')
+fit = models.cvridge(Xtrain, Ytrain, Xtest, Ytest, population_optimum=False, **options)
+print(fit.keys())
 ```
 
 The model performance (`performance=True`) and the test set predictions (`predictions=True`) are also computed in the example above. 
@@ -67,17 +67,17 @@ The model performance (`performance=True`) and the test set predictions (`predic
 Conveniently, `tikreg.models.cvridge()` will choose an efficient method to fit the ridge regression model automatically. Whenever the number of features is greater than the number of samples (*P > N*), the fit will be performed using kernel ridge regression. 
 
 ```python
-  # P >> N
-  nfeatures, ntimepoints = 1000, 100
-  weights_true, (Xtrain, Xtest), (Ytrain, Ytest) = tikutils.generate_data(n=ntimepoints, p=nfeatures, testsize=100)
+# P >> N
+nfeatures, ntimepoints = 1000, 100
+weights_true, (Xtrain, Xtest), (Ytrain, Ytest) = tikutils.generate_data(n=ntimepoints, p=nfeatures, testsize=100)
 
-  # Model is automatically fit using kernel ridge
-  options = dict(ridges=np.logspace(0,3,11), weights=True, metric='rsquared')
-  fit = models.cvridge(Xtrain, Ytrain, Xtest, Ytest, **options)
-  
-  # The weights are in the feature space
-  weights_estimate = fit['weights']
-  print(weights.shape)         # (nfeatures, nresponses)
+# Model is automatically fit using kernel ridge
+options = dict(ridges=np.logspace(0,3,11), weights=True, metric='rsquared')
+fit = models.cvridge(Xtrain, Ytrain, Xtest, Ytest, **options)
+
+# The weights are in the feature space
+weights_estimate = fit['weights']
+print(weights.shape)         # (nfeatures, nresponses)
 ```
 
 
