@@ -77,7 +77,7 @@ fit = models.cvridge(Xtrain, Ytrain, Xtest, Ytest, **options)
 
 # The weights are in the feature space
 weights_estimate = fit['weights']
-print(weights.shape)         # (nfeatures, nresponses)
+print(weights_estimate.shape)         # (nfeatures, nresponses)
 ```
 
 
