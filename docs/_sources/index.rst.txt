@@ -1,4 +1,4 @@
-.. tikreg documentation master file, created by
+.. tikreg documentation main file, created by
    sphinx-quickstart on Sat May 25 17:01:59 2019.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.

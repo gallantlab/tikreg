@@ -1,8 +1,8 @@
 # tikreg: Tikhonov regression in Python
 
-[![Build Status](https://travis-ci.com/gallantlab/tikreg.svg?token=DG1xpt4Upohy9kdU6zzg&branch=master)](https://travis-ci.com/gallantlab/tikreg)
+[![Build Status](https://travis-ci.com/gallantlab/tikreg.svg?token=DG1xpt4Upohy9kdU6zzg&branch=main)](https://travis-ci.com/gallantlab/tikreg)
 [![License](https://img.shields.io/badge/license-BSD%203--Clause-blue)](https://opensource.org/licenses/BSD-3-Clause)
-[![codecov](https://codecov.io/gh/gallantlab/tikreg/branch/master/graph/badge.svg)](https://codecov.io/gh/gallantlab/tikreg)
+[![codecov](https://codecov.io/gh/gallantlab/tikreg/branch/main/graph/badge.svg)](https://codecov.io/gh/gallantlab/tikreg)
 [![Downloads](https://pepy.tech/badge/tikreg)](https://pepy.tech/project/tikreg)
 
 **tikreg** is a Python package that efficiently implements Tikhonov regression.
@@ -90,19 +90,19 @@ https://gallantlab.github.io/tikreg/index.html
 moar tutorials coming soon.
 
 ### Non-spherical MVN prior on features 
-https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/master/examples/tutorial_feature_priors.ipynb
+https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/main/examples/tutorial_feature_priors.ipynb
 
-[Launch Google Colab notebook](https://colab.research.google.com/github/gallantlab/tikreg/blob/master/examples/tutorial_feature_priors.ipynb)
+[Launch Google Colab notebook](https://colab.research.google.com/github/gallantlab/tikreg/blob/main/examples/tutorial_feature_priors.ipynb)
 
 ### Non-spherical MVN prior on temporal delays
-https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/master/examples/tutorial_temporal_priors.ipynb
+https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/main/examples/tutorial_temporal_priors.ipynb
 
-[Launch Google Colab notebook](https://colab.research.google.com/github/gallantlab/tikreg/blob/master/examples/tutorial_temporal_priors.ipynb)
+[Launch Google Colab notebook](https://colab.research.google.com/github/gallantlab/tikreg/blob/main/examples/tutorial_temporal_priors.ipynb)
 
 
 
 ### Banded ridge regression:
-https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/master/examples/tutorial_banded_ridge_polar.ipynb
+https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/main/examples/tutorial_banded_ridge_polar.ipynb
 
 
 ## Cite as
