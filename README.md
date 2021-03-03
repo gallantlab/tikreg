@@ -87,8 +87,6 @@ https://gallantlab.github.io/tikreg/index.html
 
 ## Tutorials
 
-moar tutorials coming soon.
-
 ### Non-spherical MVN prior on features 
 https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/main/examples/tutorial_feature_priors.ipynb
 
@@ -100,9 +98,25 @@ https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/main/examples/tutoria
 [Launch Google Colab notebook](https://colab.research.google.com/github/gallantlab/tikreg/blob/main/examples/tutorial_temporal_priors.ipynb)
 
 
+### Banded ridge regression
 
-### Banded ridge regression:
-https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/main/examples/tutorial_banded_ridge_polar.ipynb
+When estimating a joint encoding model that consists of two feature spaces, banded ridge regression can be used to fit the model and assign each feature space a different regularization parameter. A banded ridge regression model with two multi-dimensional feature spaces (X<sub>1</sub> and X<sub>2</sub>) can be expressed as
+
+![](https://latex.codecogs.com/svg.latex?Y&space;=&space;X_1&space;B_1&space;&plus;&space;X_2&space;B_2&space;&plus;&space;\epsilon)
+
+where the weights for each feature space are assumed to be indpendently distributed as multivariate normal with different variance (see Figure 5 in [Nunez-Elizalde, et al., 2019](https://www.sciencedirect.com/science/article/pii/S1053811919302988?via%3Dihub)). That is:
+
+![](https://latex.codecogs.com/svg.latex?B_1&space;\sim&space;\mathcal{N}\left(0,&space;\lambda_1^{-2}&space;I_q\right)&space;\text{and&space;}&space;B_2&space;\sim&space;\mathcal{N}\left(0,&space;\lambda_2^{-2}&space;I_q\right))
+
+
+Estimating this model is computational expensive, requiring cross-validating two regularization parameters for every voxel (<img src="https://latex.codecogs.com/svg.latex?\lambda_1" title="\lambda_1" /> and <img src="https://latex.codecogs.com/svg.latex?\lambda_2" title="\lambda_2" />)
+
+For more information:
+
+* Technical description of banded ridge: [View notebook](https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/main/examples/tutorial_banded_ridge_polar.ipynb) or [Launch Google Colab notebook](https://colab.research.google.com/github/gallantlab/tikreg/blob/main/examples/tutorial_banded_ridge_polar.ipynb)
+
+* Banded ridge regression tutorial: [View notebook](https://nbviewer.jupyter.org/github/gallantlab/tikreg/blob/main/examples/tutorial_banded_ridge_regression.ipynb) or [Launch Google Colab notebook](https://colab.research.google.com/github/gallantlab/tikreg/blob/main/examples/tutorial_banded_ridge_regression.ipynb)
+
 
 
 ## Cite as
