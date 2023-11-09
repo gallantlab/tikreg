@@ -559,7 +559,7 @@ def explainable_variance(repeats, ncorrection=True, dozscore=True):
     ev = 1 - residualvar
 
     if ncorrection:
-        ev = ev - ((1 - ev) / np.float((repeats.shape[0] - 1)))
+        ev = ev - ((1 - ev) / float((repeats.shape[0] - 1)))
     return ev
 
 
@@ -920,7 +920,7 @@ def hrf_convolution(input_responses, HRF=None, do_convolution=True, dt=None):
     if input_responses.ndim == 1:
         input_responses = input_responses[...,None]
 
-    bold = np.zeros_like(input_responses).astype(np.float)
+    bold = np.zeros_like(input_responses).astype(float)
     nresp = input_responses.shape[-1]
 
     if HRF is None:

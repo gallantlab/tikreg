@@ -694,9 +694,9 @@ def cvridge(Xtrain, Ytrain,
         max_point = map(max, max_point)
         # The maximum point
         kernmax, ridgemax = max_point
-        optima = np.asarray([[kernmax, ridgemax]], dtype=np.int)
+        optima = np.asarray([[kernmax, ridgemax]], dtype=int)
     else:
-        optima = np.zeros((nresponses, 2), dtype=np.int)
+        optima = np.zeros((nresponses, 2), dtype=int)
         for rdx in range(nresponses):
             kernmax, ridgemax = np.unravel_index(np.argmax(results[...,rdx].mean(0)),
                                                  (len(kernel_params), len(ridges)))
@@ -969,7 +969,7 @@ def crossval_stem_wmvnp(features_train,
                        )
 
     if predictions or weights:
-        sample_counter = np.zeros(responses_train.shape[0]).astype(np.int)
+        sample_counter = np.zeros(responses_train.shape[0]).astype(int)
         for ifold, (trnidx, validx) in enumerate(folds):
             sample_counter[validx] += 1
         sample_max = sample_counter.max()
@@ -992,7 +992,7 @@ def crossval_stem_wmvnp(features_train,
 
     # start iterating through spatio-temporal hyparams
     for hyperidx, spatiotemporal_hyperparams in enumerate(all_hyperparams):
-        sample_counter = np.zeros(responses_train.shape[0]).astype(np.int)
+        sample_counter = np.zeros(responses_train.shape[0]).astype(int)
 
         # hyhperparameters
         temporal_hhparam = spatiotemporal_hyperparams[0]
@@ -1102,12 +1102,12 @@ def crossval_stem_wmvnp(features_train,
             print(txt % contents)
 
     #### dimensions explored
-    dtype = np.dtype([('nfolds', np.int),
-                      ('ntemporal_hhparams', np.int),
-                      ('nspatial_hyparams', np.int),
-                      ('nridges', np.int),
-                      ('nresponses', np.int),
-                      ('nfspaces', np.int)])
+    dtype = np.dtype([('nfolds', int),
+                      ('ntemporal_hhparams', int),
+                      ('nspatial_hyparams', int),
+                      ('nridges', int),
+                      ('nresponses', int),
+                      ('nfspaces', int)])
 
     dims = np.recarray(shape=(1), dtype=dtype)
     dims[0] = np.asarray([(nfolds,
